@@ -587,7 +587,7 @@ function Library:create_ui()
     ClientName.Name = 'ClientName'
     ClientName.Size = UDim2.new(0, 150, 0, 18) -- Увеличен размер
     ClientName.AnchorPoint = Vector2.new(0, 0.5)
-    ClientName.Position = UDim2.new(0.0700000017285347, 0, 0.064999999701976776, 0) -- Сдвинуто правее
+    ClientName.Position = UDim2.new(0.1900000017285347, 0, 0.064999999701976776, 0) -- Сдвинуто правее
     ClientName.BackgroundTransparency = 1
     ClientName.TextXAlignment = Enum.TextXAlignment.Left
     ClientName.BorderSizePixel = 0
