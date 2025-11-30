@@ -567,7 +567,7 @@ function Library:create_ui()
     Tabs.Selectable = false
     Tabs.AutomaticCanvasSize = Enum.AutomaticSize.XY
     Tabs.BackgroundTransparency = 1
-    Tabs.Position = UDim2.new(0.026097271591424942, 0, 0.1111111119389534, 0)
+    Tabs.Position = UDim2.new(0.256097271591424942, 0, 0.1111111119389534, 0)
     Tabs.BorderColor3 = Color3.fromRGB(0, 0, 0)
     Tabs.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
     Tabs.BorderSizePixel = 0
