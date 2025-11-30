@@ -567,7 +567,7 @@ function Library:create_ui()
     Tabs.Selectable = false
     Tabs.AutomaticCanvasSize = Enum.AutomaticSize.XY
     Tabs.BackgroundTransparency = 1
-    Tabs.Position = UDim2.new(0.256097271591424942, 0, 0.1111111119389534, 0)
+    Tabs.Position = UDim2.new(0.026097271591424942, 0, 0.1111111119389534, 0)
     Tabs.BorderColor3 = Color3.fromRGB(0, 0, 0)
     Tabs.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
     Tabs.BorderSizePixel = 0
@@ -585,14 +585,14 @@ function Library:create_ui()
     ClientName.TextTransparency = 0.20000000298023224
     ClientName.Text = 'METAN HUB [BETA]'
     ClientName.Name = 'ClientName'
-    ClientName.Size = UDim2.new(0, 200, 0, 20)
-    ClientName.AnchorPoint = Vector2.new(0.5, 0)
-    ClientName.Position = UDim2.new(0.5, 0, 0.03, 0)
+    ClientName.Size = UDim2.new(0, 150, 0, 18) -- Увеличен размер
+    ClientName.AnchorPoint = Vector2.new(0, 0.5)
+    ClientName.Position = UDim2.new(0.0700000017285347, 0, 0.064999999701976776, 0) -- Сдвинуто правее
     ClientName.BackgroundTransparency = 1
-    ClientName.TextXAlignment = Enum.TextXAlignment.Center
+    ClientName.TextXAlignment = Enum.TextXAlignment.Left
     ClientName.BorderSizePixel = 0
     ClientName.BorderColor3 = Color3.fromRGB(0, 0, 0)
-    ClientName.TextSize = 18
+    ClientName.TextSize = 16 -- Увеличен размер текста
     ClientName.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
     ClientName.Parent = Handler
     
