@@ -1,8 +1,3 @@
---[[
-    Custom UI Library
-    Вдохновлено March UI, но уникальный стиль
-    Тёмно-синяя тема с голубым акцентом
-]]
 
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
@@ -90,28 +85,16 @@ function Library.new(title)
         BorderSizePixel = 0
     })
     
-    -- Заголовок с иконкой
-    self.TitleIcon = Create("ImageLabel", {
-        Name = "Icon",
-        Parent = self.Handler,
-        BackgroundTransparency = 1,
-        Position = UDim2.new(0.025, 0, 0.055, 0),
-        Size = UDim2.new(0, 18, 0, 18),
-        AnchorPoint = Vector2.new(0, 0.5),
-        Image = "rbxassetid://107819132007001",
-        ImageColor3 = Colors.Accent,
-        ScaleType = Enum.ScaleType.Fit
-    })
-    
+    -- Заголовок (без иконки)
     self.TitleLabel = Create("TextLabel", {
         Name = "Title",
         Parent = self.Handler,
         BackgroundTransparency = 1,
-        Position = UDim2.new(0.056, 0, 0.055, 0),
-        Size = UDim2.new(0, 100, 0, 13),
+        Position = UDim2.new(0.026, 0, 0.055, 0),
+        Size = UDim2.new(0, 120, 0, 13),
         AnchorPoint = Vector2.new(0, 0.5),
         FontFace = Library.FontBold,
-        Text = title or "Custom UI",
+        Text = title or "Metan Hub",
         TextColor3 = Colors.Accent,
         TextTransparency = 0.2,
         TextSize = 13,
@@ -397,14 +380,14 @@ function Library:CreateModule(tab, settings)
     
     local parent = (settings.section == "right") and tab.RightSection or tab.LeftSection
     
-    -- Основной фрейм модуля
+    -- Основной фрейм модуля (уменьшенный размер - только заголовок и описание)
     module.Frame = Create("Frame", {
         Name = "Module",
         Parent = parent,
         BackgroundColor3 = Colors.Secondary,
         BackgroundTransparency = 0.5,
         BorderSizePixel = 0,
-        Size = UDim2.new(0, 220, 0, 85),
+        Size = UDim2.new(0, 220, 0, 45),
         ClipsDescendants = true
     })
     Create("UICorner", { CornerRadius = UDim.new(0, 5), Parent = module.Frame })
@@ -415,14 +398,13 @@ function Library:CreateModule(tab, settings)
         SortOrder = Enum.SortOrder.LayoutOrder
     })
     
-    -- Header модуля
-    module.Header = Create("TextButton", {
+    -- Header модуля (компактный)
+    module.Header = Create("Frame", {
         Name = "Header",
         Parent = module.Frame,
         BackgroundTransparency = 1,
-        Size = UDim2.new(0, 220, 0, 85),
-        Text = "",
-        AutoButtonColor = false
+        Size = UDim2.new(0, 220, 0, 45),
+        BorderSizePixel = 0
     })
     
     -- Название модуля
@@ -430,9 +412,8 @@ function Library:CreateModule(tab, settings)
         Name = "ModuleName",
         Parent = module.Header,
         BackgroundTransparency = 1,
-        Position = UDim2.new(0.073, 0, 0.24, 0),
-        Size = UDim2.new(0, 190, 0, 13),
-        AnchorPoint = Vector2.new(0, 0.5),
+        Position = UDim2.new(0, 12, 0, 10),
+        Size = UDim2.new(0, 196, 0, 14),
         FontFace = Library.FontBold,
         Text = settings.title or "Module",
         TextColor3 = Colors.Accent,
@@ -446,115 +427,27 @@ function Library:CreateModule(tab, settings)
         Name = "Description",
         Parent = module.Header,
         BackgroundTransparency = 1,
-        Position = UDim2.new(0.073, 0, 0.42, 0),
-        Size = UDim2.new(0, 190, 0, 13),
-        AnchorPoint = Vector2.new(0, 0.5),
-        FontFace = Library.FontBold,
+        Position = UDim2.new(0, 12, 0, 26),
+        Size = UDim2.new(0, 196, 0, 12),
+        FontFace = Library.Font,
         Text = settings.description or "",
-        TextColor3 = Colors.Accent,
-        TextTransparency = 0.7,
+        TextColor3 = Colors.TextDim,
+        TextTransparency = 0.3,
         TextSize = 9,
         TextXAlignment = Enum.TextXAlignment.Left
     })
     
-    -- Иконка
-    Create("ImageLabel", {
-        Name = "Icon",
-        Parent = module.Header,
-        BackgroundTransparency = 1,
-        Position = UDim2.new(0.071, 0, 0.82, 0),
-        Size = UDim2.new(0, 14, 0, 14),
-        AnchorPoint = Vector2.new(0, 0.5),
-        Image = settings.icon or "rbxassetid://79095934438045",
-        ImageColor3 = Colors.Accent,
-        ImageTransparency = 0.7,
-        ScaleType = Enum.ScaleType.Fit
-    })
-    
-    -- Toggle switch
-    module.Toggle = Create("Frame", {
-        Name = "Toggle",
-        Parent = module.Header,
-        BackgroundColor3 = Color3.fromRGB(0, 0, 0),
-        BackgroundTransparency = 0.7,
-        Position = UDim2.new(0.82, 0, 0.757, 0),
-        Size = UDim2.new(0, 24, 0, 12),
-        BorderSizePixel = 0
-    })
-    Create("UICorner", { CornerRadius = UDim.new(1, 0), Parent = module.Toggle })
-    
-    module.Circle = Create("Frame", {
-        Name = "Circle",
-        Parent = module.Toggle,
-        BackgroundColor3 = Colors.AccentDark,
-        BackgroundTransparency = 0.2,
-        Position = UDim2.new(0, 0, 0.5, 0),
-        Size = UDim2.new(0, 12, 0, 12),
-        AnchorPoint = Vector2.new(0, 0.5),
-        BorderSizePixel = 0
-    })
-    Create("UICorner", { CornerRadius = UDim.new(1, 0), Parent = module.Circle })
-    
-    -- Keybind
-    module.Keybind = Create("Frame", {
-        Name = "Keybind",
-        Parent = module.Header,
-        BackgroundColor3 = Colors.Accent,
-        BackgroundTransparency = 0.7,
-        Position = UDim2.new(0.15, 0, 0.735, 0),
-        Size = UDim2.new(0, 32, 0, 14),
-        BorderSizePixel = 0
-    })
-    Create("UICorner", { CornerRadius = UDim.new(0, 3), Parent = module.Keybind })
-    
-    module.KeybindLabel = Create("TextLabel", {
-        Name = "Label",
-        Parent = module.Keybind,
-        BackgroundTransparency = 1,
-        Position = UDim2.new(0.5, 0, 0.5, 0),
-        Size = UDim2.new(0, 24, 0, 12),
-        AnchorPoint = Vector2.new(0.5, 0.5),
-        FontFace = Library.FontBold,
-        Text = settings.keybind and settings.keybind.Name or "None",
-        TextColor3 = Color3.fromRGB(209, 222, 255),
-        TextSize = 9,
-        TextXAlignment = Enum.TextXAlignment.Left
-    })
-    
-    -- Разделители
-    Create("Frame", {
-        Name = "Divider1",
-        Parent = module.Header,
-        BackgroundColor3 = Colors.Border,
-        BackgroundTransparency = 0.5,
-        Position = UDim2.new(0.5, 0, 0.62, 0),
-        Size = UDim2.new(0, 220, 0, 1),
-        AnchorPoint = Vector2.new(0.5, 0),
-        BorderSizePixel = 0
-    })
-    
-    Create("Frame", {
-        Name = "Divider2",
-        Parent = module.Header,
-        BackgroundColor3 = Colors.Border,
-        BackgroundTransparency = 0.5,
-        Position = UDim2.new(0.5, 0, 1, 0),
-        Size = UDim2.new(0, 220, 0, 1),
-        AnchorPoint = Vector2.new(0.5, 0),
-        BorderSizePixel = 0
-    })
-    
-    -- Options контейнер
+    -- Options контейнер (сразу после заголовка, без пробела)
     module.Options = Create("Frame", {
         Name = "Options",
         Parent = module.Frame,
         BackgroundTransparency = 1,
         Position = UDim2.new(0, 0, 1, 0),
-        Size = UDim2.new(0, 220, 0, 8),
+        Size = UDim2.new(0, 220, 0, 0),
         BorderSizePixel = 0
     })
     
-    Create("UIPadding", { PaddingTop = UDim.new(0, 8), Parent = module.Options })
+    Create("UIPadding", { PaddingTop = UDim.new(0, 5), PaddingBottom = UDim.new(0, 8), Parent = module.Options })
     Create("UIListLayout", {
         Parent = module.Options,
         Padding = UDim.new(0, 5),
@@ -562,74 +455,21 @@ function Library:CreateModule(tab, settings)
         SortOrder = Enum.SortOrder.LayoutOrder
     })
     
-    -- Функция изменения состояния
-    function module:ChangeState(state)
-        self._state = state
-        if self._state then
-            Tween(module.Frame, {Size = UDim2.fromOffset(220, 85 + self._size + self._multiplier)}, 0.5)
-            Tween(module.Toggle, {BackgroundColor3 = Colors.Accent}, 0.5)
-            Tween(module.Circle, {BackgroundColor3 = Colors.Accent, Position = UDim2.fromScale(0.53, 0.5)}, 0.5)
-        else
-            Tween(module.Frame, {Size = UDim2.fromOffset(220, 85)}, 0.5)
-            Tween(module.Toggle, {BackgroundColor3 = Color3.fromRGB(0, 0, 0)}, 0.5)
-            Tween(module.Circle, {BackgroundColor3 = Colors.AccentDark, Position = UDim2.fromScale(0, 0.5)}, 0.5)
-        end
-        if settings.callback then
-            settings.callback(self._state)
-        end
+    -- Функция обновления размера модуля
+    function module:UpdateSize()
+        local newSize = 45 + self._size + self._multiplier
+        Tween(module.Frame, {Size = UDim2.fromOffset(220, newSize)}, 0.3)
     end
-    
-    -- Keybind функционал
-    module._keybind = settings.keybind
-    module._waitingKeybind = false
-    
-    module.Header.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton3 and not module._waitingKeybind then
-            module._waitingKeybind = true
-            module.KeybindLabel.Text = "..."
-            
-            local conn
-            conn = UserInputService.InputBegan:Connect(function(keyInput, processed)
-                if processed then return end
-                if keyInput.KeyCode == Enum.KeyCode.Unknown then return end
-                
-                if keyInput.KeyCode == Enum.KeyCode.Backspace then
-                    module._keybind = nil
-                    module.KeybindLabel.Text = "None"
-                else
-                    module._keybind = keyInput.KeyCode
-                    module.KeybindLabel.Text = keyInput.KeyCode.Name
-                end
-                
-                module._waitingKeybind = false
-                conn:Disconnect()
-            end)
-        end
-    end)
-    
-    -- Keybind активация
-    UserInputService.InputBegan:Connect(function(input, processed)
-        if processed or module._waitingKeybind then return end
-        if module._keybind and input.KeyCode == module._keybind then
-            module:ChangeState(not module._state)
-        end
-    end)
-    
-    module.Header.MouseButton1Click:Connect(function()
-        module:ChangeState(not module._state)
-    end)
 
     
     -- Создание Checkbox внутри модуля
     function module:CreateCheckbox(checkSettings)
         local checkbox = { _state = false }
         
-        if self._size == 0 then self._size = 11 end
+        if self._size == 0 then self._size = 5 end
         self._size += 20
         
-        if self._state then
-            module.Frame.Size = UDim2.fromOffset(220, 85 + self._size)
-        end
+        module.Frame.Size = UDim2.fromOffset(220, 45 + self._size)
         module.Options.Size = UDim2.fromOffset(220, self._size)
         
         local checkFrame = Create("TextButton", {
@@ -705,12 +545,10 @@ function Library:CreateModule(tab, settings)
     function module:CreateSlider(sliderSettings)
         local slider = {}
         
-        if self._size == 0 then self._size = 11 end
+        if self._size == 0 then self._size = 5 end
         self._size += 26
         
-        if self._state then
-            module.Frame.Size = UDim2.fromOffset(220, 85 + self._size)
-        end
+        module.Frame.Size = UDim2.fromOffset(220, 45 + self._size)
         module.Options.Size = UDim2.fromOffset(220, self._size)
         
         local sliderFrame = Create("TextButton", {
@@ -847,12 +685,10 @@ function Library:CreateModule(tab, settings)
     function module:CreateDropdown(dropSettings)
         local dropdown = { _state = false, _size = 0 }
         
-        if self._size == 0 then self._size = 11 end
+        if self._size == 0 then self._size = 5 end
         self._size += 40
         
-        if self._state then
-            module.Frame.Size = UDim2.fromOffset(220, 85 + self._size)
-        end
+        module.Frame.Size = UDim2.fromOffset(220, 45 + self._size)
         module.Options.Size = UDim2.fromOffset(220, self._size)
         
         local dropFrame = Create("TextButton", {
@@ -996,14 +832,14 @@ function Library:CreateModule(tab, settings)
             self._state = not self._state
             if self._state then
                 module._multiplier += self._size
-                Tween(module.Frame, {Size = UDim2.fromOffset(220, 85 + module._size + module._multiplier)}, 0.5)
+                Tween(module.Frame, {Size = UDim2.fromOffset(220, 45 + module._size + module._multiplier)}, 0.5)
                 Tween(module.Options, {Size = UDim2.fromOffset(220, module._size + module._multiplier)}, 0.5)
                 Tween(dropFrame, {Size = UDim2.fromOffset(195, 35 + self._size)}, 0.5)
                 Tween(box, {Size = UDim2.fromOffset(195, 20 + self._size)}, 0.5)
                 Tween(arrow, {Rotation = 180}, 0.5)
             else
                 module._multiplier -= self._size
-                Tween(module.Frame, {Size = UDim2.fromOffset(220, 85 + module._size + module._multiplier)}, 0.5)
+                Tween(module.Frame, {Size = UDim2.fromOffset(220, 45 + module._size + module._multiplier)}, 0.5)
                 Tween(module.Options, {Size = UDim2.fromOffset(220, module._size + module._multiplier)}, 0.5)
                 Tween(dropFrame, {Size = UDim2.fromOffset(195, 35)}, 0.5)
                 Tween(box, {Size = UDim2.fromOffset(195, 20)}, 0.5)
@@ -1022,12 +858,10 @@ function Library:CreateModule(tab, settings)
     function module:CreateTextBox(textSettings)
         local textbox = { Value = "" }
         
-        if self._size == 0 then self._size = 11 end
+        if self._size == 0 then self._size = 5 end
         self._size += 30
         
-        if self._state then
-            module.Frame.Size = UDim2.fromOffset(220, 85 + self._size)
-        end
+        module.Frame.Size = UDim2.fromOffset(220, 45 + self._size)
         module.Options.Size = UDim2.fromOffset(220, self._size)
         
         Create("TextLabel", {
@@ -1071,12 +905,10 @@ function Library:CreateModule(tab, settings)
     
     -- Создание Button внутри модуля
     function module:CreateButton(btnSettings)
-        if self._size == 0 then self._size = 11 end
+        if self._size == 0 then self._size = 5 end
         self._size += 22
         
-        if self._state then
-            module.Frame.Size = UDim2.fromOffset(220, 85 + self._size)
-        end
+        module.Frame.Size = UDim2.fromOffset(220, 45 + self._size)
         module.Options.Size = UDim2.fromOffset(220, self._size)
         
         local btn = Create("TextButton", {
