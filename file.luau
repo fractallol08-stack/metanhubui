@@ -1,7 +1,7 @@
 --[[
-    Custom UI Library
+    Ocean UI Library
+    Светлая морская тема - белые и голубые тона
     Вдохновлено March UI, но уникальный стиль
-    Тёмно-синяя тема с голубым акцентом
 ]]
 
 local TweenService = game:GetService("TweenService")
@@ -15,22 +15,36 @@ local Library = {}
 Library.__index = Library
 Library.ToggleKey = Enum.KeyCode.Insert
 
--- Шрифты GothamSSm
+-- Шрифты
 Library.Font = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.Regular, Enum.FontStyle.Normal)
 Library.FontBold = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
 
--- Цвета (морские бело-голубые прозрачные тона)
+-- Светлая морская палитра
 local Colors = {
-    Background = Color3.fromRGB(15, 25, 40),
-    Secondary = Color3.fromRGB(20, 35, 55),
-    Tertiary = Color3.fromRGB(30, 50, 75),
-    Accent = Color3.fromRGB(100, 180, 255),
-    AccentDark = Color3.fromRGB(60, 120, 180),
-    Border = Color3.fromRGB(80, 140, 200),
-    Text = Color3.fromRGB(255, 255, 255),
-    TextDim = Color3.fromRGB(200, 220, 240),
-    Success = Color3.fromRGB(100, 255, 200),
-    Error = Color3.fromRGB(255, 120, 150)
+    -- Основные фоны (светлые)
+    Background = Color3.fromRGB(245, 248, 252),      -- Почти белый с голубым оттенком
+    Secondary = Color3.fromRGB(235, 242, 250),       -- Светло-голубой
+    Tertiary = Color3.fromRGB(225, 235, 248),        -- Чуть темнее
+    Card = Color3.fromRGB(255, 255, 255),            -- Чисто белый для карточек
+    
+    -- Акценты (морские)
+    Accent = Color3.fromRGB(70, 150, 220),           -- Морской голубой
+    AccentLight = Color3.fromRGB(100, 175, 235),     -- Светлый акцент
+    AccentDark = Color3.fromRGB(50, 120, 190),       -- Тёмный акцент
+    
+    -- Границы
+    Border = Color3.fromRGB(200, 215, 235),          -- Светлая граница
+    BorderHover = Color3.fromRGB(150, 180, 220),     -- Граница при наведении
+    
+    -- Текст
+    Text = Color3.fromRGB(40, 55, 75),               -- Тёмно-синий текст
+    TextDim = Color3.fromRGB(100, 120, 150),         -- Приглушённый текст
+    TextLight = Color3.fromRGB(255, 255, 255),       -- Белый текст
+    
+    -- Статусы
+    Success = Color3.fromRGB(80, 200, 150),          -- Зелёный
+    Error = Color3.fromRGB(240, 100, 120),           -- Красный
+    Warning = Color3.fromRGB(250, 180, 80)           -- Оранжевый
 }
 
 -- Утилиты
@@ -43,7 +57,7 @@ local function Create(class, props)
 end
 
 local function Tween(obj, props, duration, style)
-    local tween = TweenService:Create(obj, TweenInfo.new(duration or 0.3, style or Enum.EasingStyle.Quint, Enum.EasingDirection.Out), props)
+    local tween = TweenService:Create(obj, TweenInfo.new(duration or 0.25, style or Enum.EasingStyle.Quint, Enum.EasingDirection.Out), props)
     tween:Play()
     return tween
 end
@@ -53,23 +67,22 @@ function Library.new(title)
     local self = setmetatable({}, Library)
     
     -- Удаляем старый UI
-    local old = CoreGui:FindFirstChild("CustomUI")
+    local old = CoreGui:FindFirstChild("OceanUI")
     if old then Debris:AddItem(old, 0) end
     
     -- ScreenGui
     self.ScreenGui = Create("ScreenGui", {
-        Name = "CustomUI",
+        Name = "OceanUI",
         Parent = CoreGui,
         ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
         ResetOnSpawn = false
     })
 
-    -- Главный контейнер (размер как в March UI)
+    -- Главный контейнер
     self.Container = Create("Frame", {
         Name = "Container",
         Parent = self.ScreenGui,
         BackgroundColor3 = Colors.Background,
-        BackgroundTransparency = 0.05,
         BorderSizePixel = 0,
         AnchorPoint = Vector2.new(0.5, 0.5),
         Position = UDim2.new(0.5, 0, 0.5, 0),
@@ -78,91 +91,170 @@ function Library.new(title)
         Active = true
     })
     
-    Create("UICorner", { CornerRadius = UDim.new(0, 10), Parent = self.Container })
-    Create("UIStroke", { Color = Colors.Border, Transparency = 0.5, Parent = self.Container })
+    Create("UICorner", { CornerRadius = UDim.new(0, 12), Parent = self.Container })
+    
+    -- Тень (эффект глубины)
+    local shadow = Create("ImageLabel", {
+        Name = "Shadow",
+        Parent = self.Container,
+        BackgroundTransparency = 1,
+        Position = UDim2.new(0.5, 0, 0.5, 4),
+        Size = UDim2.new(1, 30, 1, 30),
+        AnchorPoint = Vector2.new(0.5, 0.5),
+        Image = "rbxassetid://5554236805",
+        ImageColor3 = Color3.fromRGB(0, 0, 0),
+        ImageTransparency = 0.85,
+        ScaleType = Enum.ScaleType.Slice,
+        SliceCenter = Rect.new(23, 23, 277, 277),
+        ZIndex = -1
+    })
+    
+    -- Граница
+    Create("UIStroke", { 
+        Color = Colors.Border, 
+        Thickness = 1,
+        Transparency = 0.3,
+        Parent = self.Container 
+    })
     
     -- Handler (внутренний контейнер)
     self.Handler = Create("Frame", {
         Name = "Handler",
         Parent = self.Container,
         BackgroundTransparency = 1,
-        Size = UDim2.new(0, 650, 0, 450),
+        Size = UDim2.new(0, 680, 0, 480),
         BorderSizePixel = 0
     })
     
-    -- Заголовок (жирный)
+    -- Верхняя панель (заголовок)
+    local topBar = Create("Frame", {
+        Name = "TopBar",
+        Parent = self.Handler,
+        BackgroundColor3 = Colors.Card,
+        BackgroundTransparency = 0,
+        Position = UDim2.new(0, 0, 0, 0),
+        Size = UDim2.new(1, 0, 0, 50),
+        BorderSizePixel = 0
+    })
+    
+    -- Разделитель под заголовком
+    Create("Frame", {
+        Name = "TopDivider",
+        Parent = topBar,
+        BackgroundColor3 = Colors.Border,
+        Position = UDim2.new(0, 0, 1, -1),
+        Size = UDim2.new(1, 0, 0, 1),
+        BorderSizePixel = 0
+    })
+    
+    -- Иконка
+    Create("Frame", {
+        Name = "IconDot",
+        Parent = topBar,
+        BackgroundColor3 = Colors.Accent,
+        Position = UDim2.new(0, 20, 0.5, 0),
+        Size = UDim2.new(0, 8, 0, 8),
+        AnchorPoint = Vector2.new(0, 0.5),
+        BorderSizePixel = 0
+    }):FindFirstChildOfClass("UICorner") or Create("UICorner", { CornerRadius = UDim.new(1, 0), Parent = topBar.IconDot })
+    
+    -- Заголовок
     self.TitleLabel = Create("TextLabel", {
         Name = "Title",
-        Parent = self.Handler,
+        Parent = topBar,
         BackgroundTransparency = 1,
-        Position = UDim2.new(0.026, 0, 0.04, 0),
-        Size = UDim2.new(0, 130, 0, 16),
+        Position = UDim2.new(0, 36, 0.5, 0),
+        Size = UDim2.new(0, 200, 0, 20),
         AnchorPoint = Vector2.new(0, 0.5),
-        FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.Bold, Enum.FontStyle.Normal),
-        Text = title or "Metan Hub",
+        FontFace = Library.FontBold,
+        Text = title or "Ocean Hub",
         TextColor3 = Colors.Accent,
-        TextTransparency = 0,
-        TextSize = 15,
+        TextSize = 16,
         TextXAlignment = Enum.TextXAlignment.Left
     })
+
+    -- Кнопка минимизации
+    local minimizeBtn = Create("TextButton", {
+        Name = "Minimize",
+        Parent = topBar,
+        BackgroundColor3 = Colors.Secondary,
+        BackgroundTransparency = 0.5,
+        Position = UDim2.new(1, -45, 0.5, 0),
+        Size = UDim2.new(0, 28, 0, 28),
+        AnchorPoint = Vector2.new(0, 0.5),
+        Text = "−",
+        TextColor3 = Colors.TextDim,
+        TextSize = 18,
+        FontFace = Library.FontBold,
+        AutoButtonColor = false
+    })
+    Create("UICorner", { CornerRadius = UDim.new(0, 6), Parent = minimizeBtn })
     
-    -- Разделитель после заголовка (горизонтальный)
+    -- Боковая панель табов
+    local sidePanel = Create("Frame", {
+        Name = "SidePanel",
+        Parent = self.Handler,
+        BackgroundColor3 = Colors.Card,
+        Position = UDim2.new(0, 0, 0, 50),
+        Size = UDim2.new(0, 160, 1, -50),
+        BorderSizePixel = 0
+    })
+    
+    -- Разделитель справа от боковой панели
     Create("Frame", {
-        Name = "TitleDivider",
-        Parent = self.Handler,
+        Name = "SideDivider",
+        Parent = sidePanel,
         BackgroundColor3 = Colors.Border,
-        BackgroundTransparency = 0.3,
-        Position = UDim2.new(0.026, 0, 0.075, 0),
-        Size = UDim2.new(0, 130, 0, 1),
+        Position = UDim2.new(1, -1, 0, 0),
+        Size = UDim2.new(0, 1, 1, 0),
         BorderSizePixel = 0
     })
     
-    -- Индикатор активного таба (Pin)
-    self.Pin = Create("Frame", {
-        Name = "Pin",
-        Parent = self.Handler,
+    -- Индикатор активного таба
+    self.TabIndicator = Create("Frame", {
+        Name = "TabIndicator",
+        Parent = sidePanel,
         BackgroundColor3 = Colors.Accent,
-        Position = UDim2.new(0.026, 0, 0.12, 0),
-        Size = UDim2.new(0, 2, 0, 16),
+        Position = UDim2.new(0, 0, 0, 15),
+        Size = UDim2.new(0, 3, 0, 32),
         BorderSizePixel = 0
     })
-    Create("UICorner", { CornerRadius = UDim.new(1, 0), Parent = self.Pin })
+    Create("UICorner", { CornerRadius = UDim.new(0, 2), Parent = self.TabIndicator })
     
-    -- Контейнер табов (боковая панель)
+    -- Контейнер табов
     self.TabsContainer = Create("ScrollingFrame", {
         Name = "Tabs",
-        Parent = self.Handler,
+        Parent = sidePanel,
         BackgroundTransparency = 1,
-        Position = UDim2.new(0.026, 0, 0.1, 0),
-        Size = UDim2.new(0, 129, 0, 390),
+        Position = UDim2.new(0, 8, 0, 10),
+        Size = UDim2.new(1, -16, 1, -20),
         ScrollBarImageTransparency = 1,
         ScrollBarThickness = 0,
         AutomaticCanvasSize = Enum.AutomaticSize.Y,
-        CanvasSize = UDim2.new(0, 0, 0.5, 0),
+        CanvasSize = UDim2.new(0, 0, 0, 0),
         Selectable = false
     })
     
     Create("UIListLayout", {
         Parent = self.TabsContainer,
-        Padding = UDim.new(0, 4),
+        Padding = UDim.new(0, 6),
         SortOrder = Enum.SortOrder.LayoutOrder
     })
     
-    -- Разделитель
-    Create("Frame", {
-        Name = "Divider",
+    -- Контейнер секций (основная область)
+    self.ContentArea = Create("Frame", {
+        Name = "ContentArea",
         Parent = self.Handler,
-        BackgroundColor3 = Colors.Border,
-        BackgroundTransparency = 0.5,
-        Position = UDim2.new(0.235, 0, 0, 0),
-        Size = UDim2.new(0, 1, 1, 0),
+        BackgroundColor3 = Colors.Background,
+        BackgroundTransparency = 1,
+        Position = UDim2.new(0, 160, 0, 50),
+        Size = UDim2.new(1, -160, 1, -50),
         BorderSizePixel = 0
     })
     
-    -- Контейнер секций
     self.SectionsContainer = Create("Folder", {
         Name = "Sections",
-        Parent = self.Handler
+        Parent = self.ContentArea
     })
     
     self.Tabs = {}
@@ -170,22 +262,11 @@ function Library.new(title)
     self.TabIndex = 0
     self.Visible = true
     self._dragging = false
-    self._sliderDragging = false  -- Флаг для блокировки drag при слайдере
     
-    -- Drag функционал (только по заголовку)
+    -- Drag функционал
     local dragStart, startPos
     
-    -- Создаем зону для перетаскивания (только верхняя часть)
-    local dragZone = Create("Frame", {
-        Name = "DragZone",
-        Parent = self.Handler,
-        BackgroundTransparency = 1,
-        Position = UDim2.new(0, 0, 0, 0),
-        Size = UDim2.new(1, 0, 0, 35)
-    })
-    
-    dragZone.InputBegan:Connect(function(input)
-        if self._sliderDragging then return end
+    topBar.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
             self._dragging = true
             dragStart = input.Position
@@ -204,11 +285,25 @@ function Library.new(title)
             local delta = input.Position - dragStart
             Tween(self.Container, {
                 Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-            }, 0.2)
+            }, 0.15)
         end
     end)
     
-    -- Toggle visibility
+    -- Минимизация
+    minimizeBtn.MouseButton1Click:Connect(function()
+        self.Visible = not self.Visible
+        self:ChangeVisibility(self.Visible)
+    end)
+    
+    minimizeBtn.MouseEnter:Connect(function()
+        Tween(minimizeBtn, {BackgroundTransparency = 0})
+    end)
+    
+    minimizeBtn.MouseLeave:Connect(function()
+        Tween(minimizeBtn, {BackgroundTransparency = 0.5})
+    end)
+    
+    -- Toggle visibility по клавише
     UserInputService.InputBegan:Connect(function(input, processed)
         if processed then return end
         if input.KeyCode == Library.ToggleKey then
@@ -220,40 +315,39 @@ function Library.new(title)
     -- Автоматическая загрузка UI
     task.spawn(function()
         task.wait(0.1)
-        Tween(self.Container, {Size = UDim2.fromOffset(650, 450)}, 0.5)
+        Tween(self.Container, {Size = UDim2.fromOffset(680, 480)}, 0.4)
     end)
     
     return self
 end
 
-
 -- Изменение видимости
 function Library:ChangeVisibility(state)
     if state then
-        Tween(self.Container, {Size = UDim2.fromOffset(650, 450)}, 0.5)
+        Tween(self.Container, {Size = UDim2.fromOffset(680, 480)}, 0.4)
     else
-        Tween(self.Container, {Size = UDim2.fromOffset(100, 50)}, 0.5)
+        Tween(self.Container, {Size = UDim2.fromOffset(120, 50)}, 0.4)
     end
 end
 
 -- Загрузка UI
 function Library:Load()
-    Tween(self.Container, {Size = UDim2.fromOffset(650, 450)}, 0.5)
+    Tween(self.Container, {Size = UDim2.fromOffset(680, 480)}, 0.4)
 end
 
 -- Обновление табов
 function Library:UpdateTabs(selectedTab)
     for i, tab in ipairs(self.Tabs) do
         if tab.Button == selectedTab then
-            local offset = tab.LayoutOrder * (0.087)
-            Tween(self.Pin, {Position = UDim2.fromScale(0.026, 0.135 + offset)}, 0.5)
-            Tween(tab.Button, {BackgroundTransparency = 0.5}, 0.5)
-            Tween(tab.TextLabel, {TextTransparency = 0.2, TextColor3 = Colors.Accent}, 0.5)
-            Tween(tab.Icon, {ImageTransparency = 0.2, ImageColor3 = Colors.Accent}, 0.5)
+            local yPos = 15 + (tab.LayoutOrder * 44)
+            Tween(self.TabIndicator, {Position = UDim2.new(0, 0, 0, yPos)}, 0.3)
+            Tween(tab.Button, {BackgroundColor3 = Colors.AccentLight, BackgroundTransparency = 0.85})
+            Tween(tab.TextLabel, {TextColor3 = Colors.Accent})
+            Tween(tab.Icon, {ImageColor3 = Colors.Accent})
         else
-            Tween(tab.Button, {BackgroundTransparency = 1}, 0.5)
-            Tween(tab.TextLabel, {TextTransparency = 0.7, TextColor3 = Colors.Text}, 0.5)
-            Tween(tab.Icon, {ImageTransparency = 0.8, ImageColor3 = Colors.Text}, 0.5)
+            Tween(tab.Button, {BackgroundColor3 = Colors.Card, BackgroundTransparency = 1})
+            Tween(tab.TextLabel, {TextColor3 = Colors.TextDim})
+            Tween(tab.Icon, {ImageColor3 = Colors.TextDim})
         end
     end
 end
@@ -264,6 +358,7 @@ function Library:UpdateSections(leftSection, rightSection)
         obj.Visible = (obj == leftSection or obj == rightSection)
     end
 end
+
 
 -- Создание таба
 function Library:CreateTab(name, icon)
@@ -277,27 +372,26 @@ function Library:CreateTab(name, icon)
     tab.Button = Create("TextButton", {
         Name = "Tab",
         Parent = self.TabsContainer,
-        BackgroundColor3 = Colors.Secondary,
-        BackgroundTransparency = isFirst and 0.5 or 1,
+        BackgroundColor3 = isFirst and Colors.AccentLight or Colors.Card,
+        BackgroundTransparency = isFirst and 0.85 or 1,
         BorderSizePixel = 0,
-        Size = UDim2.new(0, 129, 0, 36),
+        Size = UDim2.new(1, 0, 0, 38),
         Text = "",
         AutoButtonColor = false,
         LayoutOrder = self.TabIndex
     })
-    Create("UICorner", { CornerRadius = UDim.new(0, 5), Parent = tab.Button })
+    Create("UICorner", { CornerRadius = UDim.new(0, 8), Parent = tab.Button })
     
     -- Иконка таба
     tab.Icon = Create("ImageLabel", {
         Name = "Icon",
         Parent = tab.Button,
         BackgroundTransparency = 1,
-        Position = UDim2.new(0.1, 0, 0.5, 0),
-        Size = UDim2.new(0, 12, 0, 12),
+        Position = UDim2.new(0, 12, 0.5, 0),
+        Size = UDim2.new(0, 16, 0, 16),
         AnchorPoint = Vector2.new(0, 0.5),
-        Image = icon or "rbxassetid://79095934438045",
-        ImageColor3 = isFirst and Colors.Accent or Colors.Text,
-        ImageTransparency = isFirst and 0.2 or 0.8,
+        Image = icon or "rbxassetid://7733960981",
+        ImageColor3 = isFirst and Colors.Accent or Colors.TextDim,
         ScaleType = Enum.ScaleType.Fit
     })
     
@@ -306,24 +400,14 @@ function Library:CreateTab(name, icon)
         Name = "TextLabel",
         Parent = tab.Button,
         BackgroundTransparency = 1,
-        Position = UDim2.new(0.24, 0, 0.5, 0),
-        Size = UDim2.new(0, 80, 0, 16),
+        Position = UDim2.new(0, 36, 0.5, 0),
+        Size = UDim2.new(1, -48, 0, 18),
         AnchorPoint = Vector2.new(0, 0.5),
         FontFace = Library.FontBold,
         Text = name,
-        TextColor3 = isFirst and Colors.Accent or Colors.Text,
-        TextTransparency = isFirst and 0.2 or 0.7,
-        TextSize = 12,
+        TextColor3 = isFirst and Colors.Accent or Colors.TextDim,
+        TextSize = 13,
         TextXAlignment = Enum.TextXAlignment.Left
-    })
-    
-    Create("UIGradient", {
-        Parent = tab.TextLabel,
-        Color = ColorSequence.new{
-            ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
-            ColorSequenceKeypoint.new(0.7, Color3.fromRGB(155, 155, 155)),
-            ColorSequenceKeypoint.new(1, Color3.fromRGB(58, 58, 58))
-        }
     })
     
     -- Левая секция
@@ -331,46 +415,44 @@ function Library:CreateTab(name, icon)
         Name = "LeftSection",
         Parent = self.SectionsContainer,
         BackgroundTransparency = 1,
-        Position = UDim2.new(0.26, 0, 0.5, 0),
-        Size = UDim2.new(0, 230, 0, 420),
-        AnchorPoint = Vector2.new(0, 0.5),
-        ScrollBarImageTransparency = 1,
-        ScrollBarThickness = 0,
+        Position = UDim2.new(0, 15, 0, 15),
+        Size = UDim2.new(0.5, -22, 1, -30),
+        ScrollBarImageColor3 = Colors.Border,
+        ScrollBarImageTransparency = 0.5,
+        ScrollBarThickness = 3,
         AutomaticCanvasSize = Enum.AutomaticSize.Y,
-        CanvasSize = UDim2.new(0, 0, 0.5, 0),
+        CanvasSize = UDim2.new(0, 0, 0, 0),
         Visible = isFirst
     })
     
     Create("UIListLayout", {
         Parent = tab.LeftSection,
-        Padding = UDim.new(0, 10),
+        Padding = UDim.new(0, 12),
         HorizontalAlignment = Enum.HorizontalAlignment.Center,
         SortOrder = Enum.SortOrder.LayoutOrder
     })
-    Create("UIPadding", { PaddingTop = UDim.new(0, 5), Parent = tab.LeftSection })
     
     -- Правая секция
     tab.RightSection = Create("ScrollingFrame", {
         Name = "RightSection",
         Parent = self.SectionsContainer,
         BackgroundTransparency = 1,
-        Position = UDim2.new(0.63, 0, 0.5, 0),
-        Size = UDim2.new(0, 230, 0, 420),
-        AnchorPoint = Vector2.new(0, 0.5),
-        ScrollBarImageTransparency = 1,
-        ScrollBarThickness = 0,
+        Position = UDim2.new(0.5, 7, 0, 15),
+        Size = UDim2.new(0.5, -22, 1, -30),
+        ScrollBarImageColor3 = Colors.Border,
+        ScrollBarImageTransparency = 0.5,
+        ScrollBarThickness = 3,
         AutomaticCanvasSize = Enum.AutomaticSize.Y,
-        CanvasSize = UDim2.new(0, 0, 0.5, 0),
+        CanvasSize = UDim2.new(0, 0, 0, 0),
         Visible = isFirst
     })
     
     Create("UIListLayout", {
         Parent = tab.RightSection,
-        Padding = UDim.new(0, 10),
+        Padding = UDim.new(0, 12),
         HorizontalAlignment = Enum.HorizontalAlignment.Center,
         SortOrder = Enum.SortOrder.LayoutOrder
     })
-    Create("UIPadding", { PaddingTop = UDim.new(0, 5), Parent = tab.RightSection })
     
     self.TabIndex += 1
     table.insert(self.Tabs, tab)
@@ -378,6 +460,19 @@ function Library:CreateTab(name, icon)
     if isFirst then
         self.CurrentTab = tab
     end
+    
+    -- Hover эффект
+    tab.Button.MouseEnter:Connect(function()
+        if self.CurrentTab ~= tab then
+            Tween(tab.Button, {BackgroundTransparency = 0.9})
+        end
+    end)
+    
+    tab.Button.MouseLeave:Connect(function()
+        if self.CurrentTab ~= tab then
+            Tween(tab.Button, {BackgroundTransparency = 1})
+        end
+    end)
     
     tab.Button.MouseButton1Click:Connect(function()
         self:UpdateTabs(tab.Button)
@@ -388,8 +483,7 @@ function Library:CreateTab(name, icon)
     return tab
 end
 
-
--- Создание модуля (как в March UI - с заголовком, описанием и toggle)
+-- Создание модуля (карточка с элементами)
 function Library:CreateModule(tab, settings)
     local module = {}
     module._state = false
@@ -398,45 +492,53 @@ function Library:CreateModule(tab, settings)
     
     local parent = (settings.section == "right") and tab.RightSection or tab.LeftSection
     
-    -- Основной фрейм модуля (уменьшенный размер - только заголовок и описание)
+    -- Основной фрейм модуля
     module.Frame = Create("Frame", {
         Name = "Module",
         Parent = parent,
-        BackgroundColor3 = Colors.Secondary,
-        BackgroundTransparency = 0.5,
+        BackgroundColor3 = Colors.Card,
         BorderSizePixel = 0,
-        Size = UDim2.new(0, 220, 0, 45),
+        Size = UDim2.new(1, 0, 0, 52),
         ClipsDescendants = true
     })
-    Create("UICorner", { CornerRadius = UDim.new(0, 5), Parent = module.Frame })
-    Create("UIStroke", { Color = Colors.Border, Transparency = 0.5, Parent = module.Frame })
+    Create("UICorner", { CornerRadius = UDim.new(0, 10), Parent = module.Frame })
+    Create("UIStroke", { Color = Colors.Border, Thickness = 1, Transparency = 0.5, Parent = module.Frame })
     
     Create("UIListLayout", {
         Parent = module.Frame,
         SortOrder = Enum.SortOrder.LayoutOrder
     })
     
-    -- Header модуля (компактный)
+    -- Header модуля
     module.Header = Create("Frame", {
         Name = "Header",
         Parent = module.Frame,
         BackgroundTransparency = 1,
-        Size = UDim2.new(0, 220, 0, 45),
+        Size = UDim2.new(1, 0, 0, 52),
         BorderSizePixel = 0
     })
+    
+    -- Цветная полоска слева
+    Create("Frame", {
+        Name = "AccentBar",
+        Parent = module.Header,
+        BackgroundColor3 = Colors.Accent,
+        Position = UDim2.new(0, 0, 0.15, 0),
+        Size = UDim2.new(0, 3, 0.7, 0),
+        BorderSizePixel = 0
+    }):FindFirstChildOfClass("UICorner") or Create("UICorner", { CornerRadius = UDim.new(0, 2), Parent = module.Header.AccentBar })
     
     -- Название модуля
     Create("TextLabel", {
         Name = "ModuleName",
         Parent = module.Header,
         BackgroundTransparency = 1,
-        Position = UDim2.new(0, 12, 0, 10),
-        Size = UDim2.new(0, 196, 0, 14),
+        Position = UDim2.new(0, 14, 0, 12),
+        Size = UDim2.new(1, -80, 0, 16),
         FontFace = Library.FontBold,
         Text = settings.title or "Module",
-        TextColor3 = Colors.Accent,
-        TextTransparency = 0.2,
-        TextSize = 12,
+        TextColor3 = Colors.Text,
+        TextSize = 13,
         TextXAlignment = Enum.TextXAlignment.Left
     })
     
@@ -445,26 +547,13 @@ function Library:CreateModule(tab, settings)
         Name = "Description",
         Parent = module.Header,
         BackgroundTransparency = 1,
-        Position = UDim2.new(0, 12, 0, 26),
-        Size = UDim2.new(0, 196, 0, 12),
+        Position = UDim2.new(0, 14, 0, 30),
+        Size = UDim2.new(1, -80, 0, 14),
         FontFace = Library.Font,
         Text = settings.description or "",
         TextColor3 = Colors.TextDim,
-        TextTransparency = 0.3,
-        TextSize = 9,
+        TextSize = 10,
         TextXAlignment = Enum.TextXAlignment.Left
-    })
-    
-    -- Разделитель между заголовком и элементами
-    Create("Frame", {
-        Name = "ModuleDivider",
-        Parent = module.Header,
-        BackgroundColor3 = Colors.Border,
-        BackgroundTransparency = 0.5,
-        Position = UDim2.new(0.5, 0, 1, -2),
-        Size = UDim2.new(0, 200, 0, 1),
-        AnchorPoint = Vector2.new(0.5, 0),
-        BorderSizePixel = 0
     })
     
     -- Options контейнер
@@ -472,83 +561,70 @@ function Library:CreateModule(tab, settings)
         Name = "Options",
         Parent = module.Frame,
         BackgroundTransparency = 1,
-        Position = UDim2.new(0, 0, 1, 0),
-        Size = UDim2.new(0, 220, 0, 0),
+        Size = UDim2.new(1, 0, 0, 0),
         BorderSizePixel = 0
     })
     
-    Create("UIPadding", { PaddingTop = UDim.new(0, 3), PaddingBottom = UDim.new(0, 8), Parent = module.Options })
+    Create("UIPadding", { 
+        PaddingTop = UDim.new(0, 4), 
+        PaddingBottom = UDim.new(0, 10),
+        PaddingLeft = UDim.new(0, 14),
+        PaddingRight = UDim.new(0, 14),
+        Parent = module.Options 
+    })
     Create("UIListLayout", {
         Parent = module.Options,
-        Padding = UDim.new(0, 5),
-        HorizontalAlignment = Enum.HorizontalAlignment.Center,
+        Padding = UDim.new(0, 8),
         SortOrder = Enum.SortOrder.LayoutOrder
     })
     
-    -- Функция обновления размера модуля
+    -- Функция обновления размера
     function module:UpdateSize()
-        local newSize = 45 + self._size + self._multiplier
-        Tween(module.Frame, {Size = UDim2.fromOffset(220, newSize)}, 0.3)
+        local newSize = 52 + self._size + self._multiplier
+        Tween(module.Frame, {Size = UDim2.new(1, 0, 0, newSize)}, 0.25)
     end
 
-    
-    -- Создание Toggle внутри модуля (как в March UI)
+
+    -- Создание Toggle
     function module:CreateToggle(toggleSettings)
-        local toggle = { Value = false, Keybind = toggleSettings.keybind, _waiting = false }
+        local toggle = { Value = toggleSettings.default or false }
         
-        if self._size == 0 then self._size = 5 end
-        self._size += 18
+        if self._size == 0 then self._size = 8 end
+        self._size += 28
         
-        module.Frame.Size = UDim2.fromOffset(220, 45 + self._size)
-        module.Options.Size = UDim2.fromOffset(220, self._size)
+        module.Frame.Size = UDim2.new(1, 0, 0, 52 + self._size)
+        module.Options.Size = UDim2.new(1, 0, 0, self._size)
         
         local toggleFrame = Create("Frame", {
             Name = "Toggle",
             Parent = module.Options,
-            BackgroundTransparency = 1,
-            Size = UDim2.new(0, 195, 0, 14)
+            BackgroundColor3 = Colors.Secondary,
+            BackgroundTransparency = 0.3,
+            Size = UDim2.new(1, 0, 0, 24)
         })
+        Create("UICorner", { CornerRadius = UDim.new(0, 6), Parent = toggleFrame })
         
         Create("TextLabel", {
             Name = "Title",
             Parent = toggleFrame,
             BackgroundTransparency = 1,
-            Position = UDim2.new(0, 0, 0.5, 0),
-            Size = UDim2.new(0, 110, 0, 12),
+            Position = UDim2.new(0, 10, 0.5, 0),
+            Size = UDim2.new(1, -70, 0, 14),
             AnchorPoint = Vector2.new(0, 0.5),
             FontFace = Library.Font,
             Text = toggleSettings.title or "Toggle",
             TextColor3 = Colors.Text,
-            TextTransparency = 0.2,
-            TextSize = 10,
+            TextSize = 11,
             TextXAlignment = Enum.TextXAlignment.Left
         })
-        
-        -- Keybind кнопка
-        local keybindBtn = Create("TextButton", {
-            Name = "KeybindBtn",
-            Parent = toggleFrame,
-            BackgroundColor3 = Colors.Accent,
-            BackgroundTransparency = 0.7,
-            Position = UDim2.new(1, -55, 0.5, 0),
-            Size = UDim2.new(0, 28, 0, 12),
-            AnchorPoint = Vector2.new(0, 0.5),
-            FontFace = Library.Font,
-            Text = toggleSettings.keybind and toggleSettings.keybind.Name or "...",
-            TextColor3 = Colors.Text,
-            TextSize = 8,
-            AutoButtonColor = false
-        })
-        Create("UICorner", { CornerRadius = UDim.new(0, 3), Parent = keybindBtn })
         
         -- Toggle switch
         local switch = Create("Frame", {
             Name = "Switch",
             Parent = toggleFrame,
-            BackgroundColor3 = Color3.fromRGB(0, 0, 0),
-            BackgroundTransparency = 0.5,
-            Position = UDim2.new(1, 0, 0.5, 0),
-            Size = UDim2.new(0, 22, 0, 12),
+            BackgroundColor3 = toggle.Value and Colors.Accent or Colors.Border,
+            Position = UDim2.new(1, -10, 0.5, 0),
+            Size = UDim2.new(0, 36, 0, 18),
             AnchorPoint = Vector2.new(1, 0.5),
             BorderSizePixel = 0
         })
@@ -557,28 +633,29 @@ function Library:CreateModule(tab, settings)
         local circle = Create("Frame", {
             Name = "Circle",
             Parent = switch,
-            BackgroundColor3 = Colors.AccentDark,
-            BackgroundTransparency = 0.2,
-            Position = UDim2.new(0, 1, 0.5, 0),
-            Size = UDim2.new(0, 10, 0, 10),
+            BackgroundColor3 = Colors.Card,
+            Position = toggle.Value and UDim2.new(1, -16, 0.5, 0) or UDim2.new(0, 2, 0.5, 0),
+            Size = UDim2.new(0, 14, 0, 14),
             AnchorPoint = Vector2.new(0, 0.5),
             BorderSizePixel = 0
         })
         Create("UICorner", { CornerRadius = UDim.new(1, 0), Parent = circle })
         
+        -- Тень для circle
+        Create("UIStroke", { Color = Color3.fromRGB(0,0,0), Thickness = 1, Transparency = 0.9, Parent = circle })
+        
         local function toggleFunc()
             toggle.Value = not toggle.Value
             if toggle.Value then
-                Tween(switch, {BackgroundColor3 = Colors.Accent, BackgroundTransparency = 0.3})
-                Tween(circle, {BackgroundColor3 = Colors.Accent, Position = UDim2.new(1, -11, 0.5, 0)})
+                Tween(switch, {BackgroundColor3 = Colors.Accent})
+                Tween(circle, {Position = UDim2.new(1, -16, 0.5, 0)})
             else
-                Tween(switch, {BackgroundColor3 = Color3.fromRGB(0, 0, 0), BackgroundTransparency = 0.5})
-                Tween(circle, {BackgroundColor3 = Colors.AccentDark, Position = UDim2.new(0, 1, 0.5, 0)})
+                Tween(switch, {BackgroundColor3 = Colors.Border})
+                Tween(circle, {Position = UDim2.new(0, 2, 0.5, 0)})
             end
             if toggleSettings.callback then toggleSettings.callback(toggle.Value) end
         end
         
-        -- Клик по switch
         local switchBtn = Create("TextButton", {
             Parent = switch,
             BackgroundTransparency = 1,
@@ -587,69 +664,50 @@ function Library:CreateModule(tab, settings)
         })
         switchBtn.MouseButton1Click:Connect(toggleFunc)
         
-        -- Keybind установка
-        keybindBtn.MouseButton1Click:Connect(function()
-            if toggle._waiting then return end
-            toggle._waiting = true
-            keybindBtn.Text = "..."
-            
-            local conn
-            conn = UserInputService.InputBegan:Connect(function(input, processed)
-                if input.UserInputType == Enum.UserInputType.Keyboard then
-                    if input.KeyCode == Enum.KeyCode.Escape then
-                        toggle.Keybind = nil
-                        keybindBtn.Text = "..."
-                    else
-                        toggle.Keybind = input.KeyCode
-                        keybindBtn.Text = input.KeyCode.Name
-                    end
-                    toggle._waiting = false
-                    conn:Disconnect()
-                end
-            end)
+        -- Hover эффект
+        toggleFrame.MouseEnter:Connect(function()
+            Tween(toggleFrame, {BackgroundTransparency = 0})
+        end)
+        toggleFrame.MouseLeave:Connect(function()
+            Tween(toggleFrame, {BackgroundTransparency = 0.3})
         end)
         
-        -- Keybind активация
-        UserInputService.InputBegan:Connect(function(input, processed)
-            if processed or toggle._waiting then return end
-            if toggle.Keybind and input.KeyCode == toggle.Keybind then
-                toggleFunc()
-            end
-        end)
+        if toggle.Value and toggleSettings.callback then
+            toggleSettings.callback(true)
+        end
         
         return toggle
     end
     
-    -- Создание Slider внутри модуля
+    -- Создание Slider
     function module:CreateSlider(sliderSettings)
         local slider = {}
         
-        if self._size == 0 then self._size = 5 end
-        self._size += 26
+        if self._size == 0 then self._size = 8 end
+        self._size += 38
         
-        module.Frame.Size = UDim2.fromOffset(220, 45 + self._size)
-        module.Options.Size = UDim2.fromOffset(220, self._size)
+        module.Frame.Size = UDim2.new(1, 0, 0, 52 + self._size)
+        module.Options.Size = UDim2.new(1, 0, 0, self._size)
         
-        local sliderFrame = Create("TextButton", {
+        local sliderFrame = Create("Frame", {
             Name = "Slider",
             Parent = module.Options,
-            BackgroundTransparency = 1,
-            Size = UDim2.new(0, 195, 0, 21),
-            Text = "",
-            AutoButtonColor = false
+            BackgroundColor3 = Colors.Secondary,
+            BackgroundTransparency = 0.3,
+            Size = UDim2.new(1, 0, 0, 34)
         })
+        Create("UICorner", { CornerRadius = UDim.new(0, 6), Parent = sliderFrame })
         
         Create("TextLabel", {
             Name = "Title",
             Parent = sliderFrame,
             BackgroundTransparency = 1,
-            Position = UDim2.new(0, 0, 0.05, 0),
-            Size = UDim2.new(0, 140, 0, 13),
-            FontFace = Library.FontBold,
+            Position = UDim2.new(0, 10, 0, 4),
+            Size = UDim2.new(1, -60, 0, 14),
+            FontFace = Library.Font,
             Text = sliderSettings.title or "Slider",
             TextColor3 = Colors.Text,
-            TextTransparency = 0.2,
-            TextSize = 10,
+            TextSize = 11,
             TextXAlignment = Enum.TextXAlignment.Left
         })
         
@@ -657,76 +715,62 @@ function Library:CreateModule(tab, settings)
             Name = "Value",
             Parent = sliderFrame,
             BackgroundTransparency = 1,
-            Position = UDim2.new(1, 0, 0, 0),
-            Size = UDim2.new(0, 40, 0, 13),
+            Position = UDim2.new(1, -10, 0, 4),
+            Size = UDim2.new(0, 45, 0, 14),
             AnchorPoint = Vector2.new(1, 0),
             FontFace = Library.FontBold,
             Text = tostring(sliderSettings.default or sliderSettings.min),
-            TextColor3 = Colors.Text,
-            TextTransparency = 0.2,
-            TextSize = 9,
+            TextColor3 = Colors.Accent,
+            TextSize = 11,
             TextXAlignment = Enum.TextXAlignment.Right
         })
         
-        local drag = Create("Frame", {
-            Name = "Drag",
+        local track = Create("Frame", {
+            Name = "Track",
             Parent = sliderFrame,
-            BackgroundColor3 = Colors.Accent,
-            BackgroundTransparency = 0.9,
-            Position = UDim2.new(0.5, 0, 0.95, 0),
-            Size = UDim2.new(0, 195, 0, 4),
-            AnchorPoint = Vector2.new(0.5, 1),
+            BackgroundColor3 = Colors.Border,
+            Position = UDim2.new(0, 10, 0, 22),
+            Size = UDim2.new(1, -20, 0, 6),
             BorderSizePixel = 0
         })
-        Create("UICorner", { CornerRadius = UDim.new(1, 0), Parent = drag })
+        Create("UICorner", { CornerRadius = UDim.new(1, 0), Parent = track })
         
         local fill = Create("Frame", {
             Name = "Fill",
-            Parent = drag,
+            Parent = track,
             BackgroundColor3 = Colors.Accent,
-            BackgroundTransparency = 0.5,
-            Position = UDim2.new(0, 0, 0.5, 0),
-            Size = UDim2.new(0, 97, 0, 4),
-            AnchorPoint = Vector2.new(0, 0.5),
+            Size = UDim2.new(0.5, 0, 1, 0),
             BorderSizePixel = 0
         })
-        Create("UICorner", { CornerRadius = UDim.new(0, 3), Parent = fill })
+        Create("UICorner", { CornerRadius = UDim.new(1, 0), Parent = fill })
         
-        Create("UIGradient", {
+        local knob = Create("Frame", {
+            Name = "Knob",
             Parent = fill,
-            Color = ColorSequence.new{
-                ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
-                ColorSequenceKeypoint.new(1, Color3.fromRGB(79, 79, 79))
-            }
-        })
-        
-        local circle = Create("Frame", {
-            Name = "Circle",
-            Parent = fill,
-            BackgroundColor3 = Colors.Text,
+            BackgroundColor3 = Colors.Card,
             Position = UDim2.new(1, 0, 0.5, 0),
-            Size = UDim2.new(0, 6, 0, 6),
-            AnchorPoint = Vector2.new(1, 0.5),
+            Size = UDim2.new(0, 14, 0, 14),
+            AnchorPoint = Vector2.new(0.5, 0.5),
             BorderSizePixel = 0
         })
-        Create("UICorner", { CornerRadius = UDim.new(1, 0), Parent = circle })
+        Create("UICorner", { CornerRadius = UDim.new(1, 0), Parent = knob })
+        Create("UIStroke", { Color = Colors.Accent, Thickness = 2, Parent = knob })
         
         local min = sliderSettings.min or 0
         local max = sliderSettings.max or 100
         slider.Value = sliderSettings.default or min
         
-        function slider:SetPercentage(percentage)
-            local rounded = sliderSettings.round and math.floor(percentage) or math.floor(percentage * 10) / 10
-            percentage = (percentage - min) / (max - min)
-            local sliderSize = math.clamp(percentage, 0.02, 1) * drag.Size.X.Offset
-            local value = math.clamp(rounded, min, max)
+        function slider:SetValue(value)
+            value = math.clamp(value, min, max)
+            local rounded = sliderSettings.round and math.floor(value) or math.floor(value * 10) / 10
+            local percentage = (rounded - min) / (max - min)
             
-            self.Value = value
-            valueLabel.Text = tostring(value)
-            Tween(fill, {Size = UDim2.fromOffset(sliderSize, drag.Size.Y.Offset)}, 0.5)
+            self.Value = rounded
+            valueLabel.Text = tostring(rounded)
+            Tween(fill, {Size = UDim2.new(percentage, 0, 1, 0)}, 0.1)
             
             if sliderSettings.callback then
-                sliderSettings.callback(value)
+                sliderSettings.callback(rounded)
             end
         end
         
@@ -734,12 +778,20 @@ function Library:CreateModule(tab, settings)
         local dragging = false
         
         local function update()
-            local pos = (mouse.X - drag.AbsolutePosition.X) / drag.Size.X.Offset
-            local percentage = min + (max - min) * pos
-            slider:SetPercentage(percentage)
+            local pos = math.clamp((mouse.X - track.AbsolutePosition.X) / track.AbsoluteSize.X, 0, 1)
+            local value = min + (max - min) * pos
+            slider:SetValue(value)
         end
         
-        sliderFrame.MouseButton1Down:Connect(function()
+        local sliderBtn = Create("TextButton", {
+            Parent = sliderFrame,
+            BackgroundTransparency = 1,
+            Position = UDim2.new(0, 0, 0, 18),
+            Size = UDim2.new(1, 0, 0, 16),
+            Text = ""
+        })
+        
+        sliderBtn.MouseButton1Down:Connect(function()
             dragging = true
             update()
             
@@ -754,144 +806,129 @@ function Library:CreateModule(tab, settings)
             end)
         end)
         
-        slider:SetPercentage(slider.Value)
+        slider:SetValue(slider.Value)
         
         return slider
     end
 
-    
-    -- Создание Dropdown внутри модуля
+
+    -- Создание Dropdown
     function module:CreateDropdown(dropSettings)
         local dropdown = { _state = false, _size = 0 }
         
-        if self._size == 0 then self._size = 5 end
-        self._size += 40
+        if self._size == 0 then self._size = 8 end
+        self._size += 42
         
-        module.Frame.Size = UDim2.fromOffset(220, 45 + self._size)
-        module.Options.Size = UDim2.fromOffset(220, self._size)
+        module.Frame.Size = UDim2.new(1, 0, 0, 52 + self._size)
+        module.Options.Size = UDim2.new(1, 0, 0, self._size)
         
-        local dropFrame = Create("TextButton", {
+        local dropFrame = Create("Frame", {
             Name = "Dropdown",
             Parent = module.Options,
-            BackgroundTransparency = 1,
-            Size = UDim2.new(0, 195, 0, 35),
-            Text = "",
-            AutoButtonColor = false
+            BackgroundColor3 = Colors.Secondary,
+            BackgroundTransparency = 0.3,
+            Size = UDim2.new(1, 0, 0, 38),
+            ClipsDescendants = true
         })
+        Create("UICorner", { CornerRadius = UDim.new(0, 6), Parent = dropFrame })
         
         Create("TextLabel", {
             Name = "Title",
             Parent = dropFrame,
             BackgroundTransparency = 1,
-            Position = UDim2.new(0, 0, 0, 0),
-            Size = UDim2.new(0, 195, 0, 13),
-            FontFace = Library.FontBold,
+            Position = UDim2.new(0, 10, 0, 4),
+            Size = UDim2.new(1, -20, 0, 14),
+            FontFace = Library.Font,
             Text = dropSettings.title or "Dropdown",
             TextColor3 = Colors.Text,
-            TextTransparency = 0.2,
+            TextSize = 11,
+            TextXAlignment = Enum.TextXAlignment.Left
+        })
+        
+        local selectBox = Create("Frame", {
+            Name = "SelectBox",
+            Parent = dropFrame,
+            BackgroundColor3 = Colors.Card,
+            Position = UDim2.new(0, 10, 0, 20),
+            Size = UDim2.new(1, -20, 0, 24),
+            BorderSizePixel = 0
+        })
+        Create("UICorner", { CornerRadius = UDim.new(0, 5), Parent = selectBox })
+        Create("UIStroke", { Color = Colors.Border, Thickness = 1, Parent = selectBox })
+        
+        local currentOption = Create("TextLabel", {
+            Name = "CurrentOption",
+            Parent = selectBox,
+            BackgroundTransparency = 1,
+            Position = UDim2.new(0, 10, 0.5, 0),
+            Size = UDim2.new(1, -35, 0, 14),
+            AnchorPoint = Vector2.new(0, 0.5),
+            FontFace = Library.Font,
+            Text = dropSettings.options[1] or "Select",
+            TextColor3 = Colors.Text,
             TextSize = 10,
             TextXAlignment = Enum.TextXAlignment.Left
         })
         
-        local box = Create("Frame", {
-            Name = "Box",
-            Parent = dropFrame,
-            BackgroundColor3 = Colors.Accent,
-            BackgroundTransparency = 0.9,
-            Position = UDim2.new(0.5, 0, 1.2, 0),
-            Size = UDim2.new(0, 195, 0, 20),
-            AnchorPoint = Vector2.new(0.5, 0),
-            BorderSizePixel = 0,
-            ClipsDescendants = true
-        })
-        Create("UICorner", { CornerRadius = UDim.new(0, 4), Parent = box })
-        
-        local currentOption = Create("TextLabel", {
-            Name = "CurrentOption",
-            Parent = box,
-            BackgroundTransparency = 1,
-            Position = UDim2.new(0.05, 0, 0.5, 0),
-            Size = UDim2.new(0, 150, 0, 13),
-            AnchorPoint = Vector2.new(0, 0.5),
-            FontFace = Library.FontBold,
-            Text = dropSettings.options[1] or "Select",
-            TextColor3 = Colors.Text,
-            TextTransparency = 0.2,
-            TextSize = 9,
-            TextXAlignment = Enum.TextXAlignment.Left
-        })
-        
-        Create("UIGradient", {
-            Parent = currentOption,
-            Transparency = NumberSequence.new{
-                NumberSequenceKeypoint.new(0, 0),
-                NumberSequenceKeypoint.new(0.7, 0),
-                NumberSequenceKeypoint.new(0.87, 0.36),
-                NumberSequenceKeypoint.new(1, 1)
-            }
-        })
-        
         local arrow = Create("ImageLabel", {
             Name = "Arrow",
-            Parent = box,
+            Parent = selectBox,
             BackgroundTransparency = 1,
-            Position = UDim2.new(0.91, 0, 0.5, 0),
-            Size = UDim2.new(0, 8, 0, 8),
+            Position = UDim2.new(1, -20, 0.5, 0),
+            Size = UDim2.new(0, 12, 0, 12),
             AnchorPoint = Vector2.new(0, 0.5),
-            Image = "rbxassetid://84232453189324"
+            Image = "rbxassetid://6031091004",
+            ImageColor3 = Colors.TextDim,
+            Rotation = 0
         })
         
-        local optionsList = Create("ScrollingFrame", {
+        local optionsList = Create("Frame", {
             Name = "Options",
-            Parent = box,
-            BackgroundTransparency = 1,
-            Position = UDim2.new(0, 0, 1, 0),
-            Size = UDim2.new(0, 195, 0, 0),
-            ScrollBarImageTransparency = 1,
-            ScrollBarThickness = 0,
-            AutomaticCanvasSize = Enum.AutomaticSize.Y,
-            CanvasSize = UDim2.new(0, 0, 0.5, 0)
+            Parent = dropFrame,
+            BackgroundColor3 = Colors.Card,
+            Position = UDim2.new(0, 10, 0, 48),
+            Size = UDim2.new(1, -20, 0, 0),
+            ClipsDescendants = true,
+            BorderSizePixel = 0
         })
-        
+        Create("UICorner", { CornerRadius = UDim.new(0, 5), Parent = optionsList })
+        Create("UIStroke", { Color = Colors.Border, Thickness = 1, Parent = optionsList })
         Create("UIListLayout", { SortOrder = Enum.SortOrder.LayoutOrder, Parent = optionsList })
-        Create("UIPadding", { PaddingTop = UDim.new(0, -1), PaddingLeft = UDim.new(0, 10), Parent = optionsList })
         
         dropdown.Value = dropSettings.options[1]
         
         -- Создаем опции
-        local maxOptions = dropSettings.maxOptions or 5
+        local maxOptions = dropSettings.maxOptions or 4
         for i, opt in ipairs(dropSettings.options) do
             local optBtn = Create("TextButton", {
                 Name = "Option",
                 Parent = optionsList,
+                BackgroundColor3 = Colors.Card,
                 BackgroundTransparency = 1,
-                Size = UDim2.new(0, 175, 0, 15),
-                FontFace = Library.FontBold,
-                Text = opt,
-                TextColor3 = Colors.Text,
-                TextTransparency = 0.6,
-                TextSize = 9,
+                Size = UDim2.new(1, 0, 0, 26),
+                FontFace = Library.Font,
+                Text = "  " .. opt,
+                TextColor3 = (opt == dropdown.Value) and Colors.Accent or Colors.Text,
+                TextSize = 10,
                 TextXAlignment = Enum.TextXAlignment.Left,
                 AutoButtonColor = false
             })
             
-            Create("UIGradient", {
-                Parent = optBtn,
-                Transparency = NumberSequence.new{
-                    NumberSequenceKeypoint.new(0, 0),
-                    NumberSequenceKeypoint.new(0.7, 0),
-                    NumberSequenceKeypoint.new(0.87, 0.36),
-                    NumberSequenceKeypoint.new(1, 1)
-                }
-            })
+            optBtn.MouseEnter:Connect(function()
+                Tween(optBtn, {BackgroundTransparency = 0, BackgroundColor3 = Colors.Secondary})
+            end)
+            
+            optBtn.MouseLeave:Connect(function()
+                Tween(optBtn, {BackgroundTransparency = 1})
+            end)
             
             optBtn.MouseButton1Click:Connect(function()
                 dropdown.Value = opt
                 currentOption.Text = opt
                 
                 for _, o in optionsList:GetChildren() do
-                    if o.Name == "Option" then
-                        o.TextTransparency = (o.Text == opt) and 0.2 or 0.6
+                    if o:IsA("TextButton") then
+                        o.TextColor3 = (o.Text == "  " .. opt) and Colors.Accent or Colors.Text
                     end
                 end
                 
@@ -901,78 +938,99 @@ function Library:CreateModule(tab, settings)
             end)
             
             if i <= maxOptions then
-                dropdown._size += 15
+                dropdown._size += 26
             end
         end
-        
-        optionsList.Size = UDim2.fromOffset(195, dropdown._size)
         
         function dropdown:Unfold()
             self._state = not self._state
             if self._state then
                 module._multiplier += self._size
-                Tween(module.Frame, {Size = UDim2.fromOffset(220, 45 + module._size + module._multiplier)}, 0.5)
-                Tween(module.Options, {Size = UDim2.fromOffset(220, module._size + module._multiplier)}, 0.5)
-                Tween(dropFrame, {Size = UDim2.fromOffset(195, 35 + self._size)}, 0.5)
-                Tween(box, {Size = UDim2.fromOffset(195, 20 + self._size)}, 0.5)
-                Tween(arrow, {Rotation = 180}, 0.5)
+                Tween(module.Frame, {Size = UDim2.new(1, 0, 0, 52 + module._size + module._multiplier)}, 0.3)
+                Tween(module.Options, {Size = UDim2.new(1, 0, 0, module._size + module._multiplier)}, 0.3)
+                Tween(dropFrame, {Size = UDim2.new(1, 0, 0, 38 + self._size + 8)}, 0.3)
+                Tween(optionsList, {Size = UDim2.new(1, -20, 0, self._size)}, 0.3)
+                Tween(arrow, {Rotation = 180}, 0.3)
             else
                 module._multiplier -= self._size
-                Tween(module.Frame, {Size = UDim2.fromOffset(220, 45 + module._size + module._multiplier)}, 0.5)
-                Tween(module.Options, {Size = UDim2.fromOffset(220, module._size + module._multiplier)}, 0.5)
-                Tween(dropFrame, {Size = UDim2.fromOffset(195, 35)}, 0.5)
-                Tween(box, {Size = UDim2.fromOffset(195, 20)}, 0.5)
-                Tween(arrow, {Rotation = 0}, 0.5)
+                Tween(module.Frame, {Size = UDim2.new(1, 0, 0, 52 + module._size + module._multiplier)}, 0.3)
+                Tween(module.Options, {Size = UDim2.new(1, 0, 0, module._size + module._multiplier)}, 0.3)
+                Tween(dropFrame, {Size = UDim2.new(1, 0, 0, 38)}, 0.3)
+                Tween(optionsList, {Size = UDim2.new(1, -20, 0, 0)}, 0.3)
+                Tween(arrow, {Rotation = 0}, 0.3)
             end
         end
         
-        dropFrame.MouseButton1Click:Connect(function()
+        local selectBtn = Create("TextButton", {
+            Parent = selectBox,
+            BackgroundTransparency = 1,
+            Size = UDim2.new(1, 0, 1, 0),
+            Text = ""
+        })
+        selectBtn.MouseButton1Click:Connect(function()
             dropdown:Unfold()
         end)
         
         return dropdown
     end
     
-    -- Создание TextBox внутри модуля
+    -- Создание TextBox
     function module:CreateTextBox(textSettings)
         local textbox = { Value = "" }
         
-        if self._size == 0 then self._size = 5 end
-        self._size += 30
+        if self._size == 0 then self._size = 8 end
+        self._size += 28
         
-        module.Frame.Size = UDim2.fromOffset(220, 45 + self._size)
-        module.Options.Size = UDim2.fromOffset(220, self._size)
+        module.Frame.Size = UDim2.new(1, 0, 0, 52 + self._size)
+        module.Options.Size = UDim2.new(1, 0, 0, self._size)
+        
+        local textFrame = Create("Frame", {
+            Name = "TextBox",
+            Parent = module.Options,
+            BackgroundColor3 = Colors.Secondary,
+            BackgroundTransparency = 0.3,
+            Size = UDim2.new(1, 0, 0, 24)
+        })
+        Create("UICorner", { CornerRadius = UDim.new(0, 6), Parent = textFrame })
         
         Create("TextLabel", {
-            Name = "Label",
-            Parent = module.Options,
+            Name = "Title",
+            Parent = textFrame,
             BackgroundTransparency = 1,
-            Size = UDim2.new(0, 195, 0, 13),
-            FontFace = Library.FontBold,
-            Text = textSettings.title or "TextBox",
+            Position = UDim2.new(0, 10, 0.5, 0),
+            Size = UDim2.new(0.4, 0, 0, 14),
+            AnchorPoint = Vector2.new(0, 0.5),
+            FontFace = Library.Font,
+            Text = textSettings.title or "Input",
             TextColor3 = Colors.Text,
-            TextTransparency = 0.2,
-            TextSize = 9,
+            TextSize = 11,
             TextXAlignment = Enum.TextXAlignment.Left
         })
         
         local input = Create("TextBox", {
             Name = "Input",
-            Parent = module.Options,
-            BackgroundColor3 = Colors.Accent,
-            BackgroundTransparency = 0.9,
-            Size = UDim2.new(0, 195, 0, 14),
+            Parent = textFrame,
+            BackgroundColor3 = Colors.Card,
+            Position = UDim2.new(0.4, 5, 0.5, 0),
+            Size = UDim2.new(0.6, -15, 0, 18),
+            AnchorPoint = Vector2.new(0, 0.5),
             FontFace = Library.Font,
             PlaceholderText = textSettings.placeholder or "Enter...",
             Text = "",
             TextColor3 = Colors.Text,
             PlaceholderColor3 = Colors.TextDim,
-            TextSize = 9,
+            TextSize = 10,
             ClearTextOnFocus = false
         })
         Create("UICorner", { CornerRadius = UDim.new(0, 4), Parent = input })
+        Create("UIStroke", { Color = Colors.Border, Thickness = 1, Parent = input })
+        
+        input.Focused:Connect(function()
+            Tween(input.UIStroke, {Color = Colors.Accent})
+        end)
         
         input.FocusLost:Connect(function()
+            Tween(input.UIStroke, {Color = Colors.Border})
             textbox.Value = input.Text
             if textSettings.callback then
                 textSettings.callback(textbox.Value)
@@ -982,42 +1040,39 @@ function Library:CreateModule(tab, settings)
         return textbox
     end
     
-    -- Создание Button внутри модуля
+    -- Создание Button
     function module:CreateButton(btnSettings)
-        if self._size == 0 then self._size = 5 end
-        self._size += 22
+        if self._size == 0 then self._size = 8 end
+        self._size += 30
         
-        module.Frame.Size = UDim2.fromOffset(220, 45 + self._size)
-        module.Options.Size = UDim2.fromOffset(220, self._size)
+        module.Frame.Size = UDim2.new(1, 0, 0, 52 + self._size)
+        module.Options.Size = UDim2.new(1, 0, 0, self._size)
         
         local btn = Create("TextButton", {
             Name = "Button",
             Parent = module.Options,
-            BackgroundColor3 = Colors.Tertiary,
-            BackgroundTransparency = 0.1,
-            Size = UDim2.new(0, 195, 0, 17),
+            BackgroundColor3 = Colors.Accent,
+            Size = UDim2.new(1, 0, 0, 26),
             FontFace = Library.FontBold,
-            Text = "    " .. (btnSettings.title or "Button"),
-            TextColor3 = Colors.TextDim,
-            TextTransparency = 0.2,
-            TextSize = 10,
-            TextXAlignment = Enum.TextXAlignment.Left,
+            Text = btnSettings.title or "Button",
+            TextColor3 = Colors.TextLight,
+            TextSize = 11,
             AutoButtonColor = false
         })
-        Create("UICorner", { CornerRadius = UDim.new(0, 4), Parent = btn })
+        Create("UICorner", { CornerRadius = UDim.new(0, 6), Parent = btn })
         
         btn.MouseEnter:Connect(function()
-            Tween(btn, {BackgroundColor3 = Color3.fromRGB(42, 50, 66)}, 0.3)
+            Tween(btn, {BackgroundColor3 = Colors.AccentLight})
         end)
         
         btn.MouseLeave:Connect(function()
-            Tween(btn, {BackgroundColor3 = Colors.Tertiary}, 0.3)
+            Tween(btn, {BackgroundColor3 = Colors.Accent})
         end)
         
         btn.MouseButton1Click:Connect(function()
-            Tween(btn, {BackgroundColor3 = Colors.Accent}, 0.1)
+            Tween(btn, {BackgroundColor3 = Colors.AccentDark}, 0.1)
             task.wait(0.1)
-            Tween(btn, {BackgroundColor3 = Colors.Tertiary}, 0.1)
+            Tween(btn, {BackgroundColor3 = Colors.Accent}, 0.1)
             
             if btnSettings.callback then
                 btnSettings.callback()
@@ -1031,7 +1086,7 @@ function Library:CreateModule(tab, settings)
 end
 
 
--- Создание простой секции (без модуля)
+-- Создание простой секции
 function Library:CreateSection(tab, name, column)
     local section = {}
     local parent = (column == "right") and tab.RightSection or tab.LeftSection
@@ -1039,26 +1094,25 @@ function Library:CreateSection(tab, name, column)
     section.Frame = Create("Frame", {
         Name = name,
         Parent = parent,
-        BackgroundColor3 = Colors.Secondary,
-        BackgroundTransparency = 0.5,
+        BackgroundColor3 = Colors.Card,
         BorderSizePixel = 0,
-        Size = UDim2.new(0, 220, 0, 0),
+        Size = UDim2.new(1, 0, 0, 0),
         AutomaticSize = Enum.AutomaticSize.Y
     })
-    Create("UICorner", { CornerRadius = UDim.new(0, 5), Parent = section.Frame })
-    Create("UIStroke", { Color = Colors.Border, Transparency = 0.5, Parent = section.Frame })
+    Create("UICorner", { CornerRadius = UDim.new(0, 10), Parent = section.Frame })
+    Create("UIStroke", { Color = Colors.Border, Thickness = 1, Transparency = 0.5, Parent = section.Frame })
     
     -- Заголовок секции
     Create("TextLabel", {
         Name = "Title",
         Parent = section.Frame,
         BackgroundTransparency = 1,
-        Position = UDim2.new(0, 10, 0, 5),
-        Size = UDim2.new(1, -20, 0, 18),
+        Position = UDim2.new(0, 14, 0, 10),
+        Size = UDim2.new(1, -28, 0, 18),
         FontFace = Library.FontBold,
         Text = name,
         TextColor3 = Colors.Accent,
-        TextSize = 11,
+        TextSize = 12,
         TextXAlignment = Enum.TextXAlignment.Left
     })
     
@@ -1067,7 +1121,7 @@ function Library:CreateSection(tab, name, column)
         Name = "Container",
         Parent = section.Frame,
         BackgroundTransparency = 1,
-        Position = UDim2.new(0, 0, 0, 23),
+        Position = UDim2.new(0, 0, 0, 32),
         Size = UDim2.new(1, 0, 0, 0),
         AutomaticSize = Enum.AutomaticSize.Y
     })
@@ -1075,68 +1129,53 @@ function Library:CreateSection(tab, name, column)
     Create("UIListLayout", {
         Parent = section.Container,
         SortOrder = Enum.SortOrder.LayoutOrder,
-        Padding = UDim.new(0, 5)
+        Padding = UDim.new(0, 8)
     })
     
     Create("UIPadding", {
         Parent = section.Container,
-        PaddingTop = UDim.new(0, 5),
-        PaddingBottom = UDim.new(0, 10),
-        PaddingLeft = UDim.new(0, 10),
-        PaddingRight = UDim.new(0, 10)
+        PaddingTop = UDim.new(0, 0),
+        PaddingBottom = UDim.new(0, 14),
+        PaddingLeft = UDim.new(0, 14),
+        PaddingRight = UDim.new(0, 14)
     })
     
     return section
 end
 
 -- Создание Toggle (простой)
-function Library:CreateToggle(section, name, default, callback, keybind)
-    local toggle = { Value = default or false, Keybind = keybind, _waiting = false }
+function Library:CreateToggle(section, name, default, callback)
+    local toggle = { Value = default or false }
     
     toggle.Frame = Create("Frame", {
         Name = name,
         Parent = section.Container,
-        BackgroundTransparency = 1,
-        Size = UDim2.new(1, 0, 0, 22)
+        BackgroundColor3 = Colors.Secondary,
+        BackgroundTransparency = 0.5,
+        Size = UDim2.new(1, 0, 0, 28)
     })
+    Create("UICorner", { CornerRadius = UDim.new(0, 6), Parent = toggle.Frame })
     
     toggle.Label = Create("TextLabel", {
         Name = "Label",
         Parent = toggle.Frame,
         BackgroundTransparency = 1,
-        Size = UDim2.new(1, -80, 1, 0),
+        Position = UDim2.new(0, 10, 0.5, 0),
+        Size = UDim2.new(1, -60, 0, 14),
+        AnchorPoint = Vector2.new(0, 0.5),
         FontFace = Library.Font,
         Text = name,
         TextColor3 = Colors.Text,
-        TextSize = 10,
+        TextSize = 11,
         TextXAlignment = Enum.TextXAlignment.Left
     })
     
-    -- Keybind кнопка
-    toggle.KeybindBtn = Create("TextButton", {
-        Name = "KeybindBtn",
-        Parent = toggle.Frame,
-        BackgroundColor3 = Colors.Accent,
-        BackgroundTransparency = 0.7,
-        Position = UDim2.new(1, -70, 0.5, 0),
-        Size = UDim2.new(0, 30, 0, 14),
-        AnchorPoint = Vector2.new(0, 0.5),
-        FontFace = Library.Font,
-        Text = keybind and keybind.Name or "...",
-        TextColor3 = Colors.Text,
-        TextSize = 8,
-        AutoButtonColor = false
-    })
-    Create("UICorner", { CornerRadius = UDim.new(0, 3), Parent = toggle.KeybindBtn })
-    
-    -- Toggle switch
     toggle.Switch = Create("Frame", {
         Name = "Switch",
         Parent = toggle.Frame,
-        BackgroundColor3 = toggle.Value and Colors.Accent or Color3.fromRGB(0, 0, 0),
-        BackgroundTransparency = 0.7,
-        Position = UDim2.new(1, 0, 0.5, 0),
-        Size = UDim2.new(0, 32, 0, 14),
+        BackgroundColor3 = toggle.Value and Colors.Accent or Colors.Border,
+        Position = UDim2.new(1, -10, 0.5, 0),
+        Size = UDim2.new(0, 36, 0, 18),
         AnchorPoint = Vector2.new(1, 0.5),
         BorderSizePixel = 0
     })
@@ -1145,9 +1184,8 @@ function Library:CreateToggle(section, name, default, callback, keybind)
     toggle.Circle = Create("Frame", {
         Name = "Circle",
         Parent = toggle.Switch,
-        BackgroundColor3 = toggle.Value and Colors.Accent or Colors.AccentDark,
-        BackgroundTransparency = 0.2,
-        Position = toggle.Value and UDim2.new(1, -14, 0.5, 0) or UDim2.new(0, 0, 0.5, 0),
+        BackgroundColor3 = Colors.Card,
+        Position = toggle.Value and UDim2.new(1, -16, 0.5, 0) or UDim2.new(0, 2, 0.5, 0),
         Size = UDim2.new(0, 14, 0, 14),
         AnchorPoint = Vector2.new(0, 0.5),
         BorderSizePixel = 0
@@ -1156,15 +1194,11 @@ function Library:CreateToggle(section, name, default, callback, keybind)
     
     local function toggleFunc()
         toggle.Value = not toggle.Value
-        Tween(toggle.Switch, {BackgroundColor3 = toggle.Value and Colors.Accent or Color3.fromRGB(0, 0, 0)})
-        Tween(toggle.Circle, {
-            BackgroundColor3 = toggle.Value and Colors.Accent or Colors.AccentDark,
-            Position = toggle.Value and UDim2.new(1, -14, 0.5, 0) or UDim2.new(0, 0, 0.5, 0)
-        })
+        Tween(toggle.Switch, {BackgroundColor3 = toggle.Value and Colors.Accent or Colors.Border})
+        Tween(toggle.Circle, {Position = toggle.Value and UDim2.new(1, -16, 0.5, 0) or UDim2.new(0, 2, 0.5, 0)})
         if callback then callback(toggle.Value) end
     end
     
-    -- Клик по switch
     local switchBtn = Create("TextButton", {
         Parent = toggle.Switch,
         BackgroundTransparency = 1,
@@ -1173,126 +1207,48 @@ function Library:CreateToggle(section, name, default, callback, keybind)
     })
     switchBtn.MouseButton1Click:Connect(toggleFunc)
     
-    -- Keybind установка
-    toggle.KeybindBtn.MouseButton1Click:Connect(function()
-        if toggle._waiting then return end
-        toggle._waiting = true
-        toggle.KeybindBtn.Text = "..."
-        Tween(toggle.KeybindBtn, {BackgroundTransparency = 0.3})
-        
-        local conn
-        conn = UserInputService.InputBegan:Connect(function(input, processed)
-            if input.UserInputType == Enum.UserInputType.Keyboard then
-                if input.KeyCode == Enum.KeyCode.Escape then
-                    toggle.Keybind = nil
-                    toggle.KeybindBtn.Text = "..."
-                else
-                    toggle.Keybind = input.KeyCode
-                    toggle.KeybindBtn.Text = input.KeyCode.Name
-                end
-                toggle._waiting = false
-                Tween(toggle.KeybindBtn, {BackgroundTransparency = 0.7})
-                conn:Disconnect()
-            end
-        end)
+    toggle.Frame.MouseEnter:Connect(function()
+        Tween(toggle.Frame, {BackgroundTransparency = 0})
+    end)
+    toggle.Frame.MouseLeave:Connect(function()
+        Tween(toggle.Frame, {BackgroundTransparency = 0.5})
     end)
     
-    -- Keybind активация
-    UserInputService.InputBegan:Connect(function(input, processed)
-        if processed or toggle._waiting then return end
-        if toggle.Keybind and input.KeyCode == toggle.Keybind then
-            toggleFunc()
-        end
-    end)
-    
-    if default then
-        if callback then callback(true) end
-    end
+    if default and callback then callback(true) end
     
     return toggle
 end
 
-
 -- Создание Button (простой)
-function Library:CreateButton(section, name, callback, keybind)
-    local button = { Keybind = keybind, _waiting = false }
-    
-    button.Frame = Create("Frame", {
-        Name = name,
-        Parent = section.Container,
-        BackgroundTransparency = 1,
-        Size = UDim2.new(1, 0, 0, 24)
-    })
+function Library:CreateButton(section, name, callback)
+    local button = {}
     
     button.Button = Create("TextButton", {
-        Name = "Button",
-        Parent = button.Frame,
+        Name = name,
+        Parent = section.Container,
         BackgroundColor3 = Colors.Accent,
-        BackgroundTransparency = 0.3,
-        Size = UDim2.new(1, -40, 1, 0),
+        Size = UDim2.new(1, 0, 0, 30),
         FontFace = Library.FontBold,
         Text = name,
-        TextColor3 = Colors.Text,
-        TextSize = 10,
+        TextColor3 = Colors.TextLight,
+        TextSize = 11,
         AutoButtonColor = false
     })
-    Create("UICorner", { CornerRadius = UDim.new(0, 5), Parent = button.Button })
+    Create("UICorner", { CornerRadius = UDim.new(0, 6), Parent = button.Button })
     
-    -- Keybind кнопка
-    button.KeybindBtn = Create("TextButton", {
-        Name = "KeybindBtn",
-        Parent = button.Frame,
-        BackgroundColor3 = Colors.Tertiary,
-        Position = UDim2.new(1, 0, 0.5, 0),
-        Size = UDim2.new(0, 35, 0, 20),
-        AnchorPoint = Vector2.new(1, 0.5),
-        FontFace = Library.Font,
-        Text = keybind and keybind.Name or "...",
-        TextColor3 = Colors.Accent,
-        TextSize = 8,
-        AutoButtonColor = false
-    })
-    Create("UICorner", { CornerRadius = UDim.new(0, 4), Parent = button.KeybindBtn })
-    
-    local function clickFunc()
-        Tween(button.Button, {BackgroundColor3 = Colors.Success}, 0.1)
-        task.wait(0.1)
-        Tween(button.Button, {BackgroundColor3 = Colors.Accent}, 0.1)
-        if callback then callback() end
-    end
-    
-    button.Button.MouseButton1Click:Connect(clickFunc)
-    
-    -- Keybind установка
-    button.KeybindBtn.MouseButton1Click:Connect(function()
-        if button._waiting then return end
-        button._waiting = true
-        button.KeybindBtn.Text = "..."
-        Tween(button.KeybindBtn, {BackgroundColor3 = Colors.Accent})
-        
-        local conn
-        conn = UserInputService.InputBegan:Connect(function(input, processed)
-            if input.UserInputType == Enum.UserInputType.Keyboard then
-                if input.KeyCode == Enum.KeyCode.Escape then
-                    button.Keybind = nil
-                    button.KeybindBtn.Text = "..."
-                else
-                    button.Keybind = input.KeyCode
-                    button.KeybindBtn.Text = input.KeyCode.Name
-                end
-                button._waiting = false
-                Tween(button.KeybindBtn, {BackgroundColor3 = Colors.Tertiary})
-                conn:Disconnect()
-            end
-        end)
+    button.Button.MouseEnter:Connect(function()
+        Tween(button.Button, {BackgroundColor3 = Colors.AccentLight})
     end)
     
-    -- Keybind активация
-    UserInputService.InputBegan:Connect(function(input, processed)
-        if processed or button._waiting then return end
-        if button.Keybind and input.KeyCode == button.Keybind then
-            clickFunc()
-        end
+    button.Button.MouseLeave:Connect(function()
+        Tween(button.Button, {BackgroundColor3 = Colors.Accent})
+    end)
+    
+    button.Button.MouseButton1Click:Connect(function()
+        Tween(button.Button, {BackgroundColor3 = Colors.Success}, 0.1)
+        task.wait(0.15)
+        Tween(button.Button, {BackgroundColor3 = Colors.Accent}, 0.1)
+        if callback then callback() end
     end)
     
     return button
@@ -1305,19 +1261,22 @@ function Library:CreateSlider(section, name, min, max, default, callback)
     slider.Frame = Create("Frame", {
         Name = name,
         Parent = section.Container,
-        BackgroundTransparency = 1,
-        Size = UDim2.new(1, 0, 0, 35)
+        BackgroundColor3 = Colors.Secondary,
+        BackgroundTransparency = 0.5,
+        Size = UDim2.new(1, 0, 0, 40)
     })
+    Create("UICorner", { CornerRadius = UDim.new(0, 6), Parent = slider.Frame })
     
     slider.Label = Create("TextLabel", {
         Name = "Label",
         Parent = slider.Frame,
         BackgroundTransparency = 1,
-        Size = UDim2.new(1, -45, 0, 14),
+        Position = UDim2.new(0, 10, 0, 4),
+        Size = UDim2.new(1, -60, 0, 14),
         FontFace = Library.Font,
         Text = name,
         TextColor3 = Colors.Text,
-        TextSize = 10,
+        TextSize = 11,
         TextXAlignment = Enum.TextXAlignment.Left
     })
     
@@ -1325,28 +1284,29 @@ function Library:CreateSlider(section, name, min, max, default, callback)
         Name = "Value",
         Parent = slider.Frame,
         BackgroundTransparency = 1,
-        Position = UDim2.new(1, -45, 0, 0),
+        Position = UDim2.new(1, -10, 0, 4),
         Size = UDim2.new(0, 45, 0, 14),
+        AnchorPoint = Vector2.new(1, 0),
         FontFace = Library.FontBold,
         Text = tostring(slider.Value),
         TextColor3 = Colors.Accent,
-        TextSize = 10,
+        TextSize = 11,
         TextXAlignment = Enum.TextXAlignment.Right
     })
     
-    slider.SliderBG = Create("Frame", {
-        Name = "SliderBG",
+    slider.Track = Create("Frame", {
+        Name = "Track",
         Parent = slider.Frame,
-        BackgroundColor3 = Colors.Tertiary,
-        Position = UDim2.new(0, 0, 0, 18),
-        Size = UDim2.new(1, 0, 0, 6),
+        BackgroundColor3 = Colors.Border,
+        Position = UDim2.new(0, 10, 0, 24),
+        Size = UDim2.new(1, -20, 0, 6),
         BorderSizePixel = 0
     })
-    Create("UICorner", { CornerRadius = UDim.new(1, 0), Parent = slider.SliderBG })
+    Create("UICorner", { CornerRadius = UDim.new(1, 0), Parent = slider.Track })
     
     slider.Fill = Create("Frame", {
         Name = "Fill",
-        Parent = slider.SliderBG,
+        Parent = slider.Track,
         BackgroundColor3 = Colors.Accent,
         Size = UDim2.new((slider.Value - min) / (max - min), 0, 1, 0),
         BorderSizePixel = 0
@@ -1357,21 +1317,21 @@ function Library:CreateSlider(section, name, min, max, default, callback)
     local mouse = Players.LocalPlayer:GetMouse()
     
     local function update(input)
-        local pos = math.clamp((input.Position.X - slider.SliderBG.AbsolutePosition.X) / slider.SliderBG.AbsoluteSize.X, 0, 1)
+        local pos = math.clamp((input.Position.X - slider.Track.AbsolutePosition.X) / slider.Track.AbsoluteSize.X, 0, 1)
         slider.Value = math.floor(min + (max - min) * pos)
         slider.ValueLabel.Text = tostring(slider.Value)
         Tween(slider.Fill, {Size = UDim2.new(pos, 0, 1, 0)}, 0.05)
         if callback then callback(slider.Value) end
     end
     
-    slider.SliderBG.InputBegan:Connect(function(input)
+    slider.Track.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
             dragging = true
             update(input)
         end
     end)
     
-    slider.SliderBG.InputEnded:Connect(function(input)
+    slider.Track.InputEnded:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
             dragging = false
         end
@@ -1394,76 +1354,87 @@ function Library:CreateDropdown(section, name, options, default, callback)
     dropdown.Frame = Create("Frame", {
         Name = name,
         Parent = section.Container,
-        BackgroundTransparency = 1,
-        Size = UDim2.new(1, 0, 0, 22),
+        BackgroundColor3 = Colors.Secondary,
+        BackgroundTransparency = 0.5,
+        Size = UDim2.new(1, 0, 0, 28),
         ClipsDescendants = false
     })
+    Create("UICorner", { CornerRadius = UDim.new(0, 6), Parent = dropdown.Frame })
     
     dropdown.Label = Create("TextLabel", {
         Name = "Label",
         Parent = dropdown.Frame,
         BackgroundTransparency = 1,
-        Size = UDim2.new(0.45, 0, 0, 22),
+        Position = UDim2.new(0, 10, 0.5, 0),
+        Size = UDim2.new(0.4, 0, 0, 14),
+        AnchorPoint = Vector2.new(0, 0.5),
         FontFace = Library.Font,
         Text = name,
         TextColor3 = Colors.Text,
-        TextSize = 10,
+        TextSize = 11,
         TextXAlignment = Enum.TextXAlignment.Left
     })
     
     dropdown.Button = Create("TextButton", {
         Name = "Button",
         Parent = dropdown.Frame,
-        BackgroundColor3 = Colors.Tertiary,
-        Position = UDim2.new(0.45, 0, 0, 0),
-        Size = UDim2.new(0.55, 0, 0, 22),
+        BackgroundColor3 = Colors.Card,
+        Position = UDim2.new(0.4, 5, 0.5, 0),
+        Size = UDim2.new(0.6, -15, 0, 22),
+        AnchorPoint = Vector2.new(0, 0.5),
         FontFace = Library.Font,
-        Text = dropdown.Value,
+        Text = "  " .. dropdown.Value,
         TextColor3 = Colors.Text,
-        TextSize = 9,
+        TextSize = 10,
+        TextXAlignment = Enum.TextXAlignment.Left,
         AutoButtonColor = false
     })
-    Create("UICorner", { CornerRadius = UDim.new(0, 4), Parent = dropdown.Button })
+    Create("UICorner", { CornerRadius = UDim.new(0, 5), Parent = dropdown.Button })
+    Create("UIStroke", { Color = Colors.Border, Thickness = 1, Parent = dropdown.Button })
     
     dropdown.OptionsList = Create("Frame", {
         Name = "Options",
         Parent = dropdown.Button,
-        BackgroundColor3 = Colors.Tertiary,
+        BackgroundColor3 = Colors.Card,
         Position = UDim2.new(0, 0, 1, 4),
         Size = UDim2.new(1, 0, 0, 0),
         Visible = false,
         ZIndex = 10,
         ClipsDescendants = true
     })
-    Create("UICorner", { CornerRadius = UDim.new(0, 4), Parent = dropdown.OptionsList })
+    Create("UICorner", { CornerRadius = UDim.new(0, 5), Parent = dropdown.OptionsList })
+    Create("UIStroke", { Color = Colors.Border, Thickness = 1, Parent = dropdown.OptionsList })
     Create("UIListLayout", { SortOrder = Enum.SortOrder.LayoutOrder, Parent = dropdown.OptionsList })
     
     for _, opt in ipairs(options) do
         local optBtn = Create("TextButton", {
             Name = opt,
             Parent = dropdown.OptionsList,
-            BackgroundColor3 = Colors.Secondary,
-            BackgroundTransparency = 0.5,
-            Size = UDim2.new(1, 0, 0, 20),
+            BackgroundColor3 = Colors.Card,
+            BackgroundTransparency = 1,
+            Size = UDim2.new(1, 0, 0, 24),
             FontFace = Library.Font,
-            Text = opt,
+            Text = "  " .. opt,
             TextColor3 = Colors.Text,
-            TextSize = 9,
+            TextSize = 10,
+            TextXAlignment = Enum.TextXAlignment.Left,
             ZIndex = 11,
             AutoButtonColor = false
         })
         
         optBtn.MouseEnter:Connect(function()
-            Tween(optBtn, {BackgroundTransparency = 0})
+            Tween(optBtn, {BackgroundTransparency = 0, BackgroundColor3 = Colors.AccentLight})
+            optBtn.TextColor3 = Colors.TextLight
         end)
         
         optBtn.MouseLeave:Connect(function()
-            Tween(optBtn, {BackgroundTransparency = 0.5})
+            Tween(optBtn, {BackgroundTransparency = 1})
+            optBtn.TextColor3 = Colors.Text
         end)
         
         optBtn.MouseButton1Click:Connect(function()
             dropdown.Value = opt
-            dropdown.Button.Text = opt
+            dropdown.Button.Text = "  " .. opt
             dropdown.Open = false
             dropdown.OptionsList.Visible = false
             Tween(dropdown.OptionsList, {Size = UDim2.new(1, 0, 0, 0)})
@@ -1476,7 +1447,7 @@ function Library:CreateDropdown(section, name, options, default, callback)
         dropdown.OptionsList.Visible = true
         
         if dropdown.Open then
-            Tween(dropdown.OptionsList, {Size = UDim2.new(1, 0, 0, #options * 20)})
+            Tween(dropdown.OptionsList, {Size = UDim2.new(1, 0, 0, math.min(#options * 24, 120))})
         else
             Tween(dropdown.OptionsList, {Size = UDim2.new(1, 0, 0, 0)})
             task.wait(0.2)
@@ -1494,81 +1465,90 @@ function Library:CreateMultiDropdown(section, name, options, default, callback)
     dropdown.Frame = Create("Frame", {
         Name = name,
         Parent = section.Container,
-        BackgroundTransparency = 1,
-        Size = UDim2.new(1, 0, 0, 22),
+        BackgroundColor3 = Colors.Secondary,
+        BackgroundTransparency = 0.5,
+        Size = UDim2.new(1, 0, 0, 28),
         ClipsDescendants = false
     })
+    Create("UICorner", { CornerRadius = UDim.new(0, 6), Parent = dropdown.Frame })
     
     dropdown.Label = Create("TextLabel", {
         Name = "Label",
         Parent = dropdown.Frame,
         BackgroundTransparency = 1,
-        Size = UDim2.new(0.35, 0, 0, 22),
+        Position = UDim2.new(0, 10, 0.5, 0),
+        Size = UDim2.new(0.35, 0, 0, 14),
+        AnchorPoint = Vector2.new(0, 0.5),
         FontFace = Library.Font,
         Text = name,
         TextColor3 = Colors.Text,
-        TextSize = 10,
+        TextSize = 11,
         TextXAlignment = Enum.TextXAlignment.Left
     })
     
     dropdown.Button = Create("TextButton", {
         Name = "Button",
         Parent = dropdown.Frame,
-        BackgroundColor3 = Colors.Tertiary,
-        Position = UDim2.new(0.35, 0, 0, 0),
-        Size = UDim2.new(0.65, 0, 0, 22),
+        BackgroundColor3 = Colors.Card,
+        Position = UDim2.new(0.35, 5, 0.5, 0),
+        Size = UDim2.new(0.65, -15, 0, 22),
+        AnchorPoint = Vector2.new(0, 0.5),
         FontFace = Library.Font,
-        Text = #dropdown.Selected > 0 and table.concat(dropdown.Selected, ", ") or "Select...",
+        Text = #dropdown.Selected > 0 and ("  " .. table.concat(dropdown.Selected, ", ")) or "  Select...",
         TextColor3 = Colors.Text,
-        TextSize = 9,
+        TextSize = 10,
         TextTruncate = Enum.TextTruncate.AtEnd,
+        TextXAlignment = Enum.TextXAlignment.Left,
         AutoButtonColor = false
     })
-    Create("UICorner", { CornerRadius = UDim.new(0, 4), Parent = dropdown.Button })
+    Create("UICorner", { CornerRadius = UDim.new(0, 5), Parent = dropdown.Button })
+    Create("UIStroke", { Color = Colors.Border, Thickness = 1, Parent = dropdown.Button })
     
     dropdown.OptionsList = Create("Frame", {
         Name = "Options",
         Parent = dropdown.Button,
-        BackgroundColor3 = Colors.Tertiary,
+        BackgroundColor3 = Colors.Card,
         Position = UDim2.new(0, 0, 1, 4),
         Size = UDim2.new(1, 0, 0, 0),
         Visible = false,
         ZIndex = 10,
         ClipsDescendants = true
     })
-    Create("UICorner", { CornerRadius = UDim.new(0, 4), Parent = dropdown.OptionsList })
+    Create("UICorner", { CornerRadius = UDim.new(0, 5), Parent = dropdown.OptionsList })
+    Create("UIStroke", { Color = Colors.Border, Thickness = 1, Parent = dropdown.OptionsList })
     Create("UIListLayout", { SortOrder = Enum.SortOrder.LayoutOrder, Parent = dropdown.OptionsList })
     
     for _, opt in ipairs(options) do
         local optFrame = Create("Frame", {
             Name = opt,
             Parent = dropdown.OptionsList,
-            BackgroundColor3 = Colors.Secondary,
-            BackgroundTransparency = 0.5,
-            Size = UDim2.new(1, 0, 0, 20),
+            BackgroundColor3 = Colors.Card,
+            BackgroundTransparency = 1,
+            Size = UDim2.new(1, 0, 0, 26),
             ZIndex = 11
         })
         
         local checkBox = Create("Frame", {
             Name = "Check",
             Parent = optFrame,
-            BackgroundColor3 = table.find(dropdown.Selected, opt) and Colors.Accent or Colors.Tertiary,
-            Position = UDim2.new(0, 5, 0.5, -6),
-            Size = UDim2.new(0, 12, 0, 12),
+            BackgroundColor3 = table.find(dropdown.Selected, opt) and Colors.Accent or Colors.Border,
+            Position = UDim2.new(0, 8, 0.5, 0),
+            Size = UDim2.new(0, 14, 0, 14),
+            AnchorPoint = Vector2.new(0, 0.5),
             ZIndex = 12
         })
-        Create("UICorner", { CornerRadius = UDim.new(0, 3), Parent = checkBox })
+        Create("UICorner", { CornerRadius = UDim.new(0, 4), Parent = checkBox })
         
         Create("TextLabel", {
             Name = "Label",
             Parent = optFrame,
             BackgroundTransparency = 1,
-            Position = UDim2.new(0, 22, 0, 0),
-            Size = UDim2.new(1, -27, 1, 0),
+            Position = UDim2.new(0, 28, 0, 0),
+            Size = UDim2.new(1, -33, 1, 0),
             FontFace = Library.Font,
             Text = opt,
             TextColor3 = Colors.Text,
-            TextSize = 9,
+            TextSize = 10,
             TextXAlignment = Enum.TextXAlignment.Left,
             ZIndex = 12
         })
@@ -1582,24 +1562,24 @@ function Library:CreateMultiDropdown(section, name, options, default, callback)
         })
         
         optBtn.MouseEnter:Connect(function()
-            Tween(optFrame, {BackgroundTransparency = 0})
+            Tween(optFrame, {BackgroundTransparency = 0, BackgroundColor3 = Colors.Secondary})
         end)
         
         optBtn.MouseLeave:Connect(function()
-            Tween(optFrame, {BackgroundTransparency = 0.5})
+            Tween(optFrame, {BackgroundTransparency = 1})
         end)
         
         optBtn.MouseButton1Click:Connect(function()
             local index = table.find(dropdown.Selected, opt)
             if index then
                 table.remove(dropdown.Selected, index)
-                Tween(checkBox, {BackgroundColor3 = Colors.Tertiary})
+                Tween(checkBox, {BackgroundColor3 = Colors.Border})
             else
                 table.insert(dropdown.Selected, opt)
                 Tween(checkBox, {BackgroundColor3 = Colors.Accent})
             end
             
-            dropdown.Button.Text = #dropdown.Selected > 0 and table.concat(dropdown.Selected, ", ") or "Select..."
+            dropdown.Button.Text = #dropdown.Selected > 0 and ("  " .. table.concat(dropdown.Selected, ", ")) or "  Select..."
             if callback then callback(dropdown.Selected) end
         end)
     end
@@ -1609,7 +1589,7 @@ function Library:CreateMultiDropdown(section, name, options, default, callback)
         dropdown.OptionsList.Visible = true
         
         if dropdown.Open then
-            Tween(dropdown.OptionsList, {Size = UDim2.new(1, 0, 0, #options * 20)})
+            Tween(dropdown.OptionsList, {Size = UDim2.new(1, 0, 0, math.min(#options * 26, 130))})
         else
             Tween(dropdown.OptionsList, {Size = UDim2.new(1, 0, 0, 0)})
             task.wait(0.2)
@@ -1620,7 +1600,6 @@ function Library:CreateMultiDropdown(section, name, options, default, callback)
     return dropdown
 end
 
-
 -- Создание TextBox (простой)
 function Library:CreateTextBox(section, name, placeholder, callback)
     local textbox = { Value = "" }
@@ -1628,38 +1607,49 @@ function Library:CreateTextBox(section, name, placeholder, callback)
     textbox.Frame = Create("Frame", {
         Name = name,
         Parent = section.Container,
-        BackgroundTransparency = 1,
-        Size = UDim2.new(1, 0, 0, 22)
+        BackgroundColor3 = Colors.Secondary,
+        BackgroundTransparency = 0.5,
+        Size = UDim2.new(1, 0, 0, 28)
     })
+    Create("UICorner", { CornerRadius = UDim.new(0, 6), Parent = textbox.Frame })
     
     textbox.Label = Create("TextLabel", {
         Name = "Label",
         Parent = textbox.Frame,
         BackgroundTransparency = 1,
-        Size = UDim2.new(0.35, 0, 1, 0),
+        Position = UDim2.new(0, 10, 0.5, 0),
+        Size = UDim2.new(0.35, 0, 0, 14),
+        AnchorPoint = Vector2.new(0, 0.5),
         FontFace = Library.Font,
         Text = name,
         TextColor3 = Colors.Text,
-        TextSize = 10,
+        TextSize = 11,
         TextXAlignment = Enum.TextXAlignment.Left
     })
     
     textbox.Input = Create("TextBox", {
         Name = "Input",
         Parent = textbox.Frame,
-        BackgroundColor3 = Colors.Tertiary,
-        Position = UDim2.new(0.35, 5, 0, 0),
-        Size = UDim2.new(0.65, -5, 1, 0),
+        BackgroundColor3 = Colors.Card,
+        Position = UDim2.new(0.35, 5, 0.5, 0),
+        Size = UDim2.new(0.65, -15, 0, 20),
+        AnchorPoint = Vector2.new(0, 0.5),
         FontFace = Library.Font,
         PlaceholderText = placeholder or "Enter...",
         Text = "",
         TextColor3 = Colors.Text,
         PlaceholderColor3 = Colors.TextDim,
-        TextSize = 9
+        TextSize = 10
     })
-    Create("UICorner", { CornerRadius = UDim.new(0, 4), Parent = textbox.Input })
+    Create("UICorner", { CornerRadius = UDim.new(0, 5), Parent = textbox.Input })
+    Create("UIStroke", { Color = Colors.Border, Thickness = 1, Parent = textbox.Input })
+    
+    textbox.Input.Focused:Connect(function()
+        Tween(textbox.Input.UIStroke, {Color = Colors.Accent})
+    end)
     
     textbox.Input.FocusLost:Connect(function(enterPressed)
+        Tween(textbox.Input.UIStroke, {Color = Colors.Border})
         textbox.Value = textbox.Input.Text
         if callback then callback(textbox.Value, enterPressed) end
     end)
@@ -1667,65 +1657,251 @@ function Library:CreateTextBox(section, name, placeholder, callback)
     return textbox
 end
 
--- Счётчик уведомлений для стека
+
+-- Счётчик уведомлений
 Library._notifCount = 0
 
--- Уведомления (стекаются вверх)
-function Library:Notify(title, text, duration)
+-- Уведомления
+function Library:Notify(title, text, duration, notifType)
     Library._notifCount = Library._notifCount + 1
     local notifIndex = Library._notifCount
-    local yOffset = -10 - (75 * notifIndex)
+    local yOffset = 20 + (80 * (notifIndex - 1))
+    
+    local accentColor = Colors.Accent
+    if notifType == "success" then
+        accentColor = Colors.Success
+    elseif notifType == "error" then
+        accentColor = Colors.Error
+    elseif notifType == "warning" then
+        accentColor = Colors.Warning
+    end
     
     local notif = Create("Frame", {
         Name = "Notification",
         Parent = self.ScreenGui,
-        BackgroundColor3 = Colors.Secondary,
-        BackgroundTransparency = 0.15,
-        Position = UDim2.new(1, 10, 1, yOffset),
-        Size = UDim2.new(0, 240, 0, 65),
+        BackgroundColor3 = Colors.Card,
+        Position = UDim2.new(1, 20, 0, yOffset),
+        Size = UDim2.new(0, 280, 0, 70),
         BorderSizePixel = 0
     })
-    Create("UICorner", { CornerRadius = UDim.new(0, 6), Parent = notif })
-    Create("UIStroke", { Color = Colors.Border, Transparency = 0.3, Parent = notif })
+    Create("UICorner", { CornerRadius = UDim.new(0, 10), Parent = notif })
+    Create("UIStroke", { Color = Colors.Border, Thickness = 1, Parent = notif })
     
-    Create("TextLabel", {
+    -- Тень
+    Create("ImageLabel", {
+        Name = "Shadow",
         Parent = notif,
         BackgroundTransparency = 1,
-        Position = UDim2.new(0, 10, 0, 5),
-        Size = UDim2.new(1, -20, 0, 18),
+        Position = UDim2.new(0.5, 0, 0.5, 4),
+        Size = UDim2.new(1, 20, 1, 20),
+        AnchorPoint = Vector2.new(0.5, 0.5),
+        Image = "rbxassetid://5554236805",
+        ImageColor3 = Color3.fromRGB(0, 0, 0),
+        ImageTransparency = 0.9,
+        ScaleType = Enum.ScaleType.Slice,
+        SliceCenter = Rect.new(23, 23, 277, 277),
+        ZIndex = -1
+    })
+    
+    -- Цветная полоска
+    Create("Frame", {
+        Name = "AccentBar",
+        Parent = notif,
+        BackgroundColor3 = accentColor,
+        Position = UDim2.new(0, 0, 0.15, 0),
+        Size = UDim2.new(0, 4, 0.7, 0),
+        BorderSizePixel = 0
+    }):FindFirstChildOfClass("UICorner") or Create("UICorner", { CornerRadius = UDim.new(0, 2), Parent = notif.AccentBar })
+    
+    Create("TextLabel", {
+        Name = "Title",
+        Parent = notif,
+        BackgroundTransparency = 1,
+        Position = UDim2.new(0, 16, 0, 12),
+        Size = UDim2.new(1, -32, 0, 18),
         FontFace = Library.FontBold,
-        Text = title,
-        TextColor3 = Colors.Accent,
-        TextSize = 12,
+        Text = title or "Notification",
+        TextColor3 = Colors.Text,
+        TextSize = 13,
         TextXAlignment = Enum.TextXAlignment.Left
     })
     
     Create("TextLabel", {
+        Name = "Text",
         Parent = notif,
         BackgroundTransparency = 1,
-        Position = UDim2.new(0, 10, 0, 23),
-        Size = UDim2.new(1, -20, 0, 38),
+        Position = UDim2.new(0, 16, 0, 32),
+        Size = UDim2.new(1, -32, 0, 30),
+        FontFace = Library.Font,
+        Text = text or "",
+        TextColor3 = Colors.TextDim,
+        TextSize = 11,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        TextYAlignment = Enum.TextYAlignment.Top,
+        TextWrapped = true
+    })
+    
+    -- Прогресс бар
+    local progressBg = Create("Frame", {
+        Name = "ProgressBg",
+        Parent = notif,
+        BackgroundColor3 = Colors.Border,
+        Position = UDim2.new(0, 16, 1, -8),
+        Size = UDim2.new(1, -32, 0, 3),
+        BorderSizePixel = 0
+    })
+    Create("UICorner", { CornerRadius = UDim.new(1, 0), Parent = progressBg })
+    
+    local progressFill = Create("Frame", {
+        Name = "Fill",
+        Parent = progressBg,
+        BackgroundColor3 = accentColor,
+        Size = UDim2.new(1, 0, 1, 0),
+        BorderSizePixel = 0
+    })
+    Create("UICorner", { CornerRadius = UDim.new(1, 0), Parent = progressFill })
+    
+    -- Анимация появления
+    Tween(notif, {Position = UDim2.new(1, -300, 0, yOffset)}, 0.4)
+    
+    -- Анимация прогресса и исчезновения
+    task.spawn(function()
+        local dur = duration or 4
+        Tween(progressFill, {Size = UDim2.new(0, 0, 1, 0)}, dur, Enum.EasingStyle.Linear)
+        task.wait(dur)
+        
+        Tween(notif, {Position = UDim2.new(1, 20, 0, yOffset)}, 0.3)
+        task.wait(0.35)
+        notif:Destroy()
+        Library._notifCount = Library._notifCount - 1
+        
+        -- Сдвигаем остальные уведомления
+        for _, child in self.ScreenGui:GetChildren() do
+            if child.Name == "Notification" then
+                local currentY = child.Position.Y.Offset
+                if currentY > yOffset then
+                    Tween(child, {Position = UDim2.new(1, -300, 0, currentY - 80)}, 0.3)
+                end
+            end
+        end
+    end)
+    
+    return notif
+end
+
+-- Создание Label (информационный текст)
+function Library:CreateLabel(section, text)
+    local label = {}
+    
+    label.Label = Create("TextLabel", {
+        Name = "Label",
+        Parent = section.Container,
+        BackgroundTransparency = 1,
+        Size = UDim2.new(1, 0, 0, 20),
         FontFace = Library.Font,
         Text = text,
         TextColor3 = Colors.TextDim,
         TextSize = 10,
         TextXAlignment = Enum.TextXAlignment.Left,
-        TextWrapped = true
+        TextWrapped = true,
+        AutomaticSize = Enum.AutomaticSize.Y
     })
     
-    Tween(notif, {Position = UDim2.new(1, -250, 1, yOffset)})
+    function label:SetText(newText)
+        label.Label.Text = newText
+    end
     
-    task.delay(duration or 3, function()
-        Tween(notif, {Position = UDim2.new(1, 10, 1, yOffset)})
-        task.wait(0.3)
-        notif:Destroy()
-        Library._notifCount = Library._notifCount - 1
-    end)
+    return label
 end
 
--- Установка клавиши toggle
-function Library:SetToggleKey(key)
-    Library.ToggleKey = key
+-- Создание Divider (разделитель)
+function Library:CreateDivider(section)
+    local divider = Create("Frame", {
+        Name = "Divider",
+        Parent = section.Container,
+        BackgroundColor3 = Colors.Border,
+        Size = UDim2.new(1, 0, 0, 1),
+        BorderSizePixel = 0
+    })
+    
+    return divider
+end
+
+-- Создание Keybind
+function Library:CreateKeybind(section, name, default, callback)
+    local keybind = { Key = default, _waiting = false }
+    
+    keybind.Frame = Create("Frame", {
+        Name = name,
+        Parent = section.Container,
+        BackgroundColor3 = Colors.Secondary,
+        BackgroundTransparency = 0.5,
+        Size = UDim2.new(1, 0, 0, 28)
+    })
+    Create("UICorner", { CornerRadius = UDim.new(0, 6), Parent = keybind.Frame })
+    
+    keybind.Label = Create("TextLabel", {
+        Name = "Label",
+        Parent = keybind.Frame,
+        BackgroundTransparency = 1,
+        Position = UDim2.new(0, 10, 0.5, 0),
+        Size = UDim2.new(1, -80, 0, 14),
+        AnchorPoint = Vector2.new(0, 0.5),
+        FontFace = Library.Font,
+        Text = name,
+        TextColor3 = Colors.Text,
+        TextSize = 11,
+        TextXAlignment = Enum.TextXAlignment.Left
+    })
+    
+    keybind.Button = Create("TextButton", {
+        Name = "KeybindBtn",
+        Parent = keybind.Frame,
+        BackgroundColor3 = Colors.Card,
+        Position = UDim2.new(1, -10, 0.5, 0),
+        Size = UDim2.new(0, 60, 0, 20),
+        AnchorPoint = Vector2.new(1, 0.5),
+        FontFace = Library.FontBold,
+        Text = default and default.Name or "None",
+        TextColor3 = Colors.Accent,
+        TextSize = 10,
+        AutoButtonColor = false
+    })
+    Create("UICorner", { CornerRadius = UDim.new(0, 5), Parent = keybind.Button })
+    Create("UIStroke", { Color = Colors.Border, Thickness = 1, Parent = keybind.Button })
+    
+    keybind.Button.MouseButton1Click:Connect(function()
+        if keybind._waiting then return end
+        keybind._waiting = true
+        keybind.Button.Text = "..."
+        Tween(keybind.Button.UIStroke, {Color = Colors.Accent})
+        
+        local conn
+        conn = UserInputService.InputBegan:Connect(function(input, processed)
+            if input.UserInputType == Enum.UserInputType.Keyboard then
+                if input.KeyCode == Enum.KeyCode.Escape then
+                    keybind.Key = nil
+                    keybind.Button.Text = "None"
+                else
+                    keybind.Key = input.KeyCode
+                    keybind.Button.Text = input.KeyCode.Name
+                end
+                keybind._waiting = false
+                Tween(keybind.Button.UIStroke, {Color = Colors.Border})
+                conn:Disconnect()
+            end
+        end)
+    end)
+    
+    -- Активация по клавише
+    UserInputService.InputBegan:Connect(function(input, processed)
+        if processed or keybind._waiting then return end
+        if keybind.Key and input.KeyCode == keybind.Key then
+            if callback then callback() end
+        end
+    end)
+    
+    return keybind
 end
 
 return Library
