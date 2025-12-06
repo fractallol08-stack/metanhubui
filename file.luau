@@ -1,3 +1,8 @@
+--[[
+    Custom UI Library
+    Вдохновлено March UI, но уникальный стиль
+    Тёмно-синяя тема с голубым акцентом
+]]
 
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
@@ -14,18 +19,18 @@ Library.ToggleKey = Enum.KeyCode.Insert
 Library.Font = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.Regular, Enum.FontStyle.Normal)
 Library.FontBold = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
 
--- Цвета (вдохновлено March UI)
+-- Цвета (морские бело-голубые прозрачные тона)
 local Colors = {
-    Background = Color3.fromRGB(12, 13, 15),
-    Secondary = Color3.fromRGB(22, 28, 38),
-    Tertiary = Color3.fromRGB(32, 38, 51),
-    Accent = Color3.fromRGB(152, 181, 255),
-    AccentDark = Color3.fromRGB(66, 80, 115),
-    Border = Color3.fromRGB(52, 66, 89),
+    Background = Color3.fromRGB(15, 25, 40),
+    Secondary = Color3.fromRGB(20, 35, 55),
+    Tertiary = Color3.fromRGB(30, 50, 75),
+    Accent = Color3.fromRGB(100, 180, 255),
+    AccentDark = Color3.fromRGB(60, 120, 180),
+    Border = Color3.fromRGB(80, 140, 200),
     Text = Color3.fromRGB(255, 255, 255),
-    TextDim = Color3.fromRGB(180, 180, 180),
-    Success = Color3.fromRGB(100, 255, 180),
-    Error = Color3.fromRGB(255, 100, 120)
+    TextDim = Color3.fromRGB(200, 220, 240),
+    Success = Color3.fromRGB(100, 255, 200),
+    Error = Color3.fromRGB(255, 120, 150)
 }
 
 -- Утилиты
@@ -85,29 +90,31 @@ function Library.new(title)
         BorderSizePixel = 0
     })
     
-    -- Заголовок (без иконки)
+    -- Заголовок (жирный)
     self.TitleLabel = Create("TextLabel", {
         Name = "Title",
         Parent = self.Handler,
         BackgroundTransparency = 1,
-        Position = UDim2.new(0.026, 0, 0.055, 0),
-        Size = UDim2.new(0, 120, 0, 13),
+        Position = UDim2.new(0.026, 0, 0.04, 0),
+        Size = UDim2.new(0, 130, 0, 16),
         AnchorPoint = Vector2.new(0, 0.5),
-        FontFace = Library.FontBold,
+        FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.Bold, Enum.FontStyle.Normal),
         Text = title or "Metan Hub",
         TextColor3 = Colors.Accent,
-        TextTransparency = 0.2,
-        TextSize = 13,
+        TextTransparency = 0,
+        TextSize = 15,
         TextXAlignment = Enum.TextXAlignment.Left
     })
     
-    -- Градиент для заголовка
-    Create("UIGradient", {
-        Parent = self.TitleLabel,
-        Color = ColorSequence.new{
-            ColorSequenceKeypoint.new(0, Color3.fromRGB(155, 155, 155)),
-            ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 255, 255))
-        }
+    -- Разделитель после заголовка (горизонтальный)
+    Create("Frame", {
+        Name = "TitleDivider",
+        Parent = self.Handler,
+        BackgroundColor3 = Colors.Border,
+        BackgroundTransparency = 0.3,
+        Position = UDim2.new(0.026, 0, 0.075, 0),
+        Size = UDim2.new(0, 130, 0, 1),
+        BorderSizePixel = 0
     })
     
     -- Индикатор активного таба (Pin)
@@ -115,7 +122,7 @@ function Library.new(title)
         Name = "Pin",
         Parent = self.Handler,
         BackgroundColor3 = Colors.Accent,
-        Position = UDim2.new(0.026, 0, 0.136, 0),
+        Position = UDim2.new(0.026, 0, 0.12, 0),
         Size = UDim2.new(0, 2, 0, 16),
         BorderSizePixel = 0
     })
@@ -126,8 +133,8 @@ function Library.new(title)
         Name = "Tabs",
         Parent = self.Handler,
         BackgroundTransparency = 1,
-        Position = UDim2.new(0.026, 0, 0.111, 0),
-        Size = UDim2.new(0, 129, 0, 380),
+        Position = UDim2.new(0.026, 0, 0.1, 0),
+        Size = UDim2.new(0, 129, 0, 390),
         ScrollBarImageTransparency = 1,
         ScrollBarThickness = 0,
         AutomaticCanvasSize = Enum.AutomaticSize.Y,
@@ -163,11 +170,22 @@ function Library.new(title)
     self.TabIndex = 0
     self.Visible = true
     self._dragging = false
+    self._sliderDragging = false  -- Флаг для блокировки drag при слайдере
     
-    -- Drag функционал
+    -- Drag функционал (только по заголовку)
     local dragStart, startPos
     
-    self.Container.InputBegan:Connect(function(input)
+    -- Создаем зону для перетаскивания (только верхняя часть)
+    local dragZone = Create("Frame", {
+        Name = "DragZone",
+        Parent = self.Handler,
+        BackgroundTransparency = 1,
+        Position = UDim2.new(0, 0, 0, 0),
+        Size = UDim2.new(1, 0, 0, 35)
+    })
+    
+    dragZone.InputBegan:Connect(function(input)
+        if self._sliderDragging then return end
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
             self._dragging = true
             dragStart = input.Position
@@ -437,7 +455,19 @@ function Library:CreateModule(tab, settings)
         TextXAlignment = Enum.TextXAlignment.Left
     })
     
-    -- Options контейнер (сразу после заголовка, без пробела)
+    -- Разделитель между заголовком и элементами
+    Create("Frame", {
+        Name = "ModuleDivider",
+        Parent = module.Header,
+        BackgroundColor3 = Colors.Border,
+        BackgroundTransparency = 0.5,
+        Position = UDim2.new(0.5, 0, 1, -2),
+        Size = UDim2.new(0, 200, 0, 1),
+        AnchorPoint = Vector2.new(0.5, 0),
+        BorderSizePixel = 0
+    })
+    
+    -- Options контейнер
     module.Options = Create("Frame", {
         Name = "Options",
         Parent = module.Frame,
@@ -447,7 +477,7 @@ function Library:CreateModule(tab, settings)
         BorderSizePixel = 0
     })
     
-    Create("UIPadding", { PaddingTop = UDim.new(0, 5), PaddingBottom = UDim.new(0, 8), Parent = module.Options })
+    Create("UIPadding", { PaddingTop = UDim.new(0, 3), PaddingBottom = UDim.new(0, 8), Parent = module.Options })
     Create("UIListLayout", {
         Parent = module.Options,
         Padding = UDim.new(0, 5),
@@ -462,83 +492,132 @@ function Library:CreateModule(tab, settings)
     end
 
     
-    -- Создание Checkbox внутри модуля
-    function module:CreateCheckbox(checkSettings)
-        local checkbox = { _state = false }
+    -- Создание Toggle внутри модуля (как в March UI)
+    function module:CreateToggle(toggleSettings)
+        local toggle = { Value = false, Keybind = toggleSettings.keybind, _waiting = false }
         
         if self._size == 0 then self._size = 5 end
-        self._size += 20
+        self._size += 18
         
         module.Frame.Size = UDim2.fromOffset(220, 45 + self._size)
         module.Options.Size = UDim2.fromOffset(220, self._size)
         
-        local checkFrame = Create("TextButton", {
-            Name = "Checkbox",
+        local toggleFrame = Create("Frame", {
+            Name = "Toggle",
             Parent = module.Options,
             BackgroundTransparency = 1,
-            Size = UDim2.new(0, 195, 0, 15),
-            Text = "",
-            AutoButtonColor = false
+            Size = UDim2.new(0, 195, 0, 14)
         })
         
-        local titleLabel = Create("TextLabel", {
+        Create("TextLabel", {
             Name = "Title",
-            Parent = checkFrame,
+            Parent = toggleFrame,
             BackgroundTransparency = 1,
             Position = UDim2.new(0, 0, 0.5, 0),
-            Size = UDim2.new(0, 140, 0, 13),
+            Size = UDim2.new(0, 110, 0, 12),
             AnchorPoint = Vector2.new(0, 0.5),
-            FontFace = Library.FontBold,
-            Text = checkSettings.title or "Checkbox",
+            FontFace = Library.Font,
+            Text = toggleSettings.title or "Toggle",
             TextColor3 = Colors.Text,
             TextTransparency = 0.2,
             TextSize = 10,
             TextXAlignment = Enum.TextXAlignment.Left
         })
         
-        local box = Create("Frame", {
-            Name = "Box",
-            Parent = checkFrame,
+        -- Keybind кнопка
+        local keybindBtn = Create("TextButton", {
+            Name = "KeybindBtn",
+            Parent = toggleFrame,
             BackgroundColor3 = Colors.Accent,
-            BackgroundTransparency = 0.9,
+            BackgroundTransparency = 0.7,
+            Position = UDim2.new(1, -55, 0.5, 0),
+            Size = UDim2.new(0, 28, 0, 12),
+            AnchorPoint = Vector2.new(0, 0.5),
+            FontFace = Library.Font,
+            Text = toggleSettings.keybind and toggleSettings.keybind.Name or "...",
+            TextColor3 = Colors.Text,
+            TextSize = 8,
+            AutoButtonColor = false
+        })
+        Create("UICorner", { CornerRadius = UDim.new(0, 3), Parent = keybindBtn })
+        
+        -- Toggle switch
+        local switch = Create("Frame", {
+            Name = "Switch",
+            Parent = toggleFrame,
+            BackgroundColor3 = Color3.fromRGB(0, 0, 0),
+            BackgroundTransparency = 0.5,
             Position = UDim2.new(1, 0, 0.5, 0),
-            Size = UDim2.new(0, 14, 0, 14),
+            Size = UDim2.new(0, 22, 0, 12),
             AnchorPoint = Vector2.new(1, 0.5),
             BorderSizePixel = 0
         })
-        Create("UICorner", { CornerRadius = UDim.new(0, 4), Parent = box })
+        Create("UICorner", { CornerRadius = UDim.new(1, 0), Parent = switch })
         
-        local fill = Create("Frame", {
-            Name = "Fill",
-            Parent = box,
-            BackgroundColor3 = Colors.Accent,
+        local circle = Create("Frame", {
+            Name = "Circle",
+            Parent = switch,
+            BackgroundColor3 = Colors.AccentDark,
             BackgroundTransparency = 0.2,
-            Position = UDim2.new(0.5, 0, 0.5, 0),
-            Size = UDim2.new(0, 0, 0, 0),
-            AnchorPoint = Vector2.new(0.5, 0.5),
+            Position = UDim2.new(0, 1, 0.5, 0),
+            Size = UDim2.new(0, 10, 0, 10),
+            AnchorPoint = Vector2.new(0, 0.5),
             BorderSizePixel = 0
         })
-        Create("UICorner", { CornerRadius = UDim.new(0, 3), Parent = fill })
+        Create("UICorner", { CornerRadius = UDim.new(1, 0), Parent = circle })
         
-        function checkbox:ChangeState(state)
-            self._state = state
-            if self._state then
-                Tween(box, {BackgroundTransparency = 0.7}, 0.5)
-                Tween(fill, {Size = UDim2.fromOffset(8, 8)}, 0.5)
+        local function toggleFunc()
+            toggle.Value = not toggle.Value
+            if toggle.Value then
+                Tween(switch, {BackgroundColor3 = Colors.Accent, BackgroundTransparency = 0.3})
+                Tween(circle, {BackgroundColor3 = Colors.Accent, Position = UDim2.new(1, -11, 0.5, 0)})
             else
-                Tween(box, {BackgroundTransparency = 0.9}, 0.5)
-                Tween(fill, {Size = UDim2.fromOffset(0, 0)}, 0.5)
+                Tween(switch, {BackgroundColor3 = Color3.fromRGB(0, 0, 0), BackgroundTransparency = 0.5})
+                Tween(circle, {BackgroundColor3 = Colors.AccentDark, Position = UDim2.new(0, 1, 0.5, 0)})
             end
-            if checkSettings.callback then
-                checkSettings.callback(self._state)
-            end
+            if toggleSettings.callback then toggleSettings.callback(toggle.Value) end
         end
         
-        checkFrame.MouseButton1Click:Connect(function()
-            checkbox:ChangeState(not checkbox._state)
+        -- Клик по switch
+        local switchBtn = Create("TextButton", {
+            Parent = switch,
+            BackgroundTransparency = 1,
+            Size = UDim2.new(1, 0, 1, 0),
+            Text = ""
+        })
+        switchBtn.MouseButton1Click:Connect(toggleFunc)
+        
+        -- Keybind установка
+        keybindBtn.MouseButton1Click:Connect(function()
+            if toggle._waiting then return end
+            toggle._waiting = true
+            keybindBtn.Text = "..."
+            
+            local conn
+            conn = UserInputService.InputBegan:Connect(function(input, processed)
+                if input.UserInputType == Enum.UserInputType.Keyboard then
+                    if input.KeyCode == Enum.KeyCode.Escape then
+                        toggle.Keybind = nil
+                        keybindBtn.Text = "..."
+                    else
+                        toggle.Keybind = input.KeyCode
+                        keybindBtn.Text = input.KeyCode.Name
+                    end
+                    toggle._waiting = false
+                    conn:Disconnect()
+                end
+            end)
         end)
         
-        return checkbox
+        -- Keybind активация
+        UserInputService.InputBegan:Connect(function(input, processed)
+            if processed or toggle._waiting then return end
+            if toggle.Keybind and input.KeyCode == toggle.Keybind then
+                toggleFunc()
+            end
+        end)
+        
+        return toggle
     end
     
     -- Создание Slider внутри модуля
@@ -1588,19 +1667,26 @@ function Library:CreateTextBox(section, name, placeholder, callback)
     return textbox
 end
 
--- Уведомления
+-- Счётчик уведомлений для стека
+Library._notifCount = 0
+
+-- Уведомления (стекаются вверх)
 function Library:Notify(title, text, duration)
+    Library._notifCount = Library._notifCount + 1
+    local notifIndex = Library._notifCount
+    local yOffset = -10 - (75 * notifIndex)
+    
     local notif = Create("Frame", {
         Name = "Notification",
         Parent = self.ScreenGui,
         BackgroundColor3 = Colors.Secondary,
-        BackgroundTransparency = 0.1,
-        Position = UDim2.new(1, 10, 1, -75),
+        BackgroundTransparency = 0.15,
+        Position = UDim2.new(1, 10, 1, yOffset),
         Size = UDim2.new(0, 240, 0, 65),
         BorderSizePixel = 0
     })
     Create("UICorner", { CornerRadius = UDim.new(0, 6), Parent = notif })
-    Create("UIStroke", { Color = Colors.Border, Transparency = 0.5, Parent = notif })
+    Create("UIStroke", { Color = Colors.Border, Transparency = 0.3, Parent = notif })
     
     Create("TextLabel", {
         Parent = notif,
@@ -1627,12 +1713,13 @@ function Library:Notify(title, text, duration)
         TextWrapped = true
     })
     
-    Tween(notif, {Position = UDim2.new(1, -250, 1, -75)})
+    Tween(notif, {Position = UDim2.new(1, -250, 1, yOffset)})
     
     task.delay(duration or 3, function()
-        Tween(notif, {Position = UDim2.new(1, 10, 1, -75)})
+        Tween(notif, {Position = UDim2.new(1, 10, 1, yOffset)})
         task.wait(0.3)
         notif:Destroy()
+        Library._notifCount = Library._notifCount - 1
     end)
 end
 
