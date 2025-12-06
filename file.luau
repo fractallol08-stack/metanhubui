@@ -13,29 +13,9 @@ local Library = {}
 Library.__index = Library
 Library.ToggleKey = Enum.KeyCode.RightControl -- Клавиша для скрытия/показа UI
 
--- Доступные шрифты
-Library.Fonts = {
-    Default = Enum.Font.Gotham,
-    Bold = Enum.Font.GothamBold,
-    Light = Enum.Font.GothamLight,           -- Легкий
-    Medium = Enum.Font.GothamMedium,         -- Средний
-    Black = Enum.Font.GothamBlack,           -- Жирный
-    Roboto = Enum.Font.Roboto,               -- Roboto
-    RobotoBold = Enum.Font.RobotoMono,       -- Roboto Mono
-    SourceSans = Enum.Font.SourceSans,       -- Source Sans
-    SourceSansBold = Enum.Font.SourceSansBold,
-    Ubuntu = Enum.Font.Ubuntu,               -- Ubuntu
-    Nunito = Enum.Font.Nunito,               -- Nunito
-    FredokaOne = Enum.Font.FredokaOne,       -- FredokaOne (мультяшный)
-    Bangers = Enum.Font.Bangers,             -- Bangers (комикс)
-    Oswald = Enum.Font.Oswald,               -- Oswald
-    Michroma = Enum.Font.Michroma,           -- Michroma (футуристичный)
-    BuilderSans = Enum.Font.BuilderSans,     -- Builder Sans
-}
-
--- Текущий шрифт (можно менять)
-Library.CurrentFont = Enum.Font.GothamMedium
-Library.CurrentFontBold = Enum.Font.GothamBold
+-- Шрифты (GothamSSm как в March UI)
+Library.CurrentFont = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+Library.CurrentFontBold = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
 
 -- Морские цвета (бело-голубые светящиеся)
 local Colors = {
@@ -60,21 +40,7 @@ local Transparency = {
     Elements = 0.1          -- Элементы (кнопки, toggle) - менее прозрачные
 }
 
--- Функция установки шрифта
-function Library:SetFont(fontName)
-    if Library.Fonts[fontName] then
-        Library.CurrentFont = Library.Fonts[fontName]
-        if fontName == "Roboto" then
-            Library.CurrentFontBold = Enum.Font.RobotoMono
-        elseif fontName == "SourceSans" then
-            Library.CurrentFontBold = Enum.Font.SourceSansBold
-        elseif fontName == "Default" or fontName == "Light" or fontName == "Medium" then
-            Library.CurrentFontBold = Enum.Font.GothamBold
-        else
-            Library.CurrentFontBold = Library.Fonts[fontName]
-        end
-    end
-end
+
 
 -- Утилиты
 local function CreateInstance(className, properties)
@@ -157,7 +123,7 @@ function Library.new(title)
         BackgroundTransparency = 1,
         Position = UDim2.new(0, 15, 0, 0),
         Size = UDim2.new(1, -100, 1, 0),
-        Font = Library.CurrentFontBold,
+        FontFace = Library.CurrentFontBold,
         Text = title or "Simple UI",
         TextColor3 = Colors.Accent,
         TextSize = 16,
@@ -171,7 +137,7 @@ function Library.new(title)
         BackgroundTransparency = 1,
         Position = UDim2.new(1, -35, 0, 0),
         Size = UDim2.new(0, 35, 1, 0),
-        Font = Library.CurrentFontBold,
+        FontFace = Library.CurrentFontBold,
         Text = "X",
         TextColor3 = Colors.Error,
         TextSize = 16
@@ -276,7 +242,7 @@ function Library:CreateTab(name)
         BackgroundTransparency = Transparency.Section,
         BorderSizePixel = 0,
         Size = UDim2.new(1, 0, 0, 30),
-        Font = Library.CurrentFont,
+        FontFace = Library.CurrentFont,
         Text = name,
         TextColor3 = Colors.TextDark,
         TextSize = 12
@@ -407,7 +373,7 @@ function Library:CreateSection(tab, name, column)
         BackgroundTransparency = 1,
         Position = UDim2.new(0, 10, 0, 5),
         Size = UDim2.new(1, -20, 0, 20),
-        Font = Library.CurrentFontBold,
+        FontFace = Library.CurrentFontBold,
         Text = name,
         TextColor3 = Colors.Accent,
         TextSize = 12,
@@ -464,7 +430,7 @@ function Library:CreateToggle(section, name, default, callback, keybind)
         Parent = toggle.Frame,
         BackgroundTransparency = 1,
         Size = UDim2.new(1, -90, 1, 0),
-        Font = Library.CurrentFont,
+        FontFace = Library.CurrentFont,
         Text = labelText,
         TextColor3 = Colors.Text,
         TextSize = 12,
@@ -481,7 +447,7 @@ function Library:CreateToggle(section, name, default, callback, keybind)
         BackgroundColor3 = Colors.Background,
         BackgroundTransparency = 0.3,
         BorderSizePixel = 0,
-        Font = Library.CurrentFont,
+        FontFace = Library.CurrentFont,
         Text = keybind and keybind.Name or "...",
         TextColor3 = Colors.Accent,
         TextSize = 9
@@ -622,7 +588,7 @@ function Library:CreateButton(section, name, callback, keybind)
         BorderSizePixel = 0,
         Position = UDim2.new(0, 0, 0, 0),
         Size = UDim2.new(1, -45, 1, 0),
-        Font = Library.CurrentFontBold,
+        FontFace = Library.CurrentFontBold,
         Text = name,
         TextColor3 = Colors.Text,
         TextSize = 12
@@ -643,7 +609,7 @@ function Library:CreateButton(section, name, callback, keybind)
         BackgroundColor3 = Colors.Background,
         BackgroundTransparency = 0.3,
         BorderSizePixel = 0,
-        Font = Library.CurrentFont,
+        FontFace = Library.CurrentFont,
         Text = keybind and keybind.Name or "...",
         TextColor3 = Colors.Accent,
         TextSize = 10
@@ -738,7 +704,7 @@ function Library:CreateSlider(section, name, min, max, default, callback)
         Parent = slider.Frame,
         BackgroundTransparency = 1,
         Size = UDim2.new(1, -50, 0, 15),
-        Font = Library.CurrentFont,
+        FontFace = Library.CurrentFont,
         Text = name,
         TextColor3 = Colors.Text,
         TextSize = 12,
@@ -751,7 +717,7 @@ function Library:CreateSlider(section, name, min, max, default, callback)
         BackgroundTransparency = 1,
         Position = UDim2.new(1, -50, 0, 0),
         Size = UDim2.new(0, 50, 0, 15),
-        Font = Library.CurrentFontBold,
+        FontFace = Library.CurrentFontBold,
         Text = tostring(slider.Value),
         TextColor3 = Colors.Accent,
         TextSize = 12,
@@ -840,7 +806,7 @@ function Library:CreateDropdown(section, name, options, default, callback)
         Parent = dropdown.Frame,
         BackgroundTransparency = 1,
         Size = UDim2.new(0.5, 0, 0, 25),
-        Font = Library.CurrentFont,
+        FontFace = Library.CurrentFont,
         Text = name,
         TextColor3 = Colors.Text,
         TextSize = 12,
@@ -855,7 +821,7 @@ function Library:CreateDropdown(section, name, options, default, callback)
         BorderSizePixel = 0,
         Position = UDim2.new(0.5, 0, 0, 0),
         Size = UDim2.new(0.5, 0, 0, 25),
-        Font = Library.CurrentFont,
+        FontFace = Library.CurrentFont,
         Text = dropdown.Value,
         TextColor3 = Colors.Text,
         TextSize = 11
@@ -897,7 +863,7 @@ function Library:CreateDropdown(section, name, options, default, callback)
             BackgroundTransparency = 0.5,
             BorderSizePixel = 0,
             Size = UDim2.new(1, 0, 0, 22),
-            Font = Library.CurrentFont,
+            FontFace = Library.CurrentFont,
             Text = option,
             TextColor3 = Colors.Text,
             TextSize = 11,
@@ -960,7 +926,7 @@ function Library:CreateMultiDropdown(section, name, options, default, callback)
         Parent = dropdown.Frame,
         BackgroundTransparency = 1,
         Size = UDim2.new(0.4, 0, 0, 25),
-        Font = Library.CurrentFont,
+        FontFace = Library.CurrentFont,
         Text = name,
         TextColor3 = Colors.Text,
         TextSize = 12,
@@ -975,7 +941,7 @@ function Library:CreateMultiDropdown(section, name, options, default, callback)
         BorderSizePixel = 0,
         Position = UDim2.new(0.4, 0, 0, 0),
         Size = UDim2.new(0.6, 0, 0, 25),
-        Font = Library.CurrentFont,
+        FontFace = Library.CurrentFont,
         Text = #dropdown.Selected > 0 and table.concat(dropdown.Selected, ", ") or "Select...",
         TextColor3 = Colors.Text,
         TextSize = 10,
@@ -1118,7 +1084,7 @@ function Library:CreateTextBox(section, name, placeholder, callback)
         Parent = textbox.Frame,
         BackgroundTransparency = 1,
         Size = UDim2.new(0.4, 0, 1, 0),
-        Font = Library.CurrentFont,
+        FontFace = Library.CurrentFont,
         Text = name,
         TextColor3 = Colors.Text,
         TextSize = 12,
@@ -1133,7 +1099,7 @@ function Library:CreateTextBox(section, name, placeholder, callback)
         BorderSizePixel = 0,
         Position = UDim2.new(0.4, 5, 0, 0),
         Size = UDim2.new(0.6, -5, 1, 0),
-        Font = Library.CurrentFont,
+        FontFace = Library.CurrentFont,
         PlaceholderText = placeholder or "Enter text...",
         Text = "",
         TextColor3 = Colors.Text,
@@ -1185,7 +1151,7 @@ function Library:Notify(title, text, duration)
         BackgroundTransparency = 1,
         Position = UDim2.new(0, 10, 0, 5),
         Size = UDim2.new(1, -20, 0, 20),
-        Font = Library.CurrentFontBold,
+        FontFace = Library.CurrentFontBold,
         Text = title,
         TextColor3 = Colors.Accent,
         TextSize = 14,
@@ -1197,7 +1163,7 @@ function Library:Notify(title, text, duration)
         BackgroundTransparency = 1,
         Position = UDim2.new(0, 10, 0, 25),
         Size = UDim2.new(1, -20, 0, 40),
-        Font = Library.CurrentFont,
+        FontFace = Library.CurrentFont,
         Text = text,
         TextColor3 = Colors.Text,
         TextSize = 12,
