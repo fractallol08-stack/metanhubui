@@ -13,6 +13,30 @@ local Library = {}
 Library.__index = Library
 Library.ToggleKey = Enum.KeyCode.RightControl -- Клавиша для скрытия/показа UI
 
+-- Доступные шрифты
+Library.Fonts = {
+    Default = Enum.Font.Gotham,
+    Bold = Enum.Font.GothamBold,
+    Light = Enum.Font.GothamLight,           -- Легкий
+    Medium = Enum.Font.GothamMedium,         -- Средний
+    Black = Enum.Font.GothamBlack,           -- Жирный
+    Roboto = Enum.Font.Roboto,               -- Roboto
+    RobotoBold = Enum.Font.RobotoMono,       -- Roboto Mono
+    SourceSans = Enum.Font.SourceSans,       -- Source Sans
+    SourceSansBold = Enum.Font.SourceSansBold,
+    Ubuntu = Enum.Font.Ubuntu,               -- Ubuntu
+    Nunito = Enum.Font.Nunito,               -- Nunito
+    FredokaOne = Enum.Font.FredokaOne,       -- FredokaOne (мультяшный)
+    Bangers = Enum.Font.Bangers,             -- Bangers (комикс)
+    Oswald = Enum.Font.Oswald,               -- Oswald
+    Michroma = Enum.Font.Michroma,           -- Michroma (футуристичный)
+    BuilderSans = Enum.Font.BuilderSans,     -- Builder Sans
+}
+
+-- Текущий шрифт (можно менять)
+Library.CurrentFont = Enum.Font.GothamMedium
+Library.CurrentFontBold = Enum.Font.GothamBold
+
 -- Морские цвета (бело-голубые светящиеся)
 local Colors = {
     Background = Color3.fromRGB(15, 25, 45),      -- Темно-синий
@@ -26,12 +50,31 @@ local Colors = {
     Glow = Color3.fromRGB(80, 180, 255)           -- Свечение
 }
 
--- Прозрачность
+-- Прозрачность (увеличена для фонов)
 local Transparency = {
-    Background = 0.15,
-    Secondary = 0.2,
-    Elements = 0.1
+    Background = 0.35,      -- Главный фон (более прозрачный)
+    Secondary = 0.45,       -- Вторичный фон (более прозрачный)
+    TitleBar = 0.3,         -- Заголовок
+    TabContainer = 0.4,     -- Контейнер табов
+    Section = 0.5,          -- Секции
+    Elements = 0.1          -- Элементы (кнопки, toggle) - менее прозрачные
 }
+
+-- Функция установки шрифта
+function Library:SetFont(fontName)
+    if Library.Fonts[fontName] then
+        Library.CurrentFont = Library.Fonts[fontName]
+        if fontName == "Roboto" then
+            Library.CurrentFontBold = Enum.Font.RobotoMono
+        elseif fontName == "SourceSans" then
+            Library.CurrentFontBold = Enum.Font.SourceSansBold
+        elseif fontName == "Default" or fontName == "Light" or fontName == "Medium" then
+            Library.CurrentFontBold = Enum.Font.GothamBold
+        else
+            Library.CurrentFontBold = Library.Fonts[fontName]
+        end
+    end
+end
 
 -- Утилиты
 local function CreateInstance(className, properties)
@@ -97,6 +140,7 @@ function Library.new(title)
         Name = "TitleBar",
         Parent = self.MainFrame,
         BackgroundColor3 = Colors.Secondary,
+        BackgroundTransparency = Transparency.TitleBar,
         BorderSizePixel = 0,
         Size = UDim2.new(1, 0, 0, 35)
     })
@@ -113,7 +157,7 @@ function Library.new(title)
         BackgroundTransparency = 1,
         Position = UDim2.new(0, 15, 0, 0),
         Size = UDim2.new(1, -100, 1, 0),
-        Font = Enum.Font.GothamBold,
+        Font = Library.CurrentFontBold,
         Text = title or "Simple UI",
         TextColor3 = Colors.Accent,
         TextSize = 16,
@@ -127,7 +171,7 @@ function Library.new(title)
         BackgroundTransparency = 1,
         Position = UDim2.new(1, -35, 0, 0),
         Size = UDim2.new(0, 35, 1, 0),
-        Font = Enum.Font.GothamBold,
+        Font = Library.CurrentFontBold,
         Text = "X",
         TextColor3 = Colors.Error,
         TextSize = 16
@@ -142,6 +186,7 @@ function Library.new(title)
         Name = "TabContainer",
         Parent = self.MainFrame,
         BackgroundColor3 = Colors.Secondary,
+        BackgroundTransparency = Transparency.TabContainer,
         BorderSizePixel = 0,
         Position = UDim2.new(0, 0, 0, 35),
         Size = UDim2.new(0, 120, 1, -35)
@@ -228,9 +273,10 @@ function Library:CreateTab(name)
         Name = name,
         Parent = self.TabContainer,
         BackgroundColor3 = Colors.Background,
+        BackgroundTransparency = Transparency.Section,
         BorderSizePixel = 0,
         Size = UDim2.new(1, 0, 0, 30),
-        Font = Enum.Font.Gotham,
+        Font = Library.CurrentFont,
         Text = name,
         TextColor3 = Colors.TextDark,
         TextSize = 12
@@ -343,6 +389,7 @@ function Library:CreateSection(tab, name, column)
         Name = name,
         Parent = parent,
         BackgroundColor3 = Colors.Secondary,
+        BackgroundTransparency = Transparency.Section,
         BorderSizePixel = 0,
         Size = UDim2.new(1, 0, 0, 0),
         AutomaticSize = Enum.AutomaticSize.Y
@@ -360,7 +407,7 @@ function Library:CreateSection(tab, name, column)
         BackgroundTransparency = 1,
         Position = UDim2.new(0, 10, 0, 5),
         Size = UDim2.new(1, -20, 0, 20),
-        Font = Enum.Font.GothamBold,
+        Font = Library.CurrentFontBold,
         Text = name,
         TextColor3 = Colors.Accent,
         TextSize = 12,
@@ -400,6 +447,8 @@ function Library:CreateToggle(section, name, default, callback, keybind)
     local toggle = {}
     toggle.Value = default or false
     toggle.Keybind = keybind
+    toggle.WaitingForKeybind = false
+    toggle.KeybindConnection = nil
     
     toggle.Frame = CreateInstance("Frame", {
         Name = name,
@@ -414,12 +463,33 @@ function Library:CreateToggle(section, name, default, callback, keybind)
         Name = "Label",
         Parent = toggle.Frame,
         BackgroundTransparency = 1,
-        Size = UDim2.new(1, -50, 1, 0),
-        Font = Enum.Font.Gotham,
+        Size = UDim2.new(1, -90, 1, 0),
+        Font = Library.CurrentFont,
         Text = labelText,
         TextColor3 = Colors.Text,
         TextSize = 12,
         TextXAlignment = Enum.TextXAlignment.Left
+    })
+    
+    -- Кнопка для установки keybind
+    toggle.KeybindBtn = CreateInstance("TextButton", {
+        Name = "KeybindBtn",
+        Parent = toggle.Frame,
+        AnchorPoint = Vector2.new(1, 0.5),
+        Position = UDim2.new(1, -45, 0.5, 0),
+        Size = UDim2.new(0, 35, 0, 18),
+        BackgroundColor3 = Colors.Background,
+        BackgroundTransparency = 0.3,
+        BorderSizePixel = 0,
+        Font = Library.CurrentFont,
+        Text = keybind and keybind.Name or "...",
+        TextColor3 = Colors.Accent,
+        TextSize = 9
+    })
+    
+    CreateInstance("UICorner", {
+        CornerRadius = UDim.new(0, 4),
+        Parent = toggle.KeybindBtn
     })
     
     toggle.Button = CreateInstance("TextButton", {
@@ -472,41 +542,88 @@ function Library:CreateToggle(section, name, default, callback, keybind)
     
     toggle.Button.MouseButton1Click:Connect(toggleFunc)
     
-    -- Keybind support
-    if keybind then
-        UserInputService.InputBegan:Connect(function(input, gameProcessed)
-            if gameProcessed then return end
-            if input.KeyCode == keybind then
-                toggleFunc()
+    -- Клик по кнопке keybind - ждем нажатия клавиши
+    toggle.KeybindBtn.MouseButton1Click:Connect(function()
+        if toggle.WaitingForKeybind then return end
+        toggle.WaitingForKeybind = true
+        toggle.KeybindBtn.Text = "..."
+        Tween(toggle.KeybindBtn, {BackgroundColor3 = Colors.Accent})
+        
+        local connection
+        connection = UserInputService.InputBegan:Connect(function(input, gameProcessed)
+            if input.UserInputType == Enum.UserInputType.Keyboard then
+                -- Отмена по Escape
+                if input.KeyCode == Enum.KeyCode.Escape then
+                    toggle.Keybind = nil
+                    toggle.KeybindBtn.Text = "..."
+                    toggle.Label.Text = name
+                else
+                    toggle.Keybind = input.KeyCode
+                    toggle.KeybindBtn.Text = input.KeyCode.Name
+                    toggle.Label.Text = name .. " [" .. input.KeyCode.Name .. "]"
+                end
+                
+                toggle.WaitingForKeybind = false
+                Tween(toggle.KeybindBtn, {BackgroundColor3 = Colors.Background})
+                connection:Disconnect()
             end
         end)
-    end
+    end)
     
-    -- Функция для установки keybind
+    -- Keybind support (активация по клавише)
+    UserInputService.InputBegan:Connect(function(input, gameProcessed)
+        if gameProcessed then return end
+        if toggle.WaitingForKeybind then return end
+        if toggle.Keybind and input.KeyCode == toggle.Keybind then
+            toggleFunc()
+        end
+    end)
+    
+    -- Функция для установки keybind программно
     function toggle:SetKeybind(key)
         toggle.Keybind = key
-        toggle.Label.Text = name .. " [" .. key.Name .. "]"
+        if key then
+            toggle.KeybindBtn.Text = key.Name
+            toggle.Label.Text = name .. " [" .. key.Name .. "]"
+        else
+            toggle.KeybindBtn.Text = "..."
+            toggle.Label.Text = name
+        end
+    end
+    
+    -- Функция для удаления keybind
+    function toggle:ClearKeybind()
+        toggle.Keybind = nil
+        toggle.KeybindBtn.Text = "..."
+        toggle.Label.Text = name
     end
     
     return toggle
 end
 
 
--- Создание Button (кнопка) с keybind
+-- Создание Button (кнопка) с keybind (можно ставить самому)
 function Library:CreateButton(section, name, callback, keybind)
     local button = {}
     button.Keybind = keybind
+    button.WaitingForKeybind = false
     
-    local labelText = keybind and (name .. " [" .. keybind.Name .. "]") or name
-    
-    button.Button = CreateInstance("TextButton", {
+    button.Frame = CreateInstance("Frame", {
         Name = name,
         Parent = section.Container,
+        BackgroundTransparency = 1,
+        Size = UDim2.new(1, 0, 0, 30)
+    })
+    
+    button.Button = CreateInstance("TextButton", {
+        Name = "Button",
+        Parent = button.Frame,
         BackgroundColor3 = Colors.Accent,
         BorderSizePixel = 0,
-        Size = UDim2.new(1, 0, 0, 30),
-        Font = Enum.Font.GothamBold,
-        Text = labelText,
+        Position = UDim2.new(0, 0, 0, 0),
+        Size = UDim2.new(1, -45, 1, 0),
+        Font = Library.CurrentFontBold,
+        Text = name,
         TextColor3 = Colors.Text,
         TextSize = 12
     })
@@ -514,6 +631,27 @@ function Library:CreateButton(section, name, callback, keybind)
     CreateInstance("UICorner", {
         CornerRadius = UDim.new(0, 6),
         Parent = button.Button
+    })
+    
+    -- Кнопка для установки keybind
+    button.KeybindBtn = CreateInstance("TextButton", {
+        Name = "KeybindBtn",
+        Parent = button.Frame,
+        AnchorPoint = Vector2.new(1, 0.5),
+        Position = UDim2.new(1, 0, 0.5, 0),
+        Size = UDim2.new(0, 40, 0, 24),
+        BackgroundColor3 = Colors.Background,
+        BackgroundTransparency = 0.3,
+        BorderSizePixel = 0,
+        Font = Library.CurrentFont,
+        Text = keybind and keybind.Name or "...",
+        TextColor3 = Colors.Accent,
+        TextSize = 10
+    })
+    
+    CreateInstance("UICorner", {
+        CornerRadius = UDim.new(0, 4),
+        Parent = button.KeybindBtn
     })
     
     local function clickFunc()
@@ -529,20 +667,55 @@ function Library:CreateButton(section, name, callback, keybind)
     
     button.Button.MouseButton1Click:Connect(clickFunc)
     
-    -- Keybind support
-    if keybind then
-        UserInputService.InputBegan:Connect(function(input, gameProcessed)
-            if gameProcessed then return end
-            if input.KeyCode == keybind then
-                clickFunc()
+    -- Клик по кнопке keybind - ждем нажатия клавиши
+    button.KeybindBtn.MouseButton1Click:Connect(function()
+        if button.WaitingForKeybind then return end
+        button.WaitingForKeybind = true
+        button.KeybindBtn.Text = "..."
+        Tween(button.KeybindBtn, {BackgroundColor3 = Colors.Accent})
+        
+        local connection
+        connection = UserInputService.InputBegan:Connect(function(input, gameProcessed)
+            if input.UserInputType == Enum.UserInputType.Keyboard then
+                -- Отмена по Escape
+                if input.KeyCode == Enum.KeyCode.Escape then
+                    button.Keybind = nil
+                    button.KeybindBtn.Text = "..."
+                else
+                    button.Keybind = input.KeyCode
+                    button.KeybindBtn.Text = input.KeyCode.Name
+                end
+                
+                button.WaitingForKeybind = false
+                Tween(button.KeybindBtn, {BackgroundColor3 = Colors.Background})
+                connection:Disconnect()
             end
         end)
-    end
+    end)
     
-    -- Функция для установки keybind
+    -- Keybind support (активация по клавише)
+    UserInputService.InputBegan:Connect(function(input, gameProcessed)
+        if gameProcessed then return end
+        if button.WaitingForKeybind then return end
+        if button.Keybind and input.KeyCode == button.Keybind then
+            clickFunc()
+        end
+    end)
+    
+    -- Функция для установки keybind программно
     function button:SetKeybind(key)
         button.Keybind = key
-        button.Button.Text = name .. " [" .. key.Name .. "]"
+        if key then
+            button.KeybindBtn.Text = key.Name
+        else
+            button.KeybindBtn.Text = "..."
+        end
+    end
+    
+    -- Функция для удаления keybind
+    function button:ClearKeybind()
+        button.Keybind = nil
+        button.KeybindBtn.Text = "..."
     end
     
     return button
@@ -565,7 +738,7 @@ function Library:CreateSlider(section, name, min, max, default, callback)
         Parent = slider.Frame,
         BackgroundTransparency = 1,
         Size = UDim2.new(1, -50, 0, 15),
-        Font = Enum.Font.Gotham,
+        Font = Library.CurrentFont,
         Text = name,
         TextColor3 = Colors.Text,
         TextSize = 12,
@@ -578,7 +751,7 @@ function Library:CreateSlider(section, name, min, max, default, callback)
         BackgroundTransparency = 1,
         Position = UDim2.new(1, -50, 0, 0),
         Size = UDim2.new(0, 50, 0, 15),
-        Font = Enum.Font.Gotham,
+        Font = Library.CurrentFontBold,
         Text = tostring(slider.Value),
         TextColor3 = Colors.Accent,
         TextSize = 12,
@@ -667,7 +840,7 @@ function Library:CreateDropdown(section, name, options, default, callback)
         Parent = dropdown.Frame,
         BackgroundTransparency = 1,
         Size = UDim2.new(0.5, 0, 0, 25),
-        Font = Enum.Font.Gotham,
+        Font = Library.CurrentFont,
         Text = name,
         TextColor3 = Colors.Text,
         TextSize = 12,
@@ -678,10 +851,11 @@ function Library:CreateDropdown(section, name, options, default, callback)
         Name = "Button",
         Parent = dropdown.Frame,
         BackgroundColor3 = Colors.Background,
+        BackgroundTransparency = 0.3,
         BorderSizePixel = 0,
         Position = UDim2.new(0.5, 0, 0, 0),
         Size = UDim2.new(0.5, 0, 0, 25),
-        Font = Enum.Font.Gotham,
+        Font = Library.CurrentFont,
         Text = dropdown.Value,
         TextColor3 = Colors.Text,
         TextSize = 11
@@ -723,7 +897,7 @@ function Library:CreateDropdown(section, name, options, default, callback)
             BackgroundTransparency = 0.5,
             BorderSizePixel = 0,
             Size = UDim2.new(1, 0, 0, 22),
-            Font = Enum.Font.Gotham,
+            Font = Library.CurrentFont,
             Text = option,
             TextColor3 = Colors.Text,
             TextSize = 11,
@@ -786,7 +960,7 @@ function Library:CreateMultiDropdown(section, name, options, default, callback)
         Parent = dropdown.Frame,
         BackgroundTransparency = 1,
         Size = UDim2.new(0.4, 0, 0, 25),
-        Font = Enum.Font.Gotham,
+        Font = Library.CurrentFont,
         Text = name,
         TextColor3 = Colors.Text,
         TextSize = 12,
@@ -797,10 +971,11 @@ function Library:CreateMultiDropdown(section, name, options, default, callback)
         Name = "Button",
         Parent = dropdown.Frame,
         BackgroundColor3 = Colors.Background,
+        BackgroundTransparency = 0.3,
         BorderSizePixel = 0,
         Position = UDim2.new(0.4, 0, 0, 0),
         Size = UDim2.new(0.6, 0, 0, 25),
-        Font = Enum.Font.Gotham,
+        Font = Library.CurrentFont,
         Text = #dropdown.Selected > 0 and table.concat(dropdown.Selected, ", ") or "Select...",
         TextColor3 = Colors.Text,
         TextSize = 10,
@@ -943,7 +1118,7 @@ function Library:CreateTextBox(section, name, placeholder, callback)
         Parent = textbox.Frame,
         BackgroundTransparency = 1,
         Size = UDim2.new(0.4, 0, 1, 0),
-        Font = Enum.Font.Gotham,
+        Font = Library.CurrentFont,
         Text = name,
         TextColor3 = Colors.Text,
         TextSize = 12,
@@ -954,10 +1129,11 @@ function Library:CreateTextBox(section, name, placeholder, callback)
         Name = "Input",
         Parent = textbox.Frame,
         BackgroundColor3 = Colors.Background,
+        BackgroundTransparency = 0.3,
         BorderSizePixel = 0,
         Position = UDim2.new(0.4, 5, 0, 0),
         Size = UDim2.new(0.6, -5, 1, 0),
-        Font = Enum.Font.Gotham,
+        Font = Library.CurrentFont,
         PlaceholderText = placeholder or "Enter text...",
         Text = "",
         TextColor3 = Colors.Text,
@@ -986,6 +1162,7 @@ function Library:Notify(title, text, duration)
         Name = "Notification",
         Parent = self.ScreenGui,
         BackgroundColor3 = Colors.Secondary,
+        BackgroundTransparency = Transparency.Section,
         BorderSizePixel = 0,
         Position = UDim2.new(1, 10, 1, -80),
         Size = UDim2.new(0, 250, 0, 70)
@@ -996,12 +1173,19 @@ function Library:Notify(title, text, duration)
         Parent = notif
     })
     
+    CreateInstance("UIStroke", {
+        Color = Colors.Glow,
+        Thickness = 1,
+        Transparency = 0.5,
+        Parent = notif
+    })
+    
     CreateInstance("TextLabel", {
         Parent = notif,
         BackgroundTransparency = 1,
         Position = UDim2.new(0, 10, 0, 5),
         Size = UDim2.new(1, -20, 0, 20),
-        Font = Enum.Font.GothamBold,
+        Font = Library.CurrentFontBold,
         Text = title,
         TextColor3 = Colors.Accent,
         TextSize = 14,
@@ -1013,7 +1197,7 @@ function Library:Notify(title, text, duration)
         BackgroundTransparency = 1,
         Position = UDim2.new(0, 10, 0, 25),
         Size = UDim2.new(1, -20, 0, 40),
-        Font = Enum.Font.Gotham,
+        Font = Library.CurrentFont,
         Text = text,
         TextColor3 = Colors.Text,
         TextSize = 12,
