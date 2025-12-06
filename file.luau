@@ -1,6 +1,7 @@
 --[[
     Simple UI Library
     Простая UI библиотека для Roblox эксплойтов
+    Морская тема с прозрачностью
 ]]
 
 local TweenService = game:GetService("TweenService")
@@ -10,16 +11,26 @@ local Players = game:GetService("Players")
 
 local Library = {}
 Library.__index = Library
+Library.ToggleKey = Enum.KeyCode.RightControl -- Клавиша для скрытия/показа UI
 
--- Цвета
+-- Морские цвета (бело-голубые светящиеся)
 local Colors = {
-    Background = Color3.fromRGB(25, 25, 35),
-    Secondary = Color3.fromRGB(35, 35, 50),
-    Accent = Color3.fromRGB(100, 150, 255),
-    Text = Color3.fromRGB(255, 255, 255),
-    TextDark = Color3.fromRGB(180, 180, 180),
-    Success = Color3.fromRGB(100, 255, 100),
-    Error = Color3.fromRGB(255, 100, 100)
+    Background = Color3.fromRGB(15, 25, 45),      -- Темно-синий
+    Secondary = Color3.fromRGB(25, 40, 70),       -- Синий
+    Accent = Color3.fromRGB(100, 200, 255),       -- Голубой светящийся
+    AccentGlow = Color3.fromRGB(150, 220, 255),   -- Светло-голубой
+    Text = Color3.fromRGB(255, 255, 255),         -- Белый
+    TextDark = Color3.fromRGB(180, 200, 220),     -- Светло-серый с голубым
+    Success = Color3.fromRGB(100, 255, 200),      -- Бирюзовый
+    Error = Color3.fromRGB(255, 120, 150),        -- Розовый
+    Glow = Color3.fromRGB(80, 180, 255)           -- Свечение
+}
+
+-- Прозрачность
+local Transparency = {
+    Background = 0.15,
+    Secondary = 0.2,
+    Elements = 0.1
 }
 
 -- Утилиты
@@ -58,6 +69,7 @@ function Library.new(title)
         Name = "MainFrame",
         Parent = self.ScreenGui,
         BackgroundColor3 = Colors.Background,
+        BackgroundTransparency = Transparency.Background,
         BorderSizePixel = 0,
         Position = UDim2.new(0.5, -300, 0.5, -200),
         Size = UDim2.new(0, 600, 0, 400),
@@ -66,17 +78,19 @@ function Library.new(title)
 
     -- Скругление
     CreateInstance("UICorner", {
-        CornerRadius = UDim.new(0, 8),
+        CornerRadius = UDim.new(0, 12),
         Parent = self.MainFrame
     })
     
-    -- Тень
+    -- Свечение (UIStroke с голубым цветом)
     CreateInstance("UIStroke", {
-        Color = Color3.fromRGB(0, 0, 0),
-        Thickness = 1,
-        Transparency = 0.5,
+        Color = Colors.Glow,
+        Thickness = 1.5,
+        Transparency = 0.3,
         Parent = self.MainFrame
     })
+    
+    self.Visible = true
     
     -- Заголовок
     self.TitleBar = CreateInstance("Frame", {
@@ -185,7 +199,21 @@ function Library.new(title)
         end
     end)
     
+    -- Toggle UI visibility (ClickGUI)
+    UserInputService.InputBegan:Connect(function(input, gameProcessed)
+        if gameProcessed then return end
+        if input.KeyCode == Library.ToggleKey then
+            self.Visible = not self.Visible
+            self.MainFrame.Visible = self.Visible
+        end
+    end)
+    
     return self
+end
+
+-- Установка клавиши для скрытия UI
+function Library:SetToggleKey(key)
+    Library.ToggleKey = key
 end
 
 
@@ -367,10 +395,11 @@ function Library:CreateSection(tab, name, column)
 end
 
 
--- Создание Toggle (переключатель)
-function Library:CreateToggle(section, name, default, callback)
+-- Создание Toggle (переключатель) с keybind
+function Library:CreateToggle(section, name, default, callback, keybind)
     local toggle = {}
     toggle.Value = default or false
+    toggle.Keybind = keybind
     
     toggle.Frame = CreateInstance("Frame", {
         Name = name,
@@ -379,13 +408,15 @@ function Library:CreateToggle(section, name, default, callback)
         Size = UDim2.new(1, 0, 0, 25)
     })
     
+    local labelText = keybind and (name .. " [" .. keybind.Name .. "]") or name
+    
     toggle.Label = CreateInstance("TextLabel", {
         Name = "Label",
         Parent = toggle.Frame,
         BackgroundTransparency = 1,
         Size = UDim2.new(1, -50, 1, 0),
         Font = Enum.Font.Gotham,
-        Text = name,
+        Text = labelText,
         TextColor3 = Colors.Text,
         TextSize = 12,
         TextXAlignment = Enum.TextXAlignment.Left
@@ -398,12 +429,20 @@ function Library:CreateToggle(section, name, default, callback)
         Position = UDim2.new(1, 0, 0.5, 0),
         Size = UDim2.new(0, 40, 0, 20),
         BackgroundColor3 = toggle.Value and Colors.Accent or Colors.Background,
+        BackgroundTransparency = Transparency.Elements,
         BorderSizePixel = 0,
         Text = ""
     })
     
     CreateInstance("UICorner", {
         CornerRadius = UDim.new(1, 0),
+        Parent = toggle.Button
+    })
+    
+    CreateInstance("UIStroke", {
+        Color = Colors.Glow,
+        Thickness = 1,
+        Transparency = 0.5,
         Parent = toggle.Button
     })
     
@@ -422,24 +461,43 @@ function Library:CreateToggle(section, name, default, callback)
         Parent = toggle.Circle
     })
     
-    toggle.Button.MouseButton1Click:Connect(function()
+    local function toggleFunc()
         toggle.Value = not toggle.Value
-        
         Tween(toggle.Button, {BackgroundColor3 = toggle.Value and Colors.Accent or Colors.Background})
         Tween(toggle.Circle, {Position = toggle.Value and UDim2.new(1, -18, 0.5, 0) or UDim2.new(0, 2, 0.5, 0)})
-        
         if callback then
             callback(toggle.Value)
         end
-    end)
+    end
+    
+    toggle.Button.MouseButton1Click:Connect(toggleFunc)
+    
+    -- Keybind support
+    if keybind then
+        UserInputService.InputBegan:Connect(function(input, gameProcessed)
+            if gameProcessed then return end
+            if input.KeyCode == keybind then
+                toggleFunc()
+            end
+        end)
+    end
+    
+    -- Функция для установки keybind
+    function toggle:SetKeybind(key)
+        toggle.Keybind = key
+        toggle.Label.Text = name .. " [" .. key.Name .. "]"
+    end
     
     return toggle
 end
 
 
--- Создание Button (кнопка)
-function Library:CreateButton(section, name, callback)
+-- Создание Button (кнопка) с keybind
+function Library:CreateButton(section, name, callback, keybind)
     local button = {}
+    button.Keybind = keybind
+    
+    local labelText = keybind and (name .. " [" .. keybind.Name .. "]") or name
     
     button.Button = CreateInstance("TextButton", {
         Name = name,
@@ -448,7 +506,7 @@ function Library:CreateButton(section, name, callback)
         BorderSizePixel = 0,
         Size = UDim2.new(1, 0, 0, 30),
         Font = Enum.Font.GothamBold,
-        Text = name,
+        Text = labelText,
         TextColor3 = Colors.Text,
         TextSize = 12
     })
@@ -458,7 +516,7 @@ function Library:CreateButton(section, name, callback)
         Parent = button.Button
     })
     
-    button.Button.MouseButton1Click:Connect(function()
+    local function clickFunc()
         -- Анимация нажатия
         Tween(button.Button, {BackgroundColor3 = Colors.Success}, 0.1)
         task.wait(0.1)
@@ -467,7 +525,25 @@ function Library:CreateButton(section, name, callback)
         if callback then
             callback()
         end
-    end)
+    end
+    
+    button.Button.MouseButton1Click:Connect(clickFunc)
+    
+    -- Keybind support
+    if keybind then
+        UserInputService.InputBegan:Connect(function(input, gameProcessed)
+            if gameProcessed then return end
+            if input.KeyCode == keybind then
+                clickFunc()
+            end
+        end)
+    end
+    
+    -- Функция для установки keybind
+    function button:SetKeybind(key)
+        button.Keybind = key
+        button.Button.Text = name .. " [" .. key.Name .. "]"
+    end
     
     return button
 end
