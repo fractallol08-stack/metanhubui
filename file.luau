@@ -7,13 +7,36 @@
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local TextService = game:GetService("TextService")
-local CoreGui = game:GetService("CoreGui")
 local Players = game:GetService("Players")
 local Debris = game:GetService("Debris")
+
+-- Безопасное получение CoreGui
+local CoreGui
+local success, err = pcall(function()
+    CoreGui = game:GetService("CoreGui")
+end)
+if not success then
+    CoreGui = Players.LocalPlayer:WaitForChild("PlayerGui")
+end
+
+-- Проверка на syn/gethui
+local function getParent()
+    if gethui then
+        return gethui()
+    elseif syn and syn.protect_gui then
+        local gui = Instance.new("ScreenGui")
+        syn.protect_gui(gui)
+        gui.Parent = CoreGui
+        return gui.Parent
+    else
+        return CoreGui
+    end
+end
 
 local Library = {}
 Library.__index = Library
 Library.ToggleKey = Enum.KeyCode.Insert
+Library._parent = getParent()
 
 -- Шрифты
 Library.Font = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.Regular, Enum.FontStyle.Normal)
@@ -67,16 +90,24 @@ function Library.new(title)
     local self = setmetatable({}, Library)
     
     -- Удаляем старый UI
-    local old = CoreGui:FindFirstChild("OceanUI")
-    if old then Debris:AddItem(old, 0) end
+    local parent = Library._parent or CoreGui
+    local old = parent:FindFirstChild("OceanUI")
+    if old then 
+        old:Destroy()
+    end
     
     -- ScreenGui
     self.ScreenGui = Create("ScreenGui", {
         Name = "OceanUI",
-        Parent = CoreGui,
+        Parent = parent,
         ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
         ResetOnSpawn = false
     })
+    
+    -- Защита GUI если доступно
+    if syn and syn.protect_gui then
+        syn.protect_gui(self.ScreenGui)
+    end
 
     -- Главный контейнер
     self.Container = Create("Frame", {
