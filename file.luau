@@ -189,7 +189,7 @@ function Library.new(title)
 end
 
 
--- Создание таба
+-- Создание таба с двумя колонками
 function Library:CreateTab(name)
     local tab = {}
     tab.Name = name
@@ -213,27 +213,62 @@ function Library:CreateTab(name)
         Parent = tab.Button
     })
     
-    -- Контент таба
-    tab.Content = CreateInstance("ScrollingFrame", {
+    -- Контент таба (контейнер для двух колонок)
+    tab.Content = CreateInstance("Frame", {
         Name = name .. "_Content",
         Parent = self.ContentContainer,
         BackgroundTransparency = 1,
         Size = UDim2.new(1, 0, 1, 0),
+        Visible = false
+    })
+    
+    -- Левая колонка
+    tab.LeftColumn = CreateInstance("ScrollingFrame", {
+        Name = "LeftColumn",
+        Parent = tab.Content,
+        BackgroundTransparency = 1,
+        Position = UDim2.new(0, 0, 0, 0),
+        Size = UDim2.new(0.5, -5, 1, 0),
         ScrollBarThickness = 4,
         ScrollBarImageColor3 = Colors.Accent,
-        Visible = false,
         CanvasSize = UDim2.new(0, 0, 0, 0),
         AutomaticCanvasSize = Enum.AutomaticSize.Y
     })
     
     CreateInstance("UIListLayout", {
-        Parent = tab.Content,
+        Parent = tab.LeftColumn,
         SortOrder = Enum.SortOrder.LayoutOrder,
         Padding = UDim.new(0, 8)
     })
     
     CreateInstance("UIPadding", {
+        Parent = tab.LeftColumn,
+        PaddingTop = UDim.new(0, 5),
+        PaddingLeft = UDim.new(0, 5),
+        PaddingRight = UDim.new(0, 5)
+    })
+    
+    -- Правая колонка
+    tab.RightColumn = CreateInstance("ScrollingFrame", {
+        Name = "RightColumn",
         Parent = tab.Content,
+        BackgroundTransparency = 1,
+        Position = UDim2.new(0.5, 5, 0, 0),
+        Size = UDim2.new(0.5, -5, 1, 0),
+        ScrollBarThickness = 4,
+        ScrollBarImageColor3 = Colors.Accent,
+        CanvasSize = UDim2.new(0, 0, 0, 0),
+        AutomaticCanvasSize = Enum.AutomaticSize.Y
+    })
+    
+    CreateInstance("UIListLayout", {
+        Parent = tab.RightColumn,
+        SortOrder = Enum.SortOrder.LayoutOrder,
+        Padding = UDim.new(0, 8)
+    })
+    
+    CreateInstance("UIPadding", {
+        Parent = tab.RightColumn,
         PaddingTop = UDim.new(0, 5),
         PaddingLeft = UDim.new(0, 5),
         PaddingRight = UDim.new(0, 5)
@@ -269,14 +304,16 @@ function Library:SelectTab(tab)
 end
 
 
--- Создание секции
-function Library:CreateSection(tab, name)
+-- Создание секции (column = "left" или "right")
+function Library:CreateSection(tab, name, column)
     local section = {}
     section.Name = name
     
+    local parent = (column == "right") and tab.RightColumn or tab.LeftColumn
+    
     section.Frame = CreateInstance("Frame", {
         Name = name,
-        Parent = tab.Content,
+        Parent = parent,
         BackgroundColor3 = Colors.Secondary,
         BorderSizePixel = 0,
         Size = UDim2.new(1, 0, 0, 0),
@@ -654,6 +691,164 @@ function Library:CreateDropdown(section, name, options, default, callback)
     return dropdown
 end
 
+-- Создание MultiDropdown (множественный выбор)
+function Library:CreateMultiDropdown(section, name, options, default, callback)
+    local dropdown = {}
+    dropdown.Selected = default or {}
+    dropdown.Open = false
+    
+    dropdown.Frame = CreateInstance("Frame", {
+        Name = name,
+        Parent = section.Container,
+        BackgroundTransparency = 1,
+        Size = UDim2.new(1, 0, 0, 25),
+        ClipsDescendants = false
+    })
+    
+    dropdown.Label = CreateInstance("TextLabel", {
+        Name = "Label",
+        Parent = dropdown.Frame,
+        BackgroundTransparency = 1,
+        Size = UDim2.new(0.4, 0, 0, 25),
+        Font = Enum.Font.Gotham,
+        Text = name,
+        TextColor3 = Colors.Text,
+        TextSize = 12,
+        TextXAlignment = Enum.TextXAlignment.Left
+    })
+    
+    dropdown.Button = CreateInstance("TextButton", {
+        Name = "Button",
+        Parent = dropdown.Frame,
+        BackgroundColor3 = Colors.Background,
+        BorderSizePixel = 0,
+        Position = UDim2.new(0.4, 0, 0, 0),
+        Size = UDim2.new(0.6, 0, 0, 25),
+        Font = Enum.Font.Gotham,
+        Text = #dropdown.Selected > 0 and table.concat(dropdown.Selected, ", ") or "Select...",
+        TextColor3 = Colors.Text,
+        TextSize = 10,
+        TextTruncate = Enum.TextTruncate.AtEnd
+    })
+    
+    CreateInstance("UICorner", {
+        CornerRadius = UDim.new(0, 4),
+        Parent = dropdown.Button
+    })
+    
+    dropdown.OptionsList = CreateInstance("Frame", {
+        Name = "Options",
+        Parent = dropdown.Button,
+        BackgroundColor3 = Colors.Background,
+        BorderSizePixel = 0,
+        Position = UDim2.new(0, 0, 1, 5),
+        Size = UDim2.new(1, 0, 0, 0),
+        Visible = false,
+        ZIndex = 10,
+        ClipsDescendants = true
+    })
+    
+    CreateInstance("UICorner", {
+        CornerRadius = UDim.new(0, 4),
+        Parent = dropdown.OptionsList
+    })
+    
+    CreateInstance("UIListLayout", {
+        Parent = dropdown.OptionsList,
+        SortOrder = Enum.SortOrder.LayoutOrder
+    })
+    
+    -- Создаем опции с чекбоксами
+    for _, option in ipairs(options) do
+        local optFrame = CreateInstance("Frame", {
+            Name = option,
+            Parent = dropdown.OptionsList,
+            BackgroundColor3 = Colors.Secondary,
+            BackgroundTransparency = 0.5,
+            BorderSizePixel = 0,
+            Size = UDim2.new(1, 0, 0, 22),
+            ZIndex = 11
+        })
+        
+        local checkBox = CreateInstance("Frame", {
+            Name = "Check",
+            Parent = optFrame,
+            BackgroundColor3 = table.find(dropdown.Selected, option) and Colors.Accent or Colors.Background,
+            BorderSizePixel = 0,
+            Position = UDim2.new(0, 5, 0.5, -7),
+            Size = UDim2.new(0, 14, 0, 14),
+            ZIndex = 12
+        })
+        
+        CreateInstance("UICorner", {
+            CornerRadius = UDim.new(0, 3),
+            Parent = checkBox
+        })
+        
+        local optLabel = CreateInstance("TextLabel", {
+            Name = "Label",
+            Parent = optFrame,
+            BackgroundTransparency = 1,
+            Position = UDim2.new(0, 25, 0, 0),
+            Size = UDim2.new(1, -30, 1, 0),
+            Font = Enum.Font.Gotham,
+            Text = option,
+            TextColor3 = Colors.Text,
+            TextSize = 11,
+            TextXAlignment = Enum.TextXAlignment.Left,
+            ZIndex = 12
+        })
+        
+        local optBtn = CreateInstance("TextButton", {
+            Name = "Button",
+            Parent = optFrame,
+            BackgroundTransparency = 1,
+            Size = UDim2.new(1, 0, 1, 0),
+            Text = "",
+            ZIndex = 13
+        })
+        
+        optBtn.MouseEnter:Connect(function()
+            Tween(optFrame, {BackgroundTransparency = 0})
+        end)
+        
+        optBtn.MouseLeave:Connect(function()
+            Tween(optFrame, {BackgroundTransparency = 0.5})
+        end)
+        
+        optBtn.MouseButton1Click:Connect(function()
+            local index = table.find(dropdown.Selected, option)
+            if index then
+                table.remove(dropdown.Selected, index)
+                Tween(checkBox, {BackgroundColor3 = Colors.Background})
+            else
+                table.insert(dropdown.Selected, option)
+                Tween(checkBox, {BackgroundColor3 = Colors.Accent})
+            end
+            
+            dropdown.Button.Text = #dropdown.Selected > 0 and table.concat(dropdown.Selected, ", ") or "Select..."
+            
+            if callback then
+                callback(dropdown.Selected)
+            end
+        end)
+    end
+    
+    dropdown.Button.MouseButton1Click:Connect(function()
+        dropdown.Open = not dropdown.Open
+        dropdown.OptionsList.Visible = true
+        
+        if dropdown.Open then
+            Tween(dropdown.OptionsList, {Size = UDim2.new(1, 0, 0, #options * 22)})
+        else
+            Tween(dropdown.OptionsList, {Size = UDim2.new(1, 0, 0, 0)})
+            task.wait(0.2)
+            dropdown.OptionsList.Visible = false
+        end
+    end)
+    
+    return dropdown
+end
 
 -- Создание TextBox (поле ввода)
 function Library:CreateTextBox(section, name, placeholder, callback)
@@ -760,4 +955,3 @@ function Library:Notify(title, text, duration)
 end
 
 return Library
-
