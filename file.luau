@@ -2540,6 +2540,11 @@ function Library:create_ui()
                 FeatureButton.TextXAlignment = Enum.TextXAlignment.Left
                 FeatureButton.TextTransparency = 0.2
                 FeatureButton.Parent = FeatureContainer
+                
+                -- Добавляем закругленные углы для фона
+                local FeatureButtonCorner = Instance.new("UICorner")
+                FeatureButtonCorner.CornerRadius = UDim.new(0, 4)
+                FeatureButtonCorner.Parent = FeatureButton
             
                 local RightContainer = Instance.new("Frame")
                 RightContainer.Size = UDim2.new(0, 45, 0, 16)
@@ -2651,7 +2656,8 @@ function Library:create_ui()
                         end
                     end)
                     Connections["keybind_input_" .. settings.flag] = inputConnection
-                end)
+                end
+            end)
             
                 -- Нажатие кейбинда
                 local keyPressConnection
