@@ -1256,13 +1256,22 @@ function Library:create_ui()
                 end
             end
 
-            if Library:flag_type(settings.flag, 'boolean') then
+            -- Открываем модуль по умолчанию, если указано в настройках или сохранено в конфиге
+            if Library:flag_type(settings.flag, 'boolean') or settings.default_open then
                 ModuleManager._state = true
-                settings.callback(ModuleManager._state)
-
+                
+                -- Раскрываем модуль визуально
+                Module.Size = UDim2.fromOffset(241, 93 + ModuleManager._size + ModuleManager._multiplier)
+                
                 Toggle.BackgroundColor3 = Color3.fromRGB(152, 181, 255)
                 Circle.BackgroundColor3 = Color3.fromRGB(152, 181, 255)
                 Circle.Position = UDim2.fromScale(0.53, 0.5)
+                
+                -- Сохраняем состояние
+                Library._config._flags[settings.flag] = true
+                Config:save(game.GameId, Library._config)
+                
+                settings.callback(ModuleManager._state)
             end
 
             if Library._config._keybinds[settings.flag] then
@@ -1860,6 +1869,7 @@ function Library:create_ui()
                 return SliderManager
             end
 
+            -- SOLO DROPDOWN - Выбор только одного элемента
             function ModuleManager:create_dropdown(settings: any)
 
                 if not settings.Order then
@@ -1904,10 +1914,6 @@ function Library:create_ui()
                     Dropdown.LayoutOrder = LayoutOrderModule;
                 else
                     Dropdown.LayoutOrder = settings.OrderValue;
-                end;
-
-                if not Library._config._flags[settings.flag] then
-                    Library._config._flags[settings.flag] = {};
                 end;
                 
                 local TextLabel = Instance.new('TextLabel')
@@ -2021,109 +2027,24 @@ function Library:create_ui()
                 UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
                 UIListLayout.Parent = Box
 
+                -- SOLO DROPDOWN UPDATE - Только один выбор
                 function DropdownManager:update(option: string)
-                    -- If multi-dropdown is enabled
-                    if settings.multi_dropdown then
-                        -- Split the CurrentOption.Text by commas into a table
-
-                        if not Library._config._flags[settings.flag] then
-                            Library._config._flags[settings.flag] = {};
-                        end;
-
-                        local CurrentTargetValue = nil;
-                        
-                        if #Library._config._flags[settings.flag] > 0 then
-
-                            CurrentTargetValue = convertTableToString(Library._config._flags[settings.flag]);
-
-                        end;
-
-                        local selected = {}
-
-                        if CurrentTargetValue then
-                            for value in string.gmatch(CurrentTargetValue, "([^,]+)") do
-                                -- Trim spaces around the option using string.match
-                                local trimmedValue = value:match("^%s*(.-)%s*$")  -- Trim leading and trailing spaces
-                                
-                                -- Exclude any unwanted labels (e.g. "Label")
-                                if trimmedValue ~= "Label" then
-                                    table.insert(selected, trimmedValue)
-                                end
-                            end
-                        else
-                            for value in string.gmatch(CurrentOption.Text, "([^,]+)") do
-                                -- Trim spaces around the option using string.match
-                                local trimmedValue = value:match("^%s*(.-)%s*$")  -- Trim leading and trailing spaces
-                                
-                                -- Exclude any unwanted labels (e.g. "Label")
-                                if trimmedValue ~= "Label" then
-                                    table.insert(selected, trimmedValue)
-                                end
-                            end
-                        end;
-                
-                        local CurrentTextGet = convertStringToTable(CurrentOption.Text);
-
-                        optionSkibidi = "nil";
-                        if typeof(option) ~= 'string' then
-                            optionSkibidi = option.Name;
-                        else
-                            optionSkibidi = option;
-                        end;
-
-                        local found = false
-                        for i, v in pairs(CurrentTextGet) do
-                            if v == optionSkibidi then
-                                table.remove(CurrentTextGet, i);
-                                break;
+                    -- For single dropdown, just set the CurrentOption.Text to the selected option
+                    CurrentOption.Text = (typeof(option) == "string" and option) or option.Name
+                    
+                    for _, object in Options:GetChildren() do
+                        if object.Name == "Option" then
+                            -- Only update transparency for actual option text buttons
+                            if object.Text == CurrentOption.Text then
+                                object.TextTransparency = 0.2
+                            else
+                                object.TextTransparency = 0.6
                             end
                         end
-
-                        CurrentOption.Text = table.concat(selected, ", ")
-                        local OptionsChild = {}
-                        -- Update the transparent effect of each option
-                        for _, object in Options:GetChildren() do
-                            if object.Name == "Option" then
-                                table.insert(OptionsChild, object.Text)
-                                if table.find(selected, object.Text) then
-                                    object.TextTransparency = 0.2
-                                else
-                                    object.TextTransparency = 0.6
-                                end
-                            end
-                        end
-
-                        CurrentTargetValue = convertStringToTable(CurrentOption.Text);
-
-                        for _, v in CurrentTargetValue do
-                            if not table.find(OptionsChild, v) and table.find(selected, v) then
-                                table.remove(selected, _)
-                            end;
-                        end;
-
-                        CurrentOption.Text = table.concat(selected, ", ");
-                
-                        Library._config._flags[settings.flag] = convertStringToTable(CurrentOption.Text);
-                    else
-                        -- For single dropdown, just set the CurrentOption.Text to the selected option
-                        CurrentOption.Text = (typeof(option) == "string" and option) or option.Name
-                        for _, object in Options:GetChildren() do
-                            if object.Name == "Option" then
-                                -- Only update transparency for actual option text buttons
-                                if object.Text == CurrentOption.Text then
-                                    object.TextTransparency = 0.2
-                                else
-                                    object.TextTransparency = 0.6
-                                end
-                            end
-                        end
-                        Library._config._flags[settings.flag] = option
                     end
-                
-                    -- Save the configuration state
+                    
+                    Library._config._flags[settings.flag] = option
                     Config:save(game.GameId, Library._config)
-                
-                    -- Callback with the updated option(s)
                     settings.callback(option)
                 end
                 
@@ -2217,18 +2138,6 @@ function Library:create_ui()
                         UIGradient.Parent = Option
 
                         Option.MouseButton1Click:Connect(function()
-                            if not Library._config._flags[settings.flag] then
-                                Library._config._flags[settings.flag] = {};
-                            end;
-
-                            if settings.multi_dropdown then
-                                if table.find(Library._config._flags[settings.flag], value) then
-                                    Library:remove_table_value(Library._config._flags[settings.flag], value)
-                                else
-                                    table.insert(Library._config._flags[settings.flag], value)
-                                end
-                            end
-
                             DropdownManager:update(value)
                         end)
     
@@ -2259,6 +2168,335 @@ function Library:create_ui()
                 end)
 
                 return DropdownManager
+            end
+
+            -- MULTI DROPDOWN - Выбор нескольких элементов одновременно
+            function ModuleManager:create_multi_dropdown(settings: any)
+
+                if not settings.Order then
+                    LayoutOrderModule = LayoutOrderModule + 1;
+                end;
+
+                local MultiDropdownManager = {
+                    _state = false,
+                    _size = 0
+                }
+
+                if not settings.Order then
+                    if self._size == 0 then
+                        self._size = 11
+                    end
+
+                    self._size += 44
+                end;
+
+                if not settings.Order then
+                    if ModuleManager._state then
+                        Module.Size = UDim2.fromOffset(241, 93 + self._size)
+                    end
+                    Options.Size = UDim2.fromOffset(241, self._size)
+                end
+
+                local Dropdown = Instance.new('TextButton')
+                Dropdown.FontFace = Font.new('rbxasset://fonts/families/SourceSansPro.json', Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+                Dropdown.TextColor3 = Color3.fromRGB(0, 0, 0)
+                Dropdown.BorderColor3 = Color3.fromRGB(0, 0, 0)
+                Dropdown.Text = ''
+                Dropdown.AutoButtonColor = false
+                Dropdown.BackgroundTransparency = 1
+                Dropdown.Name = 'MultiDropdown'
+                Dropdown.Size = UDim2.new(0, 207, 0, 39)
+                Dropdown.BorderSizePixel = 0
+                Dropdown.TextSize = 14
+                Dropdown.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+                Dropdown.Parent = Options
+
+                if not settings.Order then
+                    Dropdown.LayoutOrder = LayoutOrderModule;
+                else
+                    Dropdown.LayoutOrder = settings.OrderValue;
+                end;
+
+                -- Инициализируем флаг как таблицу для множественного выбора
+                if not Library._config._flags[settings.flag] then
+                    Library._config._flags[settings.flag] = {};
+                end;
+                
+                local TextLabel = Instance.new('TextLabel')
+                if GG.SelectedLanguage == "th" then
+                    TextLabel.FontFace = Font.new("rbxasset://fonts/families/NotoSansThai.json", Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
+                    TextLabel.TextSize = 13;
+                else
+                    TextLabel.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
+                    TextLabel.TextSize = 11;
+                end;
+                TextLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+                TextLabel.TextTransparency = 0.20000000298023224
+                TextLabel.Text = settings.title
+                TextLabel.Size = UDim2.new(0, 207, 0, 13)
+                TextLabel.BackgroundTransparency = 1
+                TextLabel.TextXAlignment = Enum.TextXAlignment.Left
+                TextLabel.BorderSizePixel = 0
+                TextLabel.BorderColor3 = Color3.fromRGB(0, 0, 0)
+                TextLabel.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+                TextLabel.Parent = Dropdown
+                
+                local Box = Instance.new('Frame')
+                Box.ClipsDescendants = true
+                Box.BorderColor3 = Color3.fromRGB(0, 0, 0)
+                Box.AnchorPoint = Vector2.new(0.5, 0)
+                Box.BackgroundTransparency = 0.8999999761581421
+                Box.Position = UDim2.new(0.5, 0, 1.2000000476837158, 0)
+                Box.Name = 'Box'
+                Box.Size = UDim2.new(0, 207, 0, 22)
+                Box.BorderSizePixel = 0
+                Box.BackgroundColor3 = Color3.fromRGB(152, 181, 255)
+                Box.Parent = TextLabel
+                
+                local UICorner = Instance.new('UICorner')
+                UICorner.CornerRadius = UDim.new(0, 4)
+                UICorner.Parent = Box
+                
+                local Header = Instance.new('Frame')
+                Header.BorderColor3 = Color3.fromRGB(0, 0, 0)
+                Header.AnchorPoint = Vector2.new(0.5, 0)
+                Header.BackgroundTransparency = 1
+                Header.Position = UDim2.new(0.5, 0, 0, 0)
+                Header.Name = 'Header'
+                Header.Size = UDim2.new(0, 207, 0, 22)
+                Header.BorderSizePixel = 0
+                Header.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+                Header.Parent = Box
+                
+                local CurrentOption = Instance.new('TextLabel')
+                CurrentOption.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
+                CurrentOption.TextColor3 = Color3.fromRGB(255, 255, 255)
+                CurrentOption.TextTransparency = 0.20000000298023224
+                CurrentOption.Text = "None"
+                CurrentOption.Name = 'CurrentOption'
+                CurrentOption.Size = UDim2.new(0, 161, 0, 13)
+                CurrentOption.AnchorPoint = Vector2.new(0, 0.5)
+                CurrentOption.Position = UDim2.new(0.04999988153576851, 0, 0.5, 0)
+                CurrentOption.BackgroundTransparency = 1
+                CurrentOption.TextXAlignment = Enum.TextXAlignment.Left
+                CurrentOption.BorderSizePixel = 0
+                CurrentOption.BorderColor3 = Color3.fromRGB(0, 0, 0)
+                CurrentOption.TextSize = 10
+                CurrentOption.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+                CurrentOption.Parent = Header
+                
+                local UIGradient = Instance.new('UIGradient')
+                UIGradient.Transparency = NumberSequence.new{
+                    NumberSequenceKeypoint.new(0, 0),
+                    NumberSequenceKeypoint.new(0.704, 0),
+                    NumberSequenceKeypoint.new(0.872, 0.36250001192092896),
+                    NumberSequenceKeypoint.new(1, 1)
+                }
+                UIGradient.Parent = CurrentOption
+                
+                local Arrow = Instance.new('ImageLabel')
+                Arrow.BorderColor3 = Color3.fromRGB(0, 0, 0)
+                Arrow.AnchorPoint = Vector2.new(0, 0.5)
+                Arrow.Image = 'rbxassetid://84232453189324'
+                Arrow.BackgroundTransparency = 1
+                Arrow.Position = UDim2.new(0.9100000262260437, 0, 0.5, 0)
+                Arrow.Name = 'Arrow'
+                Arrow.Size = UDim2.new(0, 8, 0, 8)
+                Arrow.BorderSizePixel = 0
+                Arrow.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+                Arrow.Parent = Header
+                
+                local OptionsFrame = Instance.new('ScrollingFrame')
+                OptionsFrame.ScrollBarImageColor3 = Color3.fromRGB(0, 0, 0)
+                OptionsFrame.Active = true
+                OptionsFrame.ScrollBarImageTransparency = 1
+                OptionsFrame.AutomaticCanvasSize = Enum.AutomaticSize.XY
+                OptionsFrame.ScrollBarThickness = 0
+                OptionsFrame.Name = 'Options'
+                OptionsFrame.Size = UDim2.new(0, 207, 0, 0)
+                OptionsFrame.BackgroundTransparency = 1
+                OptionsFrame.Position = UDim2.new(0, 0, 1, 0)
+                OptionsFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+                OptionsFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
+                OptionsFrame.BorderSizePixel = 0
+                OptionsFrame.CanvasSize = UDim2.new(0, 0, 0.5, 0)
+                OptionsFrame.Parent = Box
+                
+                local UIListLayout = Instance.new('UIListLayout')
+                UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+                UIListLayout.Parent = OptionsFrame
+                
+                local UIPadding = Instance.new('UIPadding')
+                UIPadding.PaddingTop = UDim.new(0, -1)
+                UIPadding.PaddingLeft = UDim.new(0, 10)
+                UIPadding.Parent = OptionsFrame
+                
+                local UIListLayout2 = Instance.new('UIListLayout')
+                UIListLayout2.SortOrder = Enum.SortOrder.LayoutOrder
+                UIListLayout2.Parent = Box
+
+                -- MULTI DROPDOWN UPDATE - Множественный выбор
+                function MultiDropdownManager:update(option: string)
+                    local optionValue = (typeof(option) == "string" and option) or option.Name
+                    
+                    -- Переключаем выбор (добавляем или удаляем)
+                    if table.find(Library._config._flags[settings.flag], optionValue) then
+                        Library:remove_table_value(Library._config._flags[settings.flag], optionValue)
+                    else
+                        table.insert(Library._config._flags[settings.flag], optionValue)
+                    end
+                    
+                    -- Обновляем отображение
+                    local selected = Library._config._flags[settings.flag]
+                    if #selected > 0 then
+                        CurrentOption.Text = table.concat(selected, ", ")
+                    else
+                        CurrentOption.Text = "None"
+                    end
+                    
+                    -- Обновляем прозрачность опций
+                    for _, object in OptionsFrame:GetChildren() do
+                        if object.Name == "Option" then
+                            if table.find(selected, object.Text) then
+                                object.TextTransparency = 0.2
+                            else
+                                object.TextTransparency = 0.6
+                            end
+                        end
+                    end
+                    
+                    Config:save(game.GameId, Library._config)
+                    settings.callback(selected)
+                end
+                
+                local CurrentDropSizeState = 0;
+
+                function MultiDropdownManager:unfold_settings()
+                    self._state = not self._state
+
+                    if self._state then
+                        ModuleManager._multiplier += self._size
+
+                        CurrentDropSizeState = self._size;
+
+                        TweenService:Create(Module, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+                            Size = UDim2.fromOffset(241, 93 + ModuleManager._size + ModuleManager._multiplier)
+                        }):Play()
+
+                        TweenService:Create(Module.Options, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+                            Size = UDim2.fromOffset(241, ModuleManager._size + ModuleManager._multiplier)
+                        }):Play()
+
+                        TweenService:Create(Dropdown, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+                            Size = UDim2.fromOffset(207, 39 + self._size)
+                        }):Play()
+
+                        TweenService:Create(Box, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+                            Size = UDim2.fromOffset(207, 22 + self._size)
+                        }):Play()
+
+                        TweenService:Create(Arrow, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+                            Rotation = 180
+                        }):Play()
+                    else
+                        ModuleManager._multiplier -= self._size
+
+                        CurrentDropSizeState = 0;
+
+                        TweenService:Create(Module, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+                            Size = UDim2.fromOffset(241, 93 + ModuleManager._size + ModuleManager._multiplier)
+                        }):Play()
+
+                        TweenService:Create(Module.Options, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+                            Size = UDim2.fromOffset(241, ModuleManager._size + ModuleManager._multiplier)
+                        }):Play()
+
+                        TweenService:Create(Dropdown, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+                            Size = UDim2.fromOffset(207, 39)
+                        }):Play()
+
+                        TweenService:Create(Box, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+                            Size = UDim2.fromOffset(207, 22)
+                        }):Play()
+
+                        TweenService:Create(Arrow, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+                            Rotation = 0
+                        }):Play()
+                    end
+                end
+
+                if #settings.options > 0 then
+                    MultiDropdownManager._size = 3
+
+                    for index, value in settings.options do
+                        local Option = Instance.new('TextButton')
+                        Option.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
+                        Option.Active = false
+                        Option.TextTransparency = 0.6000000238418579
+                        Option.AnchorPoint = Vector2.new(0, 0.5)
+                        Option.TextSize = 10
+                        Option.Size = UDim2.new(0, 186, 0, 16)
+                        Option.TextColor3 = Color3.fromRGB(255, 255, 255)
+                        Option.BorderColor3 = Color3.fromRGB(0, 0, 0)
+                        Option.Text = (typeof(value) == "string" and value) or value.Name;
+                        Option.AutoButtonColor = false
+                        Option.Name = 'Option'
+                        Option.BackgroundTransparency = 1
+                        Option.TextXAlignment = Enum.TextXAlignment.Left
+                        Option.Selectable = false
+                        Option.Position = UDim2.new(0.04999988153576851, 0, 0.34210526943206787, 0)
+                        Option.BorderSizePixel = 0
+                        Option.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+                        Option.Parent = OptionsFrame
+                        
+                        local UIGradient = Instance.new('UIGradient')
+                        UIGradient.Transparency = NumberSequence.new{
+                            NumberSequenceKeypoint.new(0, 0),
+                            NumberSequenceKeypoint.new(0.704, 0),
+                            NumberSequenceKeypoint.new(0.872, 0.36250001192092896),
+                            NumberSequenceKeypoint.new(1, 1)
+                        }
+                        UIGradient.Parent = Option
+
+                        Option.MouseButton1Click:Connect(function()
+                            MultiDropdownManager:update(value)
+                        end)
+    
+                        if index > settings.maximum_options then
+                            continue
+                        end
+    
+                        MultiDropdownManager._size += 16
+                        OptionsFrame.Size = UDim2.fromOffset(207, MultiDropdownManager._size)
+                    end
+                end
+
+                function MultiDropdownManager:New(value)
+                    Dropdown:Destroy(true);
+                    value.OrderValue = Dropdown.LayoutOrder
+                    ModuleManager._multiplier -= CurrentDropSizeState
+                    return ModuleManager:create_multi_dropdown(value)
+                end;
+
+                -- Загружаем сохраненные значения
+                if Library:flag_type(settings.flag, 'table') and #Library._config._flags[settings.flag] > 0 then
+                    CurrentOption.Text = table.concat(Library._config._flags[settings.flag], ", ")
+                    
+                    -- Обновляем прозрачность для сохраненных опций
+                    for _, object in OptionsFrame:GetChildren() do
+                        if object.Name == "Option" then
+                            if table.find(Library._config._flags[settings.flag], object.Text) then
+                                object.TextTransparency = 0.2
+                            end
+                        end
+                    end
+                end
+    
+                Dropdown.MouseButton1Click:Connect(function()
+                    MultiDropdownManager:unfold_settings()
+                end)
+
+                return MultiDropdownManager
             end
 
             function ModuleManager:create_feature(settings)
@@ -2468,3 +2706,4 @@ function Library:create_ui()
 end
 
 return Library
+
