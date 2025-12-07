@@ -2499,7 +2499,8 @@ function Library:create_ui()
                 return MultiDropdownManager
             end
 
-            function ModuleManager:create_feature(settings)
+            -- TOGGLE - Простой переключатель вкл/выкл с кейбиндом
+            function ModuleManager:create_toggle(settings)
 
                 local checked = false;
                 
@@ -2594,47 +2595,36 @@ function Library:create_ui()
                     KeybindBox.Text = "...";
                 end;
 
-                local UseF_Var = nil;
+                -- Создаем чекбокс (toggle)
+                local Checkbox = Instance.new("TextButton")
+                Checkbox.Size = UDim2.new(0, 15, 0, 15)
+                Checkbox.BackgroundColor3 = checked and Color3.fromRGB(152, 181, 255) or Color3.fromRGB(32, 38, 51)
+                Checkbox.Text = ""
+                Checkbox.Parent = RightContainer
+                Checkbox.LayoutOrder = 1;
+
+                local UIStroke = Instance.new("UIStroke", Checkbox)
+                UIStroke.Color = Color3.fromRGB(152, 181, 255)
+                UIStroke.Thickness = 1
+                UIStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
             
-                if not settings.disablecheck then
-                    local Checkbox = Instance.new("TextButton")
-                    Checkbox.Size = UDim2.new(0, 15, 0, 15)
+                local CheckboxCorner = Instance.new("UICorner")
+                CheckboxCorner.CornerRadius = UDim.new(0, 3)
+                CheckboxCorner.Parent = Checkbox
+        
+                local function toggleState()
+                    checked = not checked
                     Checkbox.BackgroundColor3 = checked and Color3.fromRGB(152, 181, 255) or Color3.fromRGB(32, 38, 51)
-                    Checkbox.Text = ""
-                    Checkbox.Parent = RightContainer
-                    Checkbox.LayoutOrder = 1;
-
-                    local UIStroke = Instance.new("UIStroke", Checkbox)
-                    UIStroke.Color = Color3.fromRGB(152, 181, 255)
-                    UIStroke.Thickness = 1
-                    UIStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-                
-                    local CheckboxCorner = Instance.new("UICorner")
-                    CheckboxCorner.CornerRadius = UDim.new(0, 3)
-                    CheckboxCorner.Parent = Checkbox
-            
-                    local function toggleState()
-                        checked = not checked
-                        Checkbox.BackgroundColor3 = checked and Color3.fromRGB(152, 181, 255) or Color3.fromRGB(32, 38, 51)
-                        Library._config._flags[settings.flag].checked = checked
-                        Config:save(game.GameId, Library._config)
-                        if settings.callback then
-                            settings.callback(checked)
-                        end
+                    Library._config._flags[settings.flag].checked = checked
+                    Config:save(game.GameId, Library._config)
+                    if settings.callback then
+                        settings.callback(checked)
                     end
-
-                    UseF_Var = toggleState
-                
-                    Checkbox.MouseButton1Click:Connect(toggleState)
-
-                else
-
-                    UseF_Var = function()
-                        settings.button_callback();
-                    end;
-
-                end;
+                end
             
+                Checkbox.MouseButton1Click:Connect(toggleState)
+            
+                -- Установка кейбинда (ПКМ на кейбинд боксе)
                 KeybindButton.MouseButton1Click:Connect(function()
                     KeybindBox.Text = "..."
                     local inputConnection
@@ -2646,7 +2636,7 @@ function Library:create_ui()
                             if newKey ~= "Unknown" then
                                 KeybindBox.Text = newKey;
                             end;
-                            Config:save(game.GameId, Library._config) -- Save new keybind
+                            Config:save(game.GameId, Library._config)
                             inputConnection:Disconnect()
                         elseif input.UserInputType == Enum.UserInputType.MouseButton3 then
                             Library._config._flags[settings.flag].BIND = "Unknown"
@@ -2658,28 +2648,102 @@ function Library:create_ui()
                     Connections["keybind_input_" .. settings.flag] = inputConnection
                 end)
             
+                -- Нажатие кейбинда
                 local keyPressConnection
                 keyPressConnection = game:GetService("UserInputService").InputBegan:Connect(function(input, gameProcessed)
                     if gameProcessed then return end
                     if input.UserInputType == Enum.UserInputType.Keyboard then
                         if input.KeyCode.Name == Library._config._flags[settings.flag].BIND then
-                            UseF_Var();
+                            toggleState();
                         end
                     end
                 end)
                 Connections["keybind_press_" .. settings.flag] = keyPressConnection
-            
-                FeatureButton.MouseButton1Click:Connect(function()
-                    if settings.button_callback then
-                        settings.button_callback()
-                    end
-                end)
 
-                if not settings.disablecheck then
-                    settings.callback(checked);
-                end;
+                -- Вызываем callback с начальным состоянием
+                settings.callback(checked);
             
                 return FeatureContainer
+            end
+
+            -- BUTTON - Простая кнопка для действий
+            function ModuleManager:create_button(settings)
+                LayoutOrderModule = LayoutOrderModule + 1
+            
+                if self._size == 0 then
+                    self._size = 11
+                end
+            
+                self._size += 20
+            
+                if ModuleManager._state then
+                    Module.Size = UDim2.fromOffset(241, 93 + self._size);
+                end
+            
+                Options.Size = UDim2.fromOffset(241, self._size);
+            
+                local ButtonContainer = Instance.new("Frame")
+                ButtonContainer.Size = UDim2.new(0, 207, 0, 16)
+                ButtonContainer.BackgroundTransparency = 1
+                ButtonContainer.Parent = Options
+                ButtonContainer.LayoutOrder = LayoutOrderModule
+            
+                local Button = Instance.new("TextButton")
+                Button.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
+                Button.TextSize = 11;
+                Button.Size = UDim2.new(1, 0, 0, 16)
+                Button.BackgroundColor3 = Color3.fromRGB(152, 181, 255)
+                Button.BackgroundTransparency = 0.7
+                Button.TextColor3 = Color3.fromRGB(255, 255, 255)
+                Button.Text = settings.title or "Button"
+                Button.AutoButtonColor = false
+                Button.TextTransparency = 0.2
+                Button.Parent = ButtonContainer
+
+                local UICorner = Instance.new("UICorner")
+                UICorner.CornerRadius = UDim.new(0, 4)
+                UICorner.Parent = Button
+
+                local UIStroke = Instance.new("UIStroke")
+                UIStroke.Color = Color3.fromRGB(152, 181, 255)
+                UIStroke.Thickness = 1
+                UIStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+                UIStroke.Parent = Button
+
+                -- Hover эффект
+                Button.MouseEnter:Connect(function()
+                    TweenService:Create(Button, TweenInfo.new(0.2), {
+                        BackgroundTransparency = 0.5
+                    }):Play()
+                end)
+
+                Button.MouseLeave:Connect(function()
+                    TweenService:Create(Button, TweenInfo.new(0.2), {
+                        BackgroundTransparency = 0.7
+                    }):Play()
+                end)
+
+                -- Клик по кнопке
+                Button.MouseButton1Click:Connect(function()
+                    if settings.callback then
+                        settings.callback()
+                    end
+                end)
+            
+                return ButtonContainer
+            end
+
+            -- Заглушка для старого create_feature (для обратной совместимости)
+            function ModuleManager:create_feature(settings)
+                -- Если есть button и disablecheck - это кнопка
+                if settings.button and settings.disablecheck then
+                    return self:create_button({
+                        title = settings.button_text or settings.title,
+                        callback = settings.button_callback
+                    })
+                end
+                -- Иначе это toggle
+                return self:create_toggle(settings)
             end                    
 
             return ModuleManager
@@ -2706,4 +2770,3 @@ function Library:create_ui()
 end
 
 return Library
-
