@@ -1196,7 +1196,7 @@ function Library:create_ui()
                     }):Play()
 
                     TweenService:Create(Circle, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-                        BackgroundColor3 = Color3.fromRGB(0, 119, 182)
+                        BackgroundColor3 = Color3.fromRGB(0, 119, 182),
                         Position = UDim2.fromScale(0.53, 0.5)
                     }):Play()
                 else
