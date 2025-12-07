@@ -2629,11 +2629,20 @@ function Library:create_ui()
             
                 Checkbox.MouseButton1Click:Connect(toggleState)
             
-                -- Установка кейбинда (ПКМ на кейбинд боксе)
-                KeybindButton.MouseButton1Click:Connect(function()
-                    KeybindBox.Text = "..."
-                    local inputConnection
-                    inputConnection = game:GetService("UserInputService").InputBegan:Connect(function(input2, gameProcessed)
+                -- Установка кейбинда (любая кнопка мыши на кейбинд боксе)
+                KeybindButton.InputBegan:Connect(function(input)
+                    if input.UserInputType == Enum.UserInputType.MouseButton1 or 
+                       input.UserInputType == Enum.UserInputType.MouseButton2 or 
+                       input.UserInputType == Enum.UserInputType.MouseButton3 then
+                        
+                        KeybindBox.Text = "..."
+                        
+                        if Connections["keybind_input_" .. settings.flag] then
+                            Connections["keybind_input_" .. settings.flag]:Disconnect()
+                        end
+                        
+                        local inputConnection
+                        inputConnection = game:GetService("UserInputService").InputBegan:Connect(function(input2, gameProcessed)
                         if gameProcessed then return end
                         
                         if input2.UserInputType == Enum.UserInputType.Keyboard then
