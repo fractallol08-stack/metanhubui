@@ -2573,7 +2573,7 @@ function Library:create_ui()
                 CheckboxCorner.CornerRadius = UDim.new(0, 3)
 
                 local UIStroke = Instance.new("UIStroke", KeybindBox)
-                UIStroke.Color = Color3.fromRGB(152, 181, 255)
+                UIStroke.Color = Color3.fromRGB(80, 100, 140)  -- Темнее рамка
                 UIStroke.Thickness = 1
                 UIStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
             
@@ -2604,7 +2604,7 @@ function Library:create_ui()
                 Checkbox.LayoutOrder = 1;
 
                 local UIStroke = Instance.new("UIStroke", Checkbox)
-                UIStroke.Color = Color3.fromRGB(152, 181, 255)
+                UIStroke.Color = Color3.fromRGB(80, 100, 140)  -- Темнее рамка
                 UIStroke.Thickness = 1
                 UIStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
             
@@ -2628,25 +2628,31 @@ function Library:create_ui()
                 KeybindButton.MouseButton1Click:Connect(function()
                     KeybindBox.Text = "..."
                     local inputConnection
-                    inputConnection = game:GetService("UserInputService").InputBegan:Connect(function(input, gameProcessed)
+                    inputConnection = game:GetService("UserInputService").InputBegan:Connect(function(input2, gameProcessed)
                         if gameProcessed then return end
-                        if input.UserInputType == Enum.UserInputType.Keyboard then
-                            local newKey = input.KeyCode.Name
+                        
+                        if input2.UserInputType == Enum.UserInputType.Keyboard then
+                            local newKey = input2.KeyCode.Name
                             Library._config._flags[settings.flag].BIND = newKey
                             if newKey ~= "Unknown" then
-                                KeybindBox.Text = newKey;
-                            end;
+                                KeybindBox.Text = newKey
+                            else
+                                KeybindBox.Text = "..."
+                            end
                             Config:save(game.GameId, Library._config)
                             inputConnection:Disconnect()
-                        elseif input.UserInputType == Enum.UserInputType.MouseButton3 then
+                            Connections["keybind_input_" .. settings.flag] = nil
+                        elseif input2.UserInputType == Enum.UserInputType.MouseButton3 then
                             Library._config._flags[settings.flag].BIND = "Unknown"
                             KeybindBox.Text = "..."
                             Config:save(game.GameId, Library._config)
                             inputConnection:Disconnect()
+                            Connections["keybind_input_" .. settings.flag] = nil
                         end
                     end)
                     Connections["keybind_input_" .. settings.flag] = inputConnection
-                end)
+                end
+            end)
             
                 -- Нажатие кейбинда
                 local keyPressConnection
