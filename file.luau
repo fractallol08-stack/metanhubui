@@ -45,14 +45,14 @@ local CoreGui = cloneref(game:GetService('CoreGui'))
 local Debris = cloneref(game:GetService('Debris'))
 
 local mouse = Players.LocalPlayer:GetMouse()
-local old_MetanHub = CoreGui:FindFirstChild('Metan Hub')
+local old_MetanHub = CoreGui:FindFirstChild('MetanHub')
 
 if old_MetanHub then
     Debris:AddItem(old_MetanHub, 0)
 end
 
-if not isfolder("Metan Hub") then
-    makefolder("Metan Hub")
+if not isfolder("MetanHub") then
+    makefolder("MetanHub")
 end
 
 
@@ -281,7 +281,7 @@ local Config = setmetatable({
     save = function(self: any, file_name: any, config: any)
         local success_save, result = pcall(function()
             local flags = HttpService:JSONEncode(config)
-            writefile('Metan Hub/'..file_name..'.json', flags)
+            writefile('MetanHub/'..file_name..'.json', flags)
         end)
     
         if not success_save then
@@ -290,13 +290,13 @@ local Config = setmetatable({
     end,
     load = function(self: any, file_name: any, config: any)
         local success_load, result = pcall(function()
-            if not isfile('Metan Hub/'..file_name..'.json') then
+            if not isfile('MetanHub/'..file_name..'.json') then
                 self:save(file_name, config)
         
                 return
             end
         
-            local flags = readfile('Metan Hub/'..file_name..'.json')
+            local flags = readfile('MetanHub/'..file_name..'.json')
         
             if not flags then
                 self:save(file_name, config)
@@ -513,7 +513,7 @@ end
 
 
 function Library:create_ui()
-    local old_MetanHub = CoreGui:FindFirstChild('Metan Hub')
+    local old_MetanHub = CoreGui:FindFirstChild('MetanHub')
 
     if old_MetanHub then
         Debris:AddItem(old_MetanHub, 0)
@@ -521,17 +521,17 @@ function Library:create_ui()
 
     local MetanHub = Instance.new('ScreenGui')
     MetanHub.ResetOnSpawn = false
-    MetanHub.Name = 'Metan Hub'
+    MetanHub.Name = 'MetanHub'
     MetanHub.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
     MetanHub.Parent = CoreGui
     
     local Container = Instance.new('Frame')
     Container.ClipsDescendants = true
-    Container.BorderColor3 = Color3.fromRGB(20, 80, 120)
+    Container.BorderColor3 = Color3.fromRGB(0, 0, 0)
     Container.AnchorPoint = Vector2.new(0.5, 0.5)
     Container.Name = 'Container'
     Container.BackgroundTransparency = 0.05000000074505806
-    Container.BackgroundColor3 = Color3.fromRGB(15, 45, 75)
+    Container.BackgroundColor3 = Color3.fromRGB(12, 13, 15)
     Container.Position = UDim2.new(0.5, 0, 0.5, 0)
     Container.Size = UDim2.new(0, 0, 0, 0)
     Container.Active = true
@@ -543,18 +543,18 @@ function Library:create_ui()
     UICorner.Parent = Container
     
     local UIStroke = Instance.new('UIStroke')
-    UIStroke.Color = Color3.fromRGB(30, 100, 150)
-    UIStroke.Transparency = 0.3
+    UIStroke.Color = Color3.fromRGB(52, 66, 89)
+    UIStroke.Transparency = 0.5
     UIStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
     UIStroke.Parent = Container
     
     local Handler = Instance.new('Frame')
-    Handler.BackgroundTransparency = 0
+    Handler.BackgroundTransparency = 1
     Handler.Name = 'Handler'
     Handler.BorderColor3 = Color3.fromRGB(0, 0, 0)
     Handler.Size = UDim2.new(0, 698, 0, 479)
     Handler.BorderSizePixel = 0
-    Handler.BackgroundColor3 = Color3.fromRGB(20, 60, 100)
+    Handler.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
     Handler.Parent = Container
     
     local Tabs = Instance.new('ScrollingFrame')
@@ -579,8 +579,8 @@ function Library:create_ui()
     
     local ClientName = Instance.new('TextLabel')
     ClientName.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
-    ClientName.TextColor3 = Color3.fromRGB(255, 255, 255)
-    ClientName.TextTransparency = 0
+    ClientName.TextColor3 = Color3.fromRGB(152, 181, 255)
+    ClientName.TextTransparency = 0.20000000298023224
     ClientName.Text = 'Metan Hub'
     ClientName.Name = 'ClientName'
     ClientName.Size = UDim2.new(0, 31, 0, 13)
@@ -604,10 +604,10 @@ function Library:create_ui()
     local Pin = Instance.new('Frame')
     Pin.Name = 'Pin'
     Pin.Position = UDim2.new(0.026000000536441803, 0, 0.13600000739097595, 0)
-    Pin.BorderColor3 = Color3.fromRGB(255, 255, 255)
+    Pin.BorderColor3 = Color3.fromRGB(0, 0, 0)
     Pin.Size = UDim2.new(0, 2, 0, 16)
     Pin.BorderSizePixel = 0
-    Pin.BackgroundColor3 = Color3.fromRGB(30, 100, 150)
+    Pin.BackgroundColor3 = Color3.fromRGB(152, 181, 255)
     Pin.Parent = Handler
     
     local UICorner = Instance.new('UICorner')
@@ -615,9 +615,9 @@ function Library:create_ui()
     UICorner.Parent = Pin
     
     local Icon = Instance.new('ImageLabel')
-    Icon.ImageColor3 = Color3.fromRGB(255, 255, 255)
+    Icon.ImageColor3 = Color3.fromRGB(152, 181, 255)
     Icon.ScaleType = Enum.ScaleType.Fit
-    Icon.BorderColor3 = Color3.fromRGB(255, 255, 255)
+    Icon.BorderColor3 = Color3.fromRGB(0, 0, 0)
     Icon.AnchorPoint = Vector2.new(0, 0.5)
     Icon.Image = 'rbxassetid://107819132007001'
     Icon.BackgroundTransparency = 1
@@ -632,10 +632,10 @@ function Library:create_ui()
     Divider.Name = 'Divider'
     Divider.BackgroundTransparency = 0.5
     Divider.Position = UDim2.new(0.23499999940395355, 0, 0, 0)
-    Divider.BorderColor3 = Color3.fromRGB(255, 255, 255)
+    Divider.BorderColor3 = Color3.fromRGB(0, 0, 0)
     Divider.Size = UDim2.new(0, 1, 0, 479)
     Divider.BorderSizePixel = 0
-    Divider.BackgroundColor3 = Color3.fromRGB(30, 100, 150)
+    Divider.BackgroundColor3 = Color3.fromRGB(52, 66, 89)
     Divider.Parent = Handler
     
     local Sections = Instance.new('Folder')
@@ -1050,7 +1050,7 @@ function Library:create_ui()
                 ModuleName.Text = settings.title or "Skibidi"
             else
                 ModuleName.RichText = true
-                ModuleName.Text = settings.richtext or "<font color='rgb(255,0,0)'>March</font> user"
+                ModuleName.Text = settings.richtext or "<font color='rgb(255,0,0)'>Metan Hub</font> user"
             end;
             ModuleName.Name = 'ModuleName'
             ModuleName.Size = UDim2.new(0, 205, 0, 13)
@@ -1260,8 +1260,8 @@ function Library:create_ui()
                 ModuleManager._state = true
                 settings.callback(ModuleManager._state)
 
-                Toggle.BackgroundColor3 = Color3.fromRGB(30, 100, 150)
-                Circle.BackgroundColor3 = Color3.fromRGB(30, 100, 150)
+                Toggle.BackgroundColor3 = Color3.fromRGB(152, 181, 255)
+                Circle.BackgroundColor3 = Color3.fromRGB(152, 181, 255)
                 Circle.Position = UDim2.fromScale(0.53, 0.5)
             end
 
@@ -1398,7 +1398,7 @@ function Library:create_ui()
                     Body.Text = settings.text or "Skibidi"
                 else
                     Body.RichText = true
-                    Body.Text = settings.richtext or "<font color='rgb(255,0,0)'>March</font> user"
+                    Body.Text = settings.richtext or "<font color='rgb(255,0,0)'>Metan Hub</font> user"
                 end
                 
                 Body.Size = UDim2.new(1, -10, 0, 20)
@@ -1468,7 +1468,7 @@ function Library:create_ui()
                     Body.Text = settings.text or "Skibidi" -- Default text
                 else
                     Body.RichText = true
-                    Body.Text = settings.richtext or "<font color='rgb(255,0,0)'>March</font> user" -- Default rich text
+                    Body.Text = settings.richtext or "<font color='rgb(255,0,0)'>Metan Hub</font> user" -- Default rich text
                 end
             
                 Body.Size = UDim2.new(1, -10, 1, 0)
@@ -1499,7 +1499,7 @@ function Library:create_ui()
                         Body.Text = new_settings.text or "Skibidi" -- Default text
                     else
                         Body.RichText = true
-                        Body.Text = new_settings.richtext or "<font color='rgb(255,0,0)'>March</font> user" -- Default rich text
+                        Body.Text = new_settings.richtext or "<font color='rgb(255,0,0)'>Metan Hub</font> user" -- Default rich text
                     end
                 end;
             
@@ -1526,8 +1526,8 @@ function Library:create_ui()
             
                 local Label = Instance.new('TextLabel')
                 Label.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
-                Label.TextColor3 = Color3.fromRGB(30, 30, 30)
-                Label.TextTransparency = 0
+                Label.TextColor3 = Color3.fromRGB(255, 255, 255)
+                Label.TextTransparency = 0.2
                 Label.Text = settings.title or "Enter text"
                 Label.Size = UDim2.new(0, 207, 0, 13)
                 Label.AnchorPoint = Vector2.new(0, 0)
@@ -1541,16 +1541,16 @@ function Library:create_ui()
             
                 local Textbox = Instance.new('TextBox')
                 Textbox.FontFace = Font.new('rbxasset://fonts/families/SourceSansPro.json', Enum.FontWeight.Regular, Enum.FontStyle.Normal)
-                Textbox.TextColor3 = Color3.fromRGB(30, 30, 30)
-                Textbox.BorderColor3 = Color3.fromRGB(255, 255, 255)
+                Textbox.TextColor3 = Color3.fromRGB(255, 255, 255)
+                Textbox.BorderColor3 = Color3.fromRGB(0, 0, 0)
                 Textbox.PlaceholderText = settings.placeholder or "Enter text..."
                 Textbox.Text = Library._config._flags[settings.flag] or ""
                 Textbox.Name = 'Textbox'
                 Textbox.Size = UDim2.new(0, 207, 0, 15)
                 Textbox.BorderSizePixel = 0
                 Textbox.TextSize = 10
-                Textbox.BackgroundColor3 = Color3.fromRGB(235, 235, 235)
-                Textbox.BackgroundTransparency = 0
+                Textbox.BackgroundColor3 = Color3.fromRGB(152, 181, 255)
+                Textbox.BackgroundTransparency = 0.9
                 Textbox.ClearTextOnFocus = false
                 Textbox.Parent = Options
                 Textbox.LayoutOrder = LayoutOrderModule
@@ -1576,6 +1576,17 @@ function Library:create_ui()
             
                 return TextboxManager
             end   
+
+            -- Checkbox stub function (checkbox element removed from library)
+            function ModuleManager:create_checkbox(settings: any)
+                -- This function is a stub and does nothing
+                -- Checkbox element has been removed from the library
+                -- Calls to this function will not cause errors but will have no effect
+                return {
+                    _state = false,
+                    change_state = function() end
+                }
+            end
 
             function ModuleManager:create_divider(settings: any)
                 -- Layout order management
@@ -1699,8 +1710,8 @@ function Library:create_ui()
                     TextLabel.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
                     TextLabel.TextSize = 11;
                 end;
-                TextLabel.TextColor3 = Color3.fromRGB(30, 30, 30)
-                TextLabel.TextTransparency = 0
+                TextLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+                TextLabel.TextTransparency = 0.20000000298023224
                 TextLabel.Text = settings.title
                 TextLabel.Size = UDim2.new(0, 153, 0, 13)
                 TextLabel.Position = UDim2.new(0, 0, 0.05000000074505806, 0)
@@ -1712,14 +1723,14 @@ function Library:create_ui()
                 TextLabel.Parent = Slider
                 
                 local Drag = Instance.new('Frame')
-                Drag.BorderColor3 = Color3.fromRGB(255, 255, 255)
+                Drag.BorderColor3 = Color3.fromRGB(0, 0, 0)
                 Drag.AnchorPoint = Vector2.new(0.5, 1)
-                Drag.BackgroundTransparency = 0.3
+                Drag.BackgroundTransparency = 0.8999999761581421
                 Drag.Position = UDim2.new(0.5, 0, 0.949999988079071, 0)
                 Drag.Name = 'Drag'
                 Drag.Size = UDim2.new(0, 207, 0, 4)
                 Drag.BorderSizePixel = 0
-                Drag.BackgroundColor3 = Color3.fromRGB(200, 200, 200)
+                Drag.BackgroundColor3 = Color3.fromRGB(152, 181, 255)
                 Drag.Parent = Slider
                 
                 local UICorner = Instance.new('UICorner')
@@ -1727,14 +1738,14 @@ function Library:create_ui()
                 UICorner.Parent = Drag
                 
                 local Fill = Instance.new('Frame')
-                Fill.BorderColor3 = Color3.fromRGB(255, 255, 255)
+                Fill.BorderColor3 = Color3.fromRGB(0, 0, 0)
                 Fill.AnchorPoint = Vector2.new(0, 0.5)
-                Fill.BackgroundTransparency = 0
+                Fill.BackgroundTransparency = 0.5
                 Fill.Position = UDim2.new(0, 0, 0.5, 0)
                 Fill.Name = 'Fill'
                 Fill.Size = UDim2.new(0, 103, 0, 4)
                 Fill.BorderSizePixel = 0
-                Fill.BackgroundColor3 = Color3.fromRGB(30, 100, 150)
+                Fill.BackgroundColor3 = Color3.fromRGB(152, 181, 255)
                 Fill.Parent = Drag
                 
                 local UICorner = Instance.new('UICorner')
@@ -1743,8 +1754,8 @@ function Library:create_ui()
                 
                 local UIGradient = Instance.new('UIGradient')
                 UIGradient.Color = ColorSequence.new{
-                    ColorSequenceKeypoint.new(0, Color3.fromRGB(30, 100, 150)),
-                    ColorSequenceKeypoint.new(1, Color3.fromRGB(50, 140, 200))
+                    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
+                    ColorSequenceKeypoint.new(1, Color3.fromRGB(79, 79, 79))
                 }
                 UIGradient.Parent = Fill
                 
@@ -1764,8 +1775,8 @@ function Library:create_ui()
                 
                 local Value = Instance.new('TextLabel')
                 Value.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
-                Value.TextColor3 = Color3.fromRGB(30, 30, 30)
-                Value.TextTransparency = 0
+                Value.TextColor3 = Color3.fromRGB(255, 255, 255)
+                Value.TextTransparency = 0.20000000298023224
                 Value.Text = '50'
                 Value.Name = 'Value'
                 Value.Size = UDim2.new(0, 42, 0, 13)
@@ -1907,8 +1918,8 @@ function Library:create_ui()
                     TextLabel.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
                     TextLabel.TextSize = 11;
                 end;
-                TextLabel.TextColor3 = Color3.fromRGB(30, 30, 30)
-                TextLabel.TextTransparency = 0
+                TextLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+                TextLabel.TextTransparency = 0.20000000298023224
                 TextLabel.Text = settings.title
                 TextLabel.Size = UDim2.new(0, 207, 0, 13)
                 TextLabel.BackgroundTransparency = 1
@@ -1920,14 +1931,14 @@ function Library:create_ui()
                 
                 local Box = Instance.new('Frame')
                 Box.ClipsDescendants = true
-                Box.BorderColor3 = Color3.fromRGB(255, 255, 255)
+                Box.BorderColor3 = Color3.fromRGB(0, 0, 0)
                 Box.AnchorPoint = Vector2.new(0.5, 0)
-                Box.BackgroundTransparency = 0.3
+                Box.BackgroundTransparency = 0.8999999761581421
                 Box.Position = UDim2.new(0.5, 0, 1.2000000476837158, 0)
                 Box.Name = 'Box'
                 Box.Size = UDim2.new(0, 207, 0, 22)
                 Box.BorderSizePixel = 0
-                Box.BackgroundColor3 = Color3.fromRGB(30, 100, 150)
+                Box.BackgroundColor3 = Color3.fromRGB(152, 181, 255)
                 Box.Parent = TextLabel
                 
                 local UICorner = Instance.new('UICorner')
@@ -1947,8 +1958,8 @@ function Library:create_ui()
                 
                 local CurrentOption = Instance.new('TextLabel')
                 CurrentOption.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
-                CurrentOption.TextColor3 = Color3.fromRGB(30, 30, 30)
-                CurrentOption.TextTransparency = 0
+                CurrentOption.TextColor3 = Color3.fromRGB(255, 255, 255)
+                CurrentOption.TextTransparency = 0.20000000298023224
                 CurrentOption.Name = 'CurrentOption'
                 CurrentOption.Size = UDim2.new(0, 161, 0, 13)
                 CurrentOption.AnchorPoint = Vector2.new(0, 0.5)
@@ -2251,6 +2262,8 @@ function Library:create_ui()
             end
 
             function ModuleManager:create_feature(settings)
+
+                local checked = false;
                 
                 LayoutOrderModule = LayoutOrderModule + 1
             
@@ -2281,8 +2294,8 @@ function Library:create_ui()
                 FeatureButton.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
                 FeatureButton.TextSize = 11;
                 FeatureButton.Size = UDim2.new(1, -35, 0, 16)
-                FeatureButton.BackgroundColor3 = Color3.fromRGB(235, 235, 235)
-                FeatureButton.TextColor3 = Color3.fromRGB(30, 30, 30)
+                FeatureButton.BackgroundColor3 = Color3.fromRGB(32, 38, 51)
+                FeatureButton.TextColor3 = Color3.fromRGB(210, 210, 210)
                 FeatureButton.Text = "    " .. settings.title or "    " .. "Feature"
                 FeatureButton.AutoButtonColor = false
                 FeatureButton.TextXAlignment = Enum.TextXAlignment.Left
@@ -2304,11 +2317,11 @@ function Library:create_ui()
                 local KeybindBox = Instance.new("TextLabel")
                 KeybindBox.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
                 KeybindBox.Size = UDim2.new(0, 15, 0, 15)
-                KeybindBox.BackgroundColor3 = Color3.fromRGB(30, 100, 150)
+                KeybindBox.BackgroundColor3 = Color3.fromRGB(152, 181, 255)
                 KeybindBox.TextColor3 = Color3.fromRGB(255, 255, 255)
                 KeybindBox.TextSize = 11
                 KeybindBox.BackgroundTransparency = 1
-                KeybindBox.LayoutOrder = 1;
+                KeybindBox.LayoutOrder = 2;
                 KeybindBox.Parent = RightContainer
             
                 local KeybindButton = Instance.new("TextButton")
@@ -2317,11 +2330,11 @@ function Library:create_ui()
                 KeybindButton.TextTransparency = 1
                 KeybindButton.Parent = KeybindBox
 
-                local KeybindCorner = Instance.new("UICorner", KeybindBox)
-                KeybindCorner.CornerRadius = UDim.new(0, 3)
+                local CheckboxCorner = Instance.new("UICorner", KeybindBox)
+                CheckboxCorner.CornerRadius = UDim.new(0, 3)
 
                 local UIStroke = Instance.new("UIStroke", KeybindBox)
-                UIStroke.Color = Color3.fromRGB(30, 100, 150)
+                UIStroke.Color = Color3.fromRGB(152, 181, 255)
                 UIStroke.Thickness = 1
                 UIStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
             
@@ -2331,20 +2344,57 @@ function Library:create_ui()
             
                 if not Library._config._flags[settings.flag] then
                     Library._config._flags[settings.flag] = {
+                        checked = false,
                         BIND = settings.default or "Unknown"
                     }
                 end
             
+                checked = Library._config._flags[settings.flag].checked
                 KeybindBox.Text = Library._config._flags[settings.flag].BIND
 
                 if KeybindBox.Text == "Unknown" then
                     KeybindBox.Text = "...";
                 end;
 
-                local UseF_Var = function()
-                    if settings.button_callback then
-                        settings.button_callback();
+                local UseF_Var = nil;
+            
+                if not settings.disablecheck then
+                    local Checkbox = Instance.new("TextButton")
+                    Checkbox.Size = UDim2.new(0, 15, 0, 15)
+                    Checkbox.BackgroundColor3 = checked and Color3.fromRGB(152, 181, 255) or Color3.fromRGB(32, 38, 51)
+                    Checkbox.Text = ""
+                    Checkbox.Parent = RightContainer
+                    Checkbox.LayoutOrder = 1;
+
+                    local UIStroke = Instance.new("UIStroke", Checkbox)
+                    UIStroke.Color = Color3.fromRGB(152, 181, 255)
+                    UIStroke.Thickness = 1
+                    UIStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+                
+                    local CheckboxCorner = Instance.new("UICorner")
+                    CheckboxCorner.CornerRadius = UDim.new(0, 3)
+                    CheckboxCorner.Parent = Checkbox
+            
+                    local function toggleState()
+                        checked = not checked
+                        Checkbox.BackgroundColor3 = checked and Color3.fromRGB(152, 181, 255) or Color3.fromRGB(32, 38, 51)
+                        Library._config._flags[settings.flag].checked = checked
+                        Config:save(game.GameId, Library._config)
+                        if settings.callback then
+                            settings.callback(checked)
+                        end
                     end
+
+                    UseF_Var = toggleState
+                
+                    Checkbox.MouseButton1Click:Connect(toggleState)
+
+                else
+
+                    UseF_Var = function()
+                        settings.button_callback();
+                    end;
+
                 end;
             
                 KeybindButton.MouseButton1Click:Connect(function()
@@ -2386,6 +2436,10 @@ function Library:create_ui()
                         settings.button_callback()
                     end
                 end)
+
+                if not settings.disablecheck then
+                    settings.callback(checked);
+                end;
             
                 return FeatureContainer
             end                    
