@@ -1260,8 +1260,8 @@ function Library:create_ui()
                 ModuleManager._state = true
                 settings.callback(ModuleManager._state)
 
-                Toggle.BackgroundColor3 = Color3.fromRGB(152, 181, 255)
-                Circle.BackgroundColor3 = Color3.fromRGB(152, 181, 255)
+                Toggle.BackgroundColor3 = Color3.fromRGB(30, 100, 150)
+                Circle.BackgroundColor3 = Color3.fromRGB(30, 100, 150)
                 Circle.Position = UDim2.fromScale(0.53, 0.5)
             end
 
@@ -1526,8 +1526,8 @@ function Library:create_ui()
             
                 local Label = Instance.new('TextLabel')
                 Label.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
-                Label.TextColor3 = Color3.fromRGB(255, 255, 255)
-                Label.TextTransparency = 0.2
+                Label.TextColor3 = Color3.fromRGB(30, 30, 30)
+                Label.TextTransparency = 0
                 Label.Text = settings.title or "Enter text"
                 Label.Size = UDim2.new(0, 207, 0, 13)
                 Label.AnchorPoint = Vector2.new(0, 0)
@@ -1541,16 +1541,16 @@ function Library:create_ui()
             
                 local Textbox = Instance.new('TextBox')
                 Textbox.FontFace = Font.new('rbxasset://fonts/families/SourceSansPro.json', Enum.FontWeight.Regular, Enum.FontStyle.Normal)
-                Textbox.TextColor3 = Color3.fromRGB(255, 255, 255)
-                Textbox.BorderColor3 = Color3.fromRGB(0, 0, 0)
+                Textbox.TextColor3 = Color3.fromRGB(30, 30, 30)
+                Textbox.BorderColor3 = Color3.fromRGB(255, 255, 255)
                 Textbox.PlaceholderText = settings.placeholder or "Enter text..."
                 Textbox.Text = Library._config._flags[settings.flag] or ""
                 Textbox.Name = 'Textbox'
                 Textbox.Size = UDim2.new(0, 207, 0, 15)
                 Textbox.BorderSizePixel = 0
                 Textbox.TextSize = 10
-                Textbox.BackgroundColor3 = Color3.fromRGB(152, 181, 255)
-                Textbox.BackgroundTransparency = 0.9
+                Textbox.BackgroundColor3 = Color3.fromRGB(235, 235, 235)
+                Textbox.BackgroundTransparency = 0
                 Textbox.ClearTextOnFocus = false
                 Textbox.Parent = Options
                 Textbox.LayoutOrder = LayoutOrderModule
@@ -1699,8 +1699,8 @@ function Library:create_ui()
                     TextLabel.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
                     TextLabel.TextSize = 11;
                 end;
-                TextLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-                TextLabel.TextTransparency = 0.20000000298023224
+                TextLabel.TextColor3 = Color3.fromRGB(30, 30, 30)
+                TextLabel.TextTransparency = 0
                 TextLabel.Text = settings.title
                 TextLabel.Size = UDim2.new(0, 153, 0, 13)
                 TextLabel.Position = UDim2.new(0, 0, 0.05000000074505806, 0)
@@ -1712,14 +1712,14 @@ function Library:create_ui()
                 TextLabel.Parent = Slider
                 
                 local Drag = Instance.new('Frame')
-                Drag.BorderColor3 = Color3.fromRGB(0, 0, 0)
+                Drag.BorderColor3 = Color3.fromRGB(255, 255, 255)
                 Drag.AnchorPoint = Vector2.new(0.5, 1)
-                Drag.BackgroundTransparency = 0.8999999761581421
+                Drag.BackgroundTransparency = 0.3
                 Drag.Position = UDim2.new(0.5, 0, 0.949999988079071, 0)
                 Drag.Name = 'Drag'
                 Drag.Size = UDim2.new(0, 207, 0, 4)
                 Drag.BorderSizePixel = 0
-                Drag.BackgroundColor3 = Color3.fromRGB(152, 181, 255)
+                Drag.BackgroundColor3 = Color3.fromRGB(200, 200, 200)
                 Drag.Parent = Slider
                 
                 local UICorner = Instance.new('UICorner')
@@ -1727,14 +1727,14 @@ function Library:create_ui()
                 UICorner.Parent = Drag
                 
                 local Fill = Instance.new('Frame')
-                Fill.BorderColor3 = Color3.fromRGB(0, 0, 0)
+                Fill.BorderColor3 = Color3.fromRGB(255, 255, 255)
                 Fill.AnchorPoint = Vector2.new(0, 0.5)
-                Fill.BackgroundTransparency = 0.5
+                Fill.BackgroundTransparency = 0
                 Fill.Position = UDim2.new(0, 0, 0.5, 0)
                 Fill.Name = 'Fill'
                 Fill.Size = UDim2.new(0, 103, 0, 4)
                 Fill.BorderSizePixel = 0
-                Fill.BackgroundColor3 = Color3.fromRGB(152, 181, 255)
+                Fill.BackgroundColor3 = Color3.fromRGB(30, 100, 150)
                 Fill.Parent = Drag
                 
                 local UICorner = Instance.new('UICorner')
@@ -1743,8 +1743,8 @@ function Library:create_ui()
                 
                 local UIGradient = Instance.new('UIGradient')
                 UIGradient.Color = ColorSequence.new{
-                    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
-                    ColorSequenceKeypoint.new(1, Color3.fromRGB(79, 79, 79))
+                    ColorSequenceKeypoint.new(0, Color3.fromRGB(30, 100, 150)),
+                    ColorSequenceKeypoint.new(1, Color3.fromRGB(50, 140, 200))
                 }
                 UIGradient.Parent = Fill
                 
@@ -1764,8 +1764,8 @@ function Library:create_ui()
                 
                 local Value = Instance.new('TextLabel')
                 Value.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
-                Value.TextColor3 = Color3.fromRGB(255, 255, 255)
-                Value.TextTransparency = 0.20000000298023224
+                Value.TextColor3 = Color3.fromRGB(30, 30, 30)
+                Value.TextTransparency = 0
                 Value.Text = '50'
                 Value.Name = 'Value'
                 Value.Size = UDim2.new(0, 42, 0, 13)
@@ -1907,8 +1907,8 @@ function Library:create_ui()
                     TextLabel.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
                     TextLabel.TextSize = 11;
                 end;
-                TextLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-                TextLabel.TextTransparency = 0.20000000298023224
+                TextLabel.TextColor3 = Color3.fromRGB(30, 30, 30)
+                TextLabel.TextTransparency = 0
                 TextLabel.Text = settings.title
                 TextLabel.Size = UDim2.new(0, 207, 0, 13)
                 TextLabel.BackgroundTransparency = 1
@@ -1920,14 +1920,14 @@ function Library:create_ui()
                 
                 local Box = Instance.new('Frame')
                 Box.ClipsDescendants = true
-                Box.BorderColor3 = Color3.fromRGB(0, 0, 0)
+                Box.BorderColor3 = Color3.fromRGB(255, 255, 255)
                 Box.AnchorPoint = Vector2.new(0.5, 0)
-                Box.BackgroundTransparency = 0.8999999761581421
+                Box.BackgroundTransparency = 0.3
                 Box.Position = UDim2.new(0.5, 0, 1.2000000476837158, 0)
                 Box.Name = 'Box'
                 Box.Size = UDim2.new(0, 207, 0, 22)
                 Box.BorderSizePixel = 0
-                Box.BackgroundColor3 = Color3.fromRGB(152, 181, 255)
+                Box.BackgroundColor3 = Color3.fromRGB(30, 100, 150)
                 Box.Parent = TextLabel
                 
                 local UICorner = Instance.new('UICorner')
@@ -1947,8 +1947,8 @@ function Library:create_ui()
                 
                 local CurrentOption = Instance.new('TextLabel')
                 CurrentOption.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
-                CurrentOption.TextColor3 = Color3.fromRGB(255, 255, 255)
-                CurrentOption.TextTransparency = 0.20000000298023224
+                CurrentOption.TextColor3 = Color3.fromRGB(30, 30, 30)
+                CurrentOption.TextTransparency = 0
                 CurrentOption.Name = 'CurrentOption'
                 CurrentOption.Size = UDim2.new(0, 161, 0, 13)
                 CurrentOption.AnchorPoint = Vector2.new(0, 0.5)
