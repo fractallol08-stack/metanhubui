@@ -2651,8 +2651,7 @@ function Library:create_ui()
                         end
                     end)
                     Connections["keybind_input_" .. settings.flag] = inputConnection
-                end
-            end)
+                end)
             
                 -- Нажатие кейбинда
                 local keyPressConnection
