@@ -1948,7 +1948,7 @@ function Library:create_ui()
                 UICorner.CornerRadius = UDim.new(0, 4)
                 UICorner.Parent = Box
                 
-                local Header = Instance.new('Frame')
+                local Header = Instance.new('TextButton')
                 Header.BorderColor3 = Color3.fromRGB(0, 0, 0)
                 Header.AnchorPoint = Vector2.new(0.5, 0)
                 Header.BackgroundTransparency = 1
@@ -1957,6 +1957,8 @@ function Library:create_ui()
                 Header.Size = UDim2.new(0, 207, 0, 22)
                 Header.BorderSizePixel = 0
                 Header.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+                Header.Text = ''
+                Header.AutoButtonColor = false
                 Header.Parent = Box
                 
                 local CurrentOption = Instance.new('TextLabel')
