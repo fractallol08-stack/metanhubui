@@ -2237,6 +2237,10 @@ function Library:create_ui()
                 Dropdown.MouseButton1Click:Connect(function()
                     DropdownManager:unfold_settings()
                 end)
+                
+                Header.MouseButton1Click:Connect(function()
+                    DropdownManager:unfold_settings()
+                end)
 
                 return DropdownManager
             end
