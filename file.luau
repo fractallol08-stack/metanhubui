@@ -371,16 +371,6 @@ UIListLayout.Parent = NotificationContainer
 
 -- Function to create notifications
 function Library.SendNotification(settings)
-    -- Прикольный звук уведомления
-    local NotificationSound = Instance.new("Sound")
-    NotificationSound.SoundId = "rbxassetid://6026984224" -- Прикольный "pop" звук
-    NotificationSound.Volume = 0.5
-    NotificationSound.Parent = game:GetService("SoundService")
-    NotificationSound:Play()
-    NotificationSound.Ended:Connect(function()
-        NotificationSound:Destroy()
-    end)
-    
     local Notification = Instance.new("Frame")
     Notification.Size = UDim2.new(1, 0, 0, 60)
     Notification.BackgroundTransparency = 1
@@ -2256,6 +2246,12 @@ function Library:create_ui()
                 end)
 
                 return DropdownManager
+            end
+
+            -- Multi Dropdown - обертка над create_dropdown с multi_dropdown = true
+            function ModuleManager:create_multi_dropdown(settings)
+                settings.multi_dropdown = true
+                return self:create_dropdown(settings)
             end
 
             function ModuleManager:create_toggle(settings)
