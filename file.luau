@@ -2027,56 +2027,24 @@ function Library:create_ui()
 
                 function DropdownManager:update(option)
                     if settings.multi_dropdown then
+                        -- Инициализируем флаг если нужно
                         if not Library._config._flags[settings.flag] then
-                            Library._config._flags[settings.flag] = {};
-                        end;
-
-                        local CurrentTargetValue = nil;
-                        
-                        if #Library._config._flags[settings.flag] > 0 then
-                            CurrentTargetValue = convertTableToString(Library._config._flags[settings.flag]);
-                        end;
-
-                        local selected = {}
-
-                        if CurrentTargetValue then
-                            for value in string.gmatch(CurrentTargetValue, "([^,]+)") do
-                                local trimmedValue = value:match("^%s*(.-)%s*$")
-                                if trimmedValue ~= "Label" then
-                                    table.insert(selected, trimmedValue)
-                                end
-                            end
-                        else
-                            for value in string.gmatch(CurrentOption.Text, "([^,]+)") do
-                                local trimmedValue = value:match("^%s*(.-)%s*$")
-                                if trimmedValue ~= "Label" then
-                                    table.insert(selected, trimmedValue)
-                                end
-                            end
-                        end;
-                
-                        local CurrentTextGet = convertStringToTable(CurrentOption.Text);
-
-                        optionSkibidi = "nil";
-                        if typeof(option) ~= 'string' then
-                            optionSkibidi = option.Name;
-                        else
-                            optionSkibidi = option;
-                        end;
-
-                        local found = false
-                        for i, v in pairs(CurrentTextGet) do
-                            if v == optionSkibidi then
-                                table.remove(CurrentTextGet, i);
-                                break;
-                            end
+                            Library._config._flags[settings.flag] = {}
                         end
-
-                        CurrentOption.Text = table.concat(selected, ", ")
-                        local OptionsChild = {}
+                        
+                        -- Получаем текущий выбранный список
+                        local selected = Library._config._flags[settings.flag]
+                        
+                        -- Обновляем отображение текста
+                        if #selected > 0 then
+                            CurrentOption.Text = table.concat(selected, ", ")
+                        else
+                            CurrentOption.Text = "None"
+                        end
+                        
+                        -- Обновляем прозрачность опций
                         for _, object in Options:GetChildren() do
                             if object.Name == "Option" then
-                                table.insert(OptionsChild, object.Text)
                                 if table.find(selected, object.Text) then
                                     object.TextTransparency = 0.2
                                 else
@@ -2084,19 +2052,12 @@ function Library:create_ui()
                                 end
                             end
                         end
-
-                        CurrentTargetValue = convertStringToTable(CurrentOption.Text);
-
-                        for _, v in CurrentTargetValue do
-                            if not table.find(OptionsChild, v) and table.find(selected, v) then
-                                table.remove(selected, _)
-                            end;
-                        end;
-
-                        CurrentOption.Text = table.concat(selected, ", ");
-                
-                        Library._config._flags[settings.flag] = convertStringToTable(CurrentOption.Text);
+                        
+                        -- Сохраняем и вызываем callback с выбранным списком
+                        Config:save(game.GameId, Library._config)
+                        settings.callback(selected)
                     else
+                        -- Обычный dropdown (одиночный выбор)
                         CurrentOption.Text = (typeof(option) == "string" and option) or option.Name
                         for _, object in Options:GetChildren() do
                             if object.Name == "Option" then
@@ -2108,10 +2069,9 @@ function Library:create_ui()
                             end
                         end
                         Library._config._flags[settings.flag] = option
+                        Config:save(game.GameId, Library._config)
+                        settings.callback(option)
                     end
-                
-                    Config:save(game.GameId, Library._config)
-                    settings.callback(option)
                 end
                 
                 local CurrentDropSizeState = 0;
@@ -2205,18 +2165,22 @@ function Library:create_ui()
 
                         Option.MouseButton1Click:Connect(function()
                             if not Library._config._flags[settings.flag] then
-                                Library._config._flags[settings.flag] = {};
-                            end;
-
-                            if settings.multi_dropdown then
-                                if table.find(Library._config._flags[settings.flag], value) then
-                                    Library:remove_table_value(Library._config._flags[settings.flag], value)
-                                else
-                                    table.insert(Library._config._flags[settings.flag], value)
-                                end
+                                Library._config._flags[settings.flag] = {}
                             end
 
-                            DropdownManager:update(value)
+                            local optionText = (typeof(value) == "string" and value) or value.Name
+
+                            if settings.multi_dropdown then
+                                -- Добавляем или удаляем из списка
+                                if table.find(Library._config._flags[settings.flag], optionText) then
+                                    Library:remove_table_value(Library._config._flags[settings.flag], optionText)
+                                else
+                                    table.insert(Library._config._flags[settings.flag], optionText)
+                                end
+                                DropdownManager:update(optionText)
+                            else
+                                DropdownManager:update(optionText)
+                            end
                         end)
     
                         if index > (settings.maximum_options or 10) then
@@ -2235,10 +2199,26 @@ function Library:create_ui()
                     return ModuleManager:create_dropdown(value)
                 end;
 
-                if Library:flag_type(settings.flag, 'string') then
-                    DropdownManager:update(Library._config._flags[settings.flag])
+                -- Загружаем сохраненные значения
+                if settings.multi_dropdown then
+                    if Library:flag_type(settings.flag, 'table') and #Library._config._flags[settings.flag] > 0 then
+                        CurrentOption.Text = table.concat(Library._config._flags[settings.flag], ", ")
+                        
+                        -- Обновляем прозрачность для сохраненных опций
+                        for _, object in Options:GetChildren() do
+                            if object.Name == "Option" then
+                                if table.find(Library._config._flags[settings.flag], object.Text) then
+                                    object.TextTransparency = 0.2
+                                end
+                            end
+                        end
+                    end
                 else
-                    DropdownManager:update(settings.options[1])
+                    if Library:flag_type(settings.flag, 'string') then
+                        DropdownManager:update(Library._config._flags[settings.flag])
+                    else
+                        DropdownManager:update(settings.options[1])
+                    end
                 end
     
                 Dropdown.MouseButton1Click:Connect(function()
