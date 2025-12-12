@@ -371,6 +371,17 @@ UIListLayout.Parent = NotificationContainer
 
 -- Function to create notifications
 function Library.SendNotification(settings)
+    -- Звук уведомления
+    task.spawn(function()
+        local NotifSound = Instance.new("Sound")
+        NotifSound.SoundId = "rbxassetid://6026984224"
+        NotifSound.Volume = 0.5
+        NotifSound.Parent = game:GetService("SoundService")
+        NotifSound:Play()
+        NotifSound.Ended:Wait()
+        NotifSound:Destroy()
+    end)
+    
     local Notification = Instance.new("Frame")
     Notification.Size = UDim2.new(1, 0, 0, 60)
     Notification.BackgroundTransparency = 1
