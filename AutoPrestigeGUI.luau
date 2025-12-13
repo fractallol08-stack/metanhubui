@@ -61,9 +61,9 @@ GradientCorner.Parent = GradientFrame
 
 local Gradient = Instance.new("UIGradient")
 Gradient.Color = ColorSequence.new{
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(100, 150, 255)),
-    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(150, 100, 255)),
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 100, 200))
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(150, 200, 255)),
+    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(200, 230, 255)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(180, 220, 255))
 }
 Gradient.Rotation = 45
 Gradient.Parent = GradientFrame
@@ -79,7 +79,7 @@ end)
 
 -- Border glow effect
 local BorderGlow = Instance.new("UIStroke")
-BorderGlow.Color = Color3.fromRGB(150, 150, 255)
+BorderGlow.Color = Color3.fromRGB(180, 220, 255)
 BorderGlow.Thickness = 2
 BorderGlow.Transparency = 0.3
 BorderGlow.Parent = MainFrame
@@ -87,10 +87,16 @@ BorderGlow.Parent = MainFrame
 -- Animated border glow
 task.spawn(function()
     while true do
-        local tween1 = TweenService:Create(BorderGlow, TweenInfo.new(1.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {Transparency = 0})
+        local tween1 = TweenService:Create(BorderGlow, TweenInfo.new(1.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
+            Transparency = 0,
+            Color = Color3.fromRGB(200, 230, 255)
+        })
         tween1:Play()
         task.wait(1.5)
-        local tween2 = TweenService:Create(BorderGlow, TweenInfo.new(1.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {Transparency = 0.5})
+        local tween2 = TweenService:Create(BorderGlow, TweenInfo.new(1.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
+            Transparency = 0.5,
+            Color = Color3.fromRGB(150, 200, 255)
+        })
         tween2:Play()
         task.wait(1.5)
     end
@@ -106,9 +112,9 @@ AccentBar.Parent = MainFrame
 
 local AccentGradient = Instance.new("UIGradient")
 AccentGradient.Color = ColorSequence.new{
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(100, 200, 255)),
-    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(200, 100, 255)),
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 100, 150))
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(150, 200, 255)),
+    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(200, 230, 255)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(180, 220, 255))
 }
 AccentGradient.Parent = AccentBar
 
@@ -126,7 +132,7 @@ BrandLabel.ZIndex = 6
 BrandLabel.Parent = MainFrame
 
 local BrandStroke = Instance.new("UIStroke")
-BrandStroke.Color = Color3.fromRGB(100, 150, 255)
+BrandStroke.Color = Color3.fromRGB(150, 200, 255)
 BrandStroke.Thickness = 1
 BrandStroke.Parent = BrandLabel
 
@@ -179,7 +185,7 @@ LoadingDots.BackgroundTransparency = 1
 LoadingDots.Text = "..."
 LoadingDots.Font = Enum.Font.GothamBold
 LoadingDots.TextSize = 16
-LoadingDots.TextColor3 = Color3.fromRGB(100, 200, 255)
+LoadingDots.TextColor3 = Color3.fromRGB(150, 200, 255)
 LoadingDots.ZIndex = 6
 LoadingDots.Parent = StatusContainer
 
@@ -207,34 +213,68 @@ local ParticleCorner = Instance.new("UICorner")
 ParticleCorner.CornerRadius = UDim.new(0, 15)
 ParticleCorner.Parent = ParticleContainer
 
--- Create floating particles
+-- Create snowflakes
 task.spawn(function()
     while true do
-        local particle = Instance.new("Frame")
-        particle.Size = UDim2.new(0, math.random(2, 4), 0, math.random(2, 4))
-        particle.Position = UDim2.new(math.random(0, 100) / 100, 0, 1, 0)
-        particle.BackgroundColor3 = Color3.fromRGB(150, 150, 255)
-        particle.BackgroundTransparency = 0.5
-        particle.BorderSizePixel = 0
-        particle.ZIndex = 4
-        particle.Parent = ParticleContainer
+        -- Create snowflake container
+        local snowflake = Instance.new("Frame")
+        local size = math.random(3, 6)
+        snowflake.Size = UDim2.new(0, size, 0, size)
+        snowflake.Position = UDim2.new(math.random(0, 100) / 100, 0, -0.05, 0)
+        snowflake.BackgroundColor3 = Color3.fromRGB(220, 240, 255)
+        snowflake.BackgroundTransparency = 0.3
+        snowflake.BorderSizePixel = 0
+        snowflake.ZIndex = 4
+        snowflake.Rotation = math.random(0, 360)
+        snowflake.Parent = ParticleContainer
         
-        local particleCorner = Instance.new("UICorner")
-        particleCorner.CornerRadius = UDim.new(1, 0)
-        particleCorner.Parent = particle
+        local snowCorner = Instance.new("UICorner")
+        snowCorner.CornerRadius = UDim.new(0.3, 0)
+        snowCorner.Parent = snowflake
         
-        local duration = math.random(3, 6)
-        local tween = TweenService:Create(particle, TweenInfo.new(duration, Enum.EasingStyle.Linear), {
-            Position = UDim2.new(particle.Position.X.Scale, 0, -0.1, 0),
-            BackgroundTransparency = 1
+        -- Add cross pattern for snowflake shape
+        local line1 = Instance.new("Frame")
+        line1.Size = UDim2.new(1, 0, 0, 1)
+        line1.Position = UDim2.new(0, 0, 0.5, 0)
+        line1.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+        line1.BackgroundTransparency = 0.2
+        line1.BorderSizePixel = 0
+        line1.ZIndex = 5
+        line1.Parent = snowflake
+        
+        local line2 = Instance.new("Frame")
+        line2.Size = UDim2.new(0, 1, 1, 0)
+        line2.Position = UDim2.new(0.5, 0, 0, 0)
+        line2.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+        line2.BackgroundTransparency = 0.2
+        line2.BorderSizePixel = 0
+        line2.ZIndex = 5
+        line2.Parent = snowflake
+        
+        local duration = math.random(4, 7)
+        local endX = snowflake.Position.X.Scale + math.random(-20, 20) / 100
+        
+        -- Falling animation with rotation and drift
+        local tween = TweenService:Create(snowflake, TweenInfo.new(duration, Enum.EasingStyle.Linear), {
+            Position = UDim2.new(endX, 0, 1.1, 0),
+            BackgroundTransparency = 1,
+            Rotation = snowflake.Rotation + math.random(180, 360)
         })
         tween:Play()
         
+        TweenService:Create(line1, TweenInfo.new(duration, Enum.EasingStyle.Linear), {
+            BackgroundTransparency = 1
+        }):Play()
+        
+        TweenService:Create(line2, TweenInfo.new(duration, Enum.EasingStyle.Linear), {
+            BackgroundTransparency = 1
+        }):Play()
+        
         task.delay(duration, function()
-            particle:Destroy()
+            snowflake:Destroy()
         end)
         
-        task.wait(0.3)
+        task.wait(0.2)
     end
 end)
 
