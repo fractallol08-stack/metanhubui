@@ -102,39 +102,26 @@ task.spawn(function()
     end
 end)
 
--- Top accent bar
-local AccentBar = Instance.new("Frame")
-AccentBar.Size = UDim2.new(1, 0, 0, 4)
-AccentBar.Position = UDim2.new(0, 0, 0, 0)
-AccentBar.BorderSizePixel = 0
-AccentBar.ZIndex = 5
-AccentBar.Parent = MainFrame
-
-local AccentGradient = Instance.new("UIGradient")
-AccentGradient.Color = ColorSequence.new{
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(150, 200, 255)),
-    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(200, 230, 255)),
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(180, 220, 255))
-}
-AccentGradient.Parent = AccentBar
-
 -- Logo/Brand
 local BrandLabel = Instance.new("TextLabel")
 BrandLabel.Size = UDim2.new(0, 380, 0, 30)
 BrandLabel.Position = UDim2.new(0, 20, 0, 12)
 BrandLabel.BackgroundTransparency = 1
-BrandLabel.Text = "METAN HUB - AUTOPRESTIGE3"
-BrandLabel.Font = Enum.Font.GothamBold
-BrandLabel.TextSize = 18
-BrandLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+BrandLabel.Text = "Metan Hub - AutoPrestige3"
+BrandLabel.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
+BrandLabel.TextSize = 16
+BrandLabel.TextColor3 = Color3.fromRGB(152, 181, 255)
+BrandLabel.TextTransparency = 0.2
 BrandLabel.TextXAlignment = Enum.TextXAlignment.Left
 BrandLabel.ZIndex = 6
 BrandLabel.Parent = MainFrame
 
-local BrandStroke = Instance.new("UIStroke")
-BrandStroke.Color = Color3.fromRGB(150, 200, 255)
-BrandStroke.Thickness = 1
-BrandStroke.Parent = BrandLabel
+local BrandGradient = Instance.new("UIGradient")
+BrandGradient.Color = ColorSequence.new{
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(180, 200, 255)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 255, 255))
+}
+BrandGradient.Parent = BrandLabel
 
 -- Status Title
 local StatusTitle = Instance.new("TextLabel")
@@ -142,8 +129,8 @@ StatusTitle.Size = UDim2.new(1, -40, 0, 20)
 StatusTitle.Position = UDim2.new(0, 20, 0, 45)
 StatusTitle.BackgroundTransparency = 1
 StatusTitle.Text = "STATUS"
-StatusTitle.Font = Enum.Font.GothamBold
-StatusTitle.TextSize = 13
+StatusTitle.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
+StatusTitle.TextSize = 12
 StatusTitle.TextColor3 = Color3.fromRGB(180, 180, 200)
 StatusTitle.TextXAlignment = Enum.TextXAlignment.Left
 StatusTitle.ZIndex = 6
@@ -169,9 +156,9 @@ StatusLabel.Size = UDim2.new(1, -50, 1, 0)
 StatusLabel.Position = UDim2.new(0, 10, 0, 0)
 StatusLabel.BackgroundTransparency = 1
 StatusLabel.Text = "Initializing..."
-StatusLabel.Font = Enum.Font.Gotham
-StatusLabel.TextSize = 13
-StatusLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+StatusLabel.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+StatusLabel.TextSize = 12
+StatusLabel.TextColor3 = Color3.fromRGB(210, 210, 210)
 StatusLabel.TextXAlignment = Enum.TextXAlignment.Left
 StatusLabel.TextWrapped = true
 StatusLabel.ZIndex = 6
@@ -183,9 +170,9 @@ LoadingDots.Size = UDim2.new(0, 30, 1, 0)
 LoadingDots.Position = UDim2.new(1, -40, 0, 0)
 LoadingDots.BackgroundTransparency = 1
 LoadingDots.Text = "..."
-LoadingDots.Font = Enum.Font.GothamBold
-LoadingDots.TextSize = 16
-LoadingDots.TextColor3 = Color3.fromRGB(150, 200, 255)
+LoadingDots.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
+LoadingDots.TextSize = 14
+LoadingDots.TextColor3 = Color3.fromRGB(152, 181, 255)
 LoadingDots.ZIndex = 6
 LoadingDots.Parent = StatusContainer
 
@@ -213,68 +200,98 @@ local ParticleCorner = Instance.new("UICorner")
 ParticleCorner.CornerRadius = UDim.new(0, 15)
 ParticleCorner.Parent = ParticleContainer
 
--- Create snowflakes
+-- Create realistic snowflakes
 task.spawn(function()
     while true do
         -- Create snowflake container
         local snowflake = Instance.new("Frame")
-        local size = math.random(3, 6)
+        local size = math.random(4, 8)
         snowflake.Size = UDim2.new(0, size, 0, size)
-        snowflake.Position = UDim2.new(math.random(0, 100) / 100, 0, -0.05, 0)
-        snowflake.BackgroundColor3 = Color3.fromRGB(220, 240, 255)
-        snowflake.BackgroundTransparency = 0.3
+        snowflake.Position = UDim2.new(math.random(5, 95) / 100, 0, 0, -10)
+        snowflake.BackgroundTransparency = 1
         snowflake.BorderSizePixel = 0
         snowflake.ZIndex = 4
         snowflake.Rotation = math.random(0, 360)
         snowflake.Parent = ParticleContainer
         
-        local snowCorner = Instance.new("UICorner")
-        snowCorner.CornerRadius = UDim.new(0.3, 0)
-        snowCorner.Parent = snowflake
+        -- Center dot
+        local center = Instance.new("Frame")
+        center.Size = UDim2.new(0, 2, 0, 2)
+        center.Position = UDim2.new(0.5, -1, 0.5, -1)
+        center.BackgroundColor3 = Color3.fromRGB(240, 250, 255)
+        center.BackgroundTransparency = 0.1
+        center.BorderSizePixel = 0
+        center.ZIndex = 5
+        center.Parent = snowflake
         
-        -- Add cross pattern for snowflake shape
-        local line1 = Instance.new("Frame")
-        line1.Size = UDim2.new(1, 0, 0, 1)
-        line1.Position = UDim2.new(0, 0, 0.5, 0)
-        line1.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-        line1.BackgroundTransparency = 0.2
-        line1.BorderSizePixel = 0
-        line1.ZIndex = 5
-        line1.Parent = snowflake
+        local centerCorner = Instance.new("UICorner")
+        centerCorner.CornerRadius = UDim.new(1, 0)
+        centerCorner.Parent = center
         
-        local line2 = Instance.new("Frame")
-        line2.Size = UDim2.new(0, 1, 1, 0)
-        line2.Position = UDim2.new(0.5, 0, 0, 0)
-        line2.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-        line2.BackgroundTransparency = 0.2
-        line2.BorderSizePixel = 0
-        line2.ZIndex = 5
-        line2.Parent = snowflake
+        -- Create 6 arms for realistic snowflake
+        for i = 0, 5 do
+            local angle = i * 60
+            local arm = Instance.new("Frame")
+            arm.Size = UDim2.new(0, size / 2, 0, 1)
+            arm.Position = UDim2.new(0.5, 0, 0.5, 0)
+            arm.AnchorPoint = Vector2.new(0, 0.5)
+            arm.BackgroundColor3 = Color3.fromRGB(240, 250, 255)
+            arm.BackgroundTransparency = 0.2
+            arm.BorderSizePixel = 0
+            arm.Rotation = angle
+            arm.ZIndex = 5
+            arm.Parent = snowflake
+            
+            -- Small branches on arms
+            local branch1 = Instance.new("Frame")
+            branch1.Size = UDim2.new(0, size / 4, 0, 1)
+            branch1.Position = UDim2.new(0.6, 0, 0.5, 0)
+            branch1.AnchorPoint = Vector2.new(0, 0.5)
+            branch1.BackgroundColor3 = Color3.fromRGB(240, 250, 255)
+            branch1.BackgroundTransparency = 0.3
+            branch1.BorderSizePixel = 0
+            branch1.Rotation = -30
+            branch1.ZIndex = 5
+            branch1.Parent = arm
+            
+            local branch2 = Instance.new("Frame")
+            branch2.Size = UDim2.new(0, size / 4, 0, 1)
+            branch2.Position = UDim2.new(0.6, 0, 0.5, 0)
+            branch2.AnchorPoint = Vector2.new(0, 0.5)
+            branch2.BackgroundColor3 = Color3.fromRGB(240, 250, 255)
+            branch2.BackgroundTransparency = 0.3
+            branch2.BorderSizePixel = 0
+            branch2.Rotation = 30
+            branch2.ZIndex = 5
+            branch2.Parent = arm
+        end
         
-        local duration = math.random(4, 7)
-        local endX = snowflake.Position.X.Scale + math.random(-20, 20) / 100
+        local duration = math.random(5, 8)
+        local drift = math.random(-15, 15) / 100
+        local endX = math.clamp(snowflake.Position.X.Scale + drift, 0.05, 0.95)
         
-        -- Falling animation with rotation and drift
-        local tween = TweenService:Create(snowflake, TweenInfo.new(duration, Enum.EasingStyle.Linear), {
-            Position = UDim2.new(endX, 0, 1.1, 0),
+        -- Falling animation with gentle rotation and drift
+        local tween = TweenService:Create(snowflake, TweenInfo.new(duration, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
+            Position = UDim2.new(endX, 0, 1, 10),
             BackgroundTransparency = 1,
-            Rotation = snowflake.Rotation + math.random(180, 360)
+            Rotation = snowflake.Rotation + math.random(90, 180)
         })
         tween:Play()
         
-        TweenService:Create(line1, TweenInfo.new(duration, Enum.EasingStyle.Linear), {
-            BackgroundTransparency = 1
-        }):Play()
-        
-        TweenService:Create(line2, TweenInfo.new(duration, Enum.EasingStyle.Linear), {
-            BackgroundTransparency = 1
-        }):Play()
+        -- Fade out all children
+        for _, child in pairs(snowflake:GetDescendants()) do
+            if child:IsA("Frame") then
+                TweenService:Create(child, TweenInfo.new(duration, Enum.EasingStyle.Linear), {
+                    BackgroundTransparency = 1
+                }):Play()
+            end
+        end
         
         task.delay(duration, function()
             snowflake:Destroy()
         end)
         
-        task.wait(0.2)
+        task.wait(0.15)
     end
 end)
 
