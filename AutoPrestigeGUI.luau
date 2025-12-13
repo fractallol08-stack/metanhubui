@@ -207,7 +207,7 @@ task.spawn(function()
         local snowflake = Instance.new("Frame")
         local size = math.random(4, 8)
         snowflake.Size = UDim2.new(0, size, 0, size)
-        snowflake.Position = UDim2.new(math.random(5, 95) / 100, 0, 0, -10)
+        snowflake.Position = UDim2.new(math.random(10, 90) / 100, 0, 0, -10)
         snowflake.BackgroundTransparency = 1
         snowflake.BorderSizePixel = 0
         snowflake.ZIndex = 4
@@ -268,7 +268,7 @@ task.spawn(function()
         
         local duration = math.random(5, 8)
         local drift = math.random(-15, 15) / 100
-        local endX = math.clamp(snowflake.Position.X.Scale + drift, 0.05, 0.95)
+        local endX = math.clamp(snowflake.Position.X.Scale + drift, 0.1, 0.9)
         
         -- Falling animation with gentle rotation and drift
         local tween = TweenService:Create(snowflake, TweenInfo.new(duration, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
