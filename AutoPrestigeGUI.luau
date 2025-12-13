@@ -140,7 +140,8 @@ StatusTitle.Parent = MainFrame
 local StatusContainer = Instance.new("Frame")
 StatusContainer.Size = UDim2.new(1, -40, 0, 32)
 StatusContainer.Position = UDim2.new(0, 20, 0, 65)
-StatusContainer.BackgroundTransparency = 1
+StatusContainer.BackgroundColor3 = Color3.fromRGB(15, 15, 25)
+StatusContainer.BackgroundTransparency = 0.3
 StatusContainer.BorderSizePixel = 0
 StatusContainer.ZIndex = 5
 StatusContainer.Parent = MainFrame
@@ -311,6 +312,17 @@ local function updateStatus(text)
         TextTransparency = 0
     })
     fadeIn:Play()
+    
+    -- Flash effect on container
+    local flash = TweenService:Create(StatusContainer, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
+        BackgroundTransparency = 0
+    })
+    flash:Play()
+    task.wait(0.2)
+    local flashBack = TweenService:Create(StatusContainer, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {
+        BackgroundTransparency = 0.3
+    })
+    flashBack:Play()
 end
 
 -- Entrance animation
