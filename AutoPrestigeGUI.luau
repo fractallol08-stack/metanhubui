@@ -1,189 +1,131 @@
--- Metan Status GUI with Effects
+-- Metan Status GUI - Library Style
 local TweenService = game:GetService("TweenService")
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 
--- Create ScreenGui
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "MetanStatusGUI"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 ScreenGui.Parent = LocalPlayer.PlayerGui
 
--- Main Container with shadow
-local MainContainer = Instance.new("Frame")
-MainContainer.Name = "MainContainer"
-MainContainer.Size = UDim2.new(0, 600, 0, 120)
-MainContainer.Position = UDim2.new(0.5, -300, 0.02, 0)
-MainContainer.BackgroundTransparency = 1
-MainContainer.Parent = ScreenGui
+-- Main Container
+local Container = Instance.new("Frame")
+Container.Name = "Container"
+Container.Size = UDim2.new(0, 350, 0, 90)
+Container.Position = UDim2.new(0.5, -175, 0.03, 0)
+Container.BackgroundColor3 = Color3.fromRGB(22, 28, 38)
+Container.BackgroundTransparency = 0.5
+Container.BorderSizePixel = 0
+Container.Parent = ScreenGui
 
--- Shadow Frame
-local Shadow = Instance.new("Frame")
-Shadow.Name = "Shadow"
-Shadow.Size = UDim2.new(1, 10, 1, 10)
-Shadow.Position = UDim2.new(0, -5, 0, 5)
-Shadow.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-Shadow.BackgroundTransparency = 0.7
-Shadow.BorderSizePixel = 0
-Shadow.ZIndex = 1
-Shadow.Parent = MainContainer
+local ContainerCorner = Instance.new("UICorner")
+ContainerCorner.CornerRadius = UDim.new(0, 10)
+ContainerCorner.Parent = Container
 
-local ShadowCorner = Instance.new("UICorner")
-ShadowCorner.CornerRadius = UDim.new(0, 15)
-ShadowCorner.Parent = Shadow
-
--- Main Frame with gradient
-local MainFrame = Instance.new("Frame")
-MainFrame.Name = "MainFrame"
-MainFrame.Size = UDim2.new(1, 0, 1, 0)
-MainFrame.Position = UDim2.new(0, 0, 0, 0)
-MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
-MainFrame.BorderSizePixel = 0
-MainFrame.ZIndex = 2
-MainFrame.Parent = MainContainer
-
-local MainCorner = Instance.new("UICorner")
-MainCorner.CornerRadius = UDim.new(0, 15)
-MainCorner.Parent = MainFrame
-
--- Gradient overlay
-local GradientFrame = Instance.new("Frame")
-GradientFrame.Size = UDim2.new(1, 0, 1, 0)
-GradientFrame.BackgroundTransparency = 0.5
-GradientFrame.BorderSizePixel = 0
-GradientFrame.ZIndex = 3
-GradientFrame.Parent = MainFrame
-
-local GradientCorner = Instance.new("UICorner")
-GradientCorner.CornerRadius = UDim.new(0, 15)
-GradientCorner.Parent = GradientFrame
-
-local Gradient = Instance.new("UIGradient")
-Gradient.Color = ColorSequence.new{
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(100, 150, 255)),
-    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(150, 100, 255)),
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 100, 200))
-}
-Gradient.Rotation = 45
-Gradient.Parent = GradientFrame
-
--- Animated gradient rotation
-task.spawn(function()
-    while true do
-        local tween = TweenService:Create(Gradient, TweenInfo.new(3, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut), {Rotation = Gradient.Rotation + 360})
-        tween:Play()
-        task.wait(3)
-    end
-end)
-
--- Border glow effect
-local BorderGlow = Instance.new("UIStroke")
-BorderGlow.Color = Color3.fromRGB(150, 150, 255)
-BorderGlow.Thickness = 2
-BorderGlow.Transparency = 0.3
-BorderGlow.Parent = MainFrame
+local ContainerStroke = Instance.new("UIStroke")
+ContainerStroke.Color = Color3.fromRGB(52, 66, 89)
+ContainerStroke.Transparency = 0.5
+ContainerStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+ContainerStroke.Parent = Container
 
 -- Animated border glow
 task.spawn(function()
     while true do
-        local tween1 = TweenService:Create(BorderGlow, TweenInfo.new(1.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {Transparency = 0})
-        tween1:Play()
-        task.wait(1.5)
-        local tween2 = TweenService:Create(BorderGlow, TweenInfo.new(1.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {Transparency = 0.5})
-        tween2:Play()
-        task.wait(1.5)
+        TweenService:Create(ContainerStroke, TweenInfo.new(2, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
+            Transparency = 0.2
+        }):Play()
+        task.wait(2)
+        TweenService:Create(ContainerStroke, TweenInfo.new(2, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
+            Transparency = 0.6
+        }):Play()
+        task.wait(2)
     end
 end)
 
--- Top accent bar
-local AccentBar = Instance.new("Frame")
-AccentBar.Size = UDim2.new(1, 0, 0, 4)
-AccentBar.Position = UDim2.new(0, 0, 0, 0)
-AccentBar.BorderSizePixel = 0
-AccentBar.ZIndex = 5
-AccentBar.Parent = MainFrame
-
-local AccentGradient = Instance.new("UIGradient")
-AccentGradient.Color = ColorSequence.new{
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(100, 200, 255)),
-    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(200, 100, 255)),
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 100, 150))
-}
-AccentGradient.Parent = AccentBar
-
--- Logo/Brand
+-- Brand Label
 local BrandLabel = Instance.new("TextLabel")
-BrandLabel.Size = UDim2.new(0, 200, 0, 35)
-BrandLabel.Position = UDim2.new(0, 20, 0, 15)
+BrandLabel.Name = "BrandLabel"
+BrandLabel.Size = UDim2.new(0, 200, 0, 20)
+BrandLabel.Position = UDim2.new(0, 15, 0, 12)
 BrandLabel.BackgroundTransparency = 1
-BrandLabel.Text = "METAN HUB"
-BrandLabel.Font = Enum.Font.GothamBold
-BrandLabel.TextSize = 24
-BrandLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+BrandLabel.Text = "Metan Hub"
+BrandLabel.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
+BrandLabel.TextSize = 14
+BrandLabel.TextColor3 = Color3.fromRGB(152, 181, 255)
+BrandLabel.TextTransparency = 0.2
 BrandLabel.TextXAlignment = Enum.TextXAlignment.Left
-BrandLabel.ZIndex = 6
-BrandLabel.Parent = MainFrame
+BrandLabel.Parent = Container
 
-local BrandStroke = Instance.new("UIStroke")
-BrandStroke.Color = Color3.fromRGB(100, 150, 255)
-BrandStroke.Thickness = 1
-BrandStroke.Parent = BrandLabel
+local BrandGradient = Instance.new("UIGradient")
+BrandGradient.Color = ColorSequence.new{
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(155, 155, 155)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 255, 255))
+}
+BrandGradient.Parent = BrandLabel
 
 -- Status Title
 local StatusTitle = Instance.new("TextLabel")
-StatusTitle.Size = UDim2.new(1, -40, 0, 25)
-StatusTitle.Position = UDim2.new(0, 20, 0, 55)
+StatusTitle.Name = "StatusTitle"
+StatusTitle.Size = UDim2.new(0, 100, 0, 15)
+StatusTitle.Position = UDim2.new(0, 15, 0, 38)
 StatusTitle.BackgroundTransparency = 1
 StatusTitle.Text = "STATUS"
-StatusTitle.Font = Enum.Font.GothamBold
-StatusTitle.TextSize = 16
+StatusTitle.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
+StatusTitle.TextSize = 11
 StatusTitle.TextColor3 = Color3.fromRGB(180, 180, 200)
 StatusTitle.TextXAlignment = Enum.TextXAlignment.Left
-StatusTitle.ZIndex = 6
-StatusTitle.Parent = MainFrame
+StatusTitle.Parent = Container
 
--- Status Text with container
-local StatusContainer = Instance.new("Frame")
-StatusContainer.Size = UDim2.new(1, -40, 0, 35)
-StatusContainer.Position = UDim2.new(0, 20, 0, 75)
-StatusContainer.BackgroundColor3 = Color3.fromRGB(15, 15, 25)
-StatusContainer.BackgroundTransparency = 0.3
-StatusContainer.BorderSizePixel = 0
-StatusContainer.ZIndex = 5
-StatusContainer.Parent = MainFrame
+-- Status Container
+local StatusBox = Instance.new("Frame")
+StatusBox.Name = "StatusBox"
+StatusBox.Size = UDim2.new(1, -30, 0, 25)
+StatusBox.Position = UDim2.new(0, 15, 0, 57)
+StatusBox.BackgroundColor3 = Color3.fromRGB(32, 38, 51)
+StatusBox.BackgroundTransparency = 0.1
+StatusBox.BorderSizePixel = 0
+StatusBox.Parent = Container
 
-local StatusContainerCorner = Instance.new("UICorner")
-StatusContainerCorner.CornerRadius = UDim.new(0, 8)
-StatusContainerCorner.Parent = StatusContainer
+local StatusBoxCorner = Instance.new("UICorner")
+StatusBoxCorner.CornerRadius = UDim.new(0, 4)
+StatusBoxCorner.Parent = StatusBox
 
+-- Status Text
 local StatusLabel = Instance.new("TextLabel")
 StatusLabel.Name = "StatusText"
-StatusLabel.Size = UDim2.new(1, -20, 1, 0)
-StatusLabel.Position = UDim2.new(0, 10, 0, 0)
+StatusLabel.Size = UDim2.new(1, -50, 1, 0)
+StatusLabel.Position = UDim2.new(0, 8, 0, 0)
 StatusLabel.BackgroundTransparency = 1
 StatusLabel.Text = "Initializing..."
-StatusLabel.Font = Enum.Font.Gotham
-StatusLabel.TextSize = 15
-StatusLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+StatusLabel.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+StatusLabel.TextSize = 11
+StatusLabel.TextColor3 = Color3.fromRGB(210, 210, 210)
 StatusLabel.TextXAlignment = Enum.TextXAlignment.Left
 StatusLabel.TextWrapped = true
-StatusLabel.ZIndex = 6
-StatusLabel.Parent = StatusContainer
+StatusLabel.Parent = StatusBox
 
--- Loading indicator dots
+local StatusGradient = Instance.new("UIGradient")
+StatusGradient.Transparency = NumberSequence.new{
+    NumberSequenceKeypoint.new(0, 0),
+    NumberSequenceKeypoint.new(0.8, 0),
+    NumberSequenceKeypoint.new(1, 0.5)
+}
+StatusGradient.Parent = StatusLabel
+
+-- Loading Dots
 local LoadingDots = Instance.new("TextLabel")
+LoadingDots.Name = "LoadingDots"
 LoadingDots.Size = UDim2.new(0, 30, 1, 0)
-LoadingDots.Position = UDim2.new(1, -40, 0, 0)
+LoadingDots.Position = UDim2.new(1, -35, 0, 0)
 LoadingDots.BackgroundTransparency = 1
 LoadingDots.Text = "..."
-LoadingDots.Font = Enum.Font.GothamBold
-LoadingDots.TextSize = 18
-LoadingDots.TextColor3 = Color3.fromRGB(100, 200, 255)
-LoadingDots.ZIndex = 6
-LoadingDots.Parent = StatusContainer
+LoadingDots.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
+LoadingDots.TextSize = 14
+LoadingDots.TextColor3 = Color3.fromRGB(152, 181, 255)
+LoadingDots.Parent = StatusBox
 
--- Animated loading dots
+-- Animated dots
 task.spawn(function()
     local dots = {".", "..", "..."}
     local index = 1
@@ -194,93 +136,42 @@ task.spawn(function()
     end
 end)
 
--- Particle effect container
-local ParticleContainer = Instance.new("Frame")
-ParticleContainer.Size = UDim2.new(1, 0, 1, 0)
-ParticleContainer.BackgroundTransparency = 1
-ParticleContainer.BorderSizePixel = 0
-ParticleContainer.ZIndex = 4
-ParticleContainer.ClipsDescendants = true
-ParticleContainer.Parent = MainFrame
-
-local ParticleCorner = Instance.new("UICorner")
-ParticleCorner.CornerRadius = UDim.new(0, 15)
-ParticleCorner.Parent = ParticleContainer
-
--- Create floating particles
-task.spawn(function()
-    while true do
-        local particle = Instance.new("Frame")
-        particle.Size = UDim2.new(0, math.random(2, 4), 0, math.random(2, 4))
-        particle.Position = UDim2.new(math.random(0, 100) / 100, 0, 1, 0)
-        particle.BackgroundColor3 = Color3.fromRGB(150, 150, 255)
-        particle.BackgroundTransparency = 0.5
-        particle.BorderSizePixel = 0
-        particle.ZIndex = 4
-        particle.Parent = ParticleContainer
-        
-        local particleCorner = Instance.new("UICorner")
-        particleCorner.CornerRadius = UDim.new(1, 0)
-        particleCorner.Parent = particle
-        
-        local duration = math.random(3, 6)
-        local tween = TweenService:Create(particle, TweenInfo.new(duration, Enum.EasingStyle.Linear), {
-            Position = UDim2.new(particle.Position.X.Scale, 0, -0.1, 0),
-            BackgroundTransparency = 1
-        })
-        tween:Play()
-        
-        task.delay(duration, function()
-            particle:Destroy()
-        end)
-        
-        task.wait(0.3)
-    end
-end)
-
--- Update status function with animation
+-- Update status function
 local function updateStatus(text)
-    -- Fade out
-    local fadeOut = TweenService:Create(StatusLabel, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+    local fadeOut = TweenService:Create(StatusLabel, TweenInfo.new(0.2, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
         TextTransparency = 1
     })
     fadeOut:Play()
     fadeOut.Completed:Wait()
     
-    -- Update text
     StatusLabel.Text = text
     
-    -- Fade in
-    local fadeIn = TweenService:Create(StatusLabel, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
+    local fadeIn = TweenService:Create(StatusLabel, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.In), {
         TextTransparency = 0
     })
     fadeIn:Play()
     
-    -- Flash effect on container
-    local flash = TweenService:Create(StatusContainer, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
-        BackgroundTransparency = 0
-    })
-    flash:Play()
+    -- Flash effect
+    TweenService:Create(StatusBox, TweenInfo.new(0.2, Enum.EasingStyle.Quint), {
+        BackgroundColor3 = Color3.fromRGB(42, 50, 66)
+    }):Play()
     task.wait(0.2)
-    local flashBack = TweenService:Create(StatusContainer, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {
-        BackgroundTransparency = 0.3
-    })
-    flashBack:Play()
+    TweenService:Create(StatusBox, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {
+        BackgroundColor3 = Color3.fromRGB(32, 38, 51)
+    }):Play()
 end
 
 -- Entrance animation
-MainContainer.Position = UDim2.new(0.5, -300, -0.2, 0)
-MainContainer.Size = UDim2.new(0, 0, 0, 0)
+Container.Size = UDim2.new(0, 0, 0, 0)
+Container.Position = UDim2.new(0.5, 0, 0.03, 0)
 
-task.wait(0.5)
+task.wait(0.3)
 
-local entranceTween = TweenService:Create(MainContainer, TweenInfo.new(0.8, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-    Position = UDim2.new(0.5, -300, 0.02, 0),
-    Size = UDim2.new(0, 600, 0, 120)
-})
-entranceTween:Play()
+TweenService:Create(Container, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+    Size = UDim2.new(0, 350, 0, 90),
+    Position = UDim2.new(0.5, -175, 0.03, 0)
+}):Play()
 
--- Export function
 _G.UpdateStatus = updateStatus
 
 return {
