@@ -140,8 +140,7 @@ StatusTitle.Parent = MainFrame
 local StatusContainer = Instance.new("Frame")
 StatusContainer.Size = UDim2.new(1, -40, 0, 32)
 StatusContainer.Position = UDim2.new(0, 20, 0, 65)
-StatusContainer.BackgroundColor3 = Color3.fromRGB(15, 15, 25)
-StatusContainer.BackgroundTransparency = 0.3
+StatusContainer.BackgroundTransparency = 1
 StatusContainer.BorderSizePixel = 0
 StatusContainer.ZIndex = 5
 StatusContainer.Parent = MainFrame
@@ -207,7 +206,7 @@ task.spawn(function()
         local snowflake = Instance.new("Frame")
         local size = math.random(4, 8)
         snowflake.Size = UDim2.new(0, size, 0, size)
-        snowflake.Position = UDim2.new(math.random(15, 85) / 100, 0, 0, -10)
+        snowflake.Position = UDim2.new(math.random(20, 80) / 100, 0, 0, -10)
         snowflake.BackgroundTransparency = 1
         snowflake.BorderSizePixel = 0
         snowflake.ZIndex = 4
@@ -267,8 +266,8 @@ task.spawn(function()
         end
         
         local duration = math.random(5, 8)
-        local drift = math.random(-10, 10) / 100
-        local endX = math.clamp(snowflake.Position.X.Scale + drift, 0.15, 0.85)
+        local drift = math.random(-8, 8) / 100
+        local endX = math.clamp(snowflake.Position.X.Scale + drift, 0.2, 0.8)
         
         -- Falling animation with gentle rotation and drift
         local tween = TweenService:Create(snowflake, TweenInfo.new(duration, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
@@ -312,17 +311,6 @@ local function updateStatus(text)
         TextTransparency = 0
     })
     fadeIn:Play()
-    
-    -- Flash effect on container
-    local flash = TweenService:Create(StatusContainer, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
-        BackgroundTransparency = 0
-    })
-    flash:Play()
-    task.wait(0.2)
-    local flashBack = TweenService:Create(StatusContainer, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {
-        BackgroundTransparency = 0.3
-    })
-    flashBack:Play()
 end
 
 -- Entrance animation
