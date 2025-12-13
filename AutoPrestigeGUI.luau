@@ -10,28 +10,13 @@ ScreenGui.ResetOnSpawn = false
 ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 ScreenGui.Parent = LocalPlayer.PlayerGui
 
--- Main Container with shadow
+-- Main Container
 local MainContainer = Instance.new("Frame")
 MainContainer.Name = "MainContainer"
 MainContainer.Size = UDim2.new(0, 420, 0, 105)
 MainContainer.Position = UDim2.new(0.5, -210, 0.03, 0)
 MainContainer.BackgroundTransparency = 1
 MainContainer.Parent = ScreenGui
-
--- Shadow Frame
-local Shadow = Instance.new("Frame")
-Shadow.Name = "Shadow"
-Shadow.Size = UDim2.new(1, 10, 1, 10)
-Shadow.Position = UDim2.new(0, -5, 0, 5)
-Shadow.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-Shadow.BackgroundTransparency = 0.7
-Shadow.BorderSizePixel = 0
-Shadow.ZIndex = 1
-Shadow.Parent = MainContainer
-
-local ShadowCorner = Instance.new("UICorner")
-ShadowCorner.CornerRadius = UDim.new(0, 15)
-ShadowCorner.Parent = Shadow
 
 -- Main Frame with gradient
 local MainFrame = Instance.new("Frame")
@@ -47,17 +32,17 @@ local MainCorner = Instance.new("UICorner")
 MainCorner.CornerRadius = UDim.new(0, 15)
 MainCorner.Parent = MainFrame
 
--- Gradient overlay
-local GradientFrame = Instance.new("Frame")
-GradientFrame.Size = UDim2.new(1, 0, 1, 0)
-GradientFrame.BackgroundTransparency = 0.5
-GradientFrame.BorderSizePixel = 0
-GradientFrame.ZIndex = 3
-GradientFrame.Parent = MainFrame
+-- Gradient overlay on MainFrame
+local GradientOverlay = Instance.new("Frame")
+GradientOverlay.Size = UDim2.new(1, 0, 1, 0)
+GradientOverlay.BackgroundTransparency = 0.5
+GradientOverlay.BorderSizePixel = 0
+GradientOverlay.ZIndex = 3
+GradientOverlay.Parent = MainFrame
 
-local GradientCorner = Instance.new("UICorner")
-GradientCorner.CornerRadius = UDim.new(0, 15)
-GradientCorner.Parent = GradientFrame
+local GradientOverlayCorner = Instance.new("UICorner")
+GradientOverlayCorner.CornerRadius = UDim.new(0, 15)
+GradientOverlayCorner.Parent = GradientOverlay
 
 local Gradient = Instance.new("UIGradient")
 Gradient.Color = ColorSequence.new{
@@ -66,7 +51,7 @@ Gradient.Color = ColorSequence.new{
     ColorSequenceKeypoint.new(1, Color3.fromRGB(180, 220, 255))
 }
 Gradient.Rotation = 45
-Gradient.Parent = GradientFrame
+Gradient.Parent = GradientOverlay
 
 -- Animated gradient rotation
 task.spawn(function()
