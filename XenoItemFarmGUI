@@ -225,73 +225,75 @@ task.spawn(function()
 end)
 
 local function updateBalance()
-    pcall(function()
-        if Player and Player:FindFirstChild("PlayerStats") and Player.PlayerStats:FindFirstChild("Money") then
-            local newText = "Balance: $" .. tostring(Player.PlayerStats.Money.Value)
-            if BalanceLabel and BalanceLabel.Text ~= newText then
-                BalanceLabel.Text = newText
-                local pulse = TweenService:Create(BalanceLabel, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {TextSize = 20})
-                pulse:Play()
-                task.wait(0.2)
-                TweenService:Create(BalanceLabel, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {TextSize = 18}):Play()
-            end
+    local success, err = pcall(function()
+        if not Player then return end
+        if not Player:FindFirstChild("PlayerStats") then return end
+        if not Player.PlayerStats:FindFirstChild("Money") then return end
+        if not BalanceLabel then return end
+        
+        local money = Player.PlayerStats.Money.Value
+        local newText = "Balance: $" .. tostring(money)
+        
+        if BalanceLabel.Text ~= newText then
+            BalanceLabel.Text = newText
         end
     end)
+    if not success then
+        warn("Balance update error:", err)
+    end
 end
 
 local function updateLuckyArrows()
-    pcall(function()
-        if Player and Player:FindFirstChild("Backpack") then
-            local count = 0
-            for _, tool in pairs(Player.Backpack:GetChildren()) do
-                if tool.Name == "Lucky Arrow" then
-                    count = count + 1
-                end
-            end
-            local newText = "Lucky Arrows: " .. tostring(count)
-            if ArrowsLabel and ArrowsLabel.Text ~= newText then
-                ArrowsLabel.Text = newText
-                local pulse = TweenService:Create(ArrowsLabel, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {TextSize = 20})
-                pulse:Play()
-                task.wait(0.2)
-                TweenService:Create(ArrowsLabel, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {TextSize = 18}):Play()
+    local success, err = pcall(function()
+        if not Player then return end
+        if not Player:FindFirstChild("Backpack") then return end
+        if not ArrowsLabel then return end
+        
+        local count = 0
+        for _, tool in pairs(Player.Backpack:GetChildren()) do
+            if tool and tool.Name == "Lucky Arrow" then
+                count = count + 1
             end
         end
+        
+        local newText = "Lucky Arrows: " .. tostring(count)
+        if ArrowsLabel.Text ~= newText then
+            ArrowsLabel.Text = newText
+        end
     end)
+    if not success then
+        warn("Arrows update error:", err)
+    end
 end
 
 local function setStatus(text)
-    pcall(function()
-        if StatusLabel and StatusContainer then
-            local fadeOut = TweenService:Create(StatusLabel, TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-                TextTransparency = 1
-            })
-            fadeOut:Play()
-            task.wait(0.15)
-            
-            StatusLabel.Text = text
-            
-            local fadeIn = TweenService:Create(StatusLabel, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
-                TextTransparency = 0
-            })
-            fadeIn:Play()
-            
-            local flash = TweenService:Create(StatusContainer, TweenInfo.new(0.15, Enum.EasingStyle.Quad), {
-                BackgroundTransparency = 0
-            })
-            flash:Play()
-            task.wait(0.15)
-            TweenService:Create(StatusContainer, TweenInfo.new(0.25, Enum.EasingStyle.Quad), {
-                BackgroundTransparency = 0.3
-            }):Play()
-        end
+    local success, err = pcall(function()
+        if not StatusLabel then return end
+        if not text then return end
+        
+        StatusLabel.Text = tostring(text)
     end)
+    if not success then
+        warn("Status update error:", err)
+    end
 end
 
 task.spawn(function()
-    repeat task.wait(1) until Player:FindFirstChild("PlayerStats") and Player:FindFirstChild("Backpack")
+    task.wait(3)
+    
+    local attempts = 0
+    while attempts < 30 do
+        if Player:FindFirstChild("PlayerStats") and Player:FindFirstChild("Backpack") then
+            break
+        end
+        attempts = attempts + 1
+        task.wait(1)
+    end
+    
     task.wait(2)
-    while task.wait(0.2) do
+    
+    while true do
+        task.wait(0.5)
         updateBalance()
         updateLuckyArrows()
     end
