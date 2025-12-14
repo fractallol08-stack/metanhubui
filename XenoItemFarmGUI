@@ -1,6 +1,7 @@
--- Metan Item Farm GUI
--- Load this file from GitHub at the start of your script
+-- Metan Item Farm GUI with Animations
+-- Load this file from GitHub AFTER game loads
 
+local TweenService = game:GetService("TweenService")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 
@@ -16,102 +17,290 @@ local BlurEffect = Instance.new("BlurEffect")
 BlurEffect.Size = 24
 BlurEffect.Parent = game:GetService("Lighting")
 
-local Container = Instance.new("Frame")
-Container.Name = "Container"
-Container.Size = UDim2.new(0, 400, 0, 200)
-Container.Position = UDim2.new(0.5, 0, 0.5, 0)
-Container.AnchorPoint = Vector2.new(0.5, 0.5)
-Container.BackgroundTransparency = 1
-Container.Parent = ScreenGui
+local MainContainer = Instance.new("Frame")
+MainContainer.Name = "MainContainer"
+MainContainer.Size = UDim2.new(0, 500, 0, 280)
+MainContainer.Position = UDim2.new(0.5, 0, 0.5, 0)
+MainContainer.AnchorPoint = Vector2.new(0.5, 0.5)
+MainContainer.BackgroundTransparency = 1
+MainContainer.Parent = ScreenGui
+
+local MainFrame = Instance.new("Frame")
+MainFrame.Name = "MainFrame"
+MainFrame.Size = UDim2.new(1, 0, 1, 0)
+MainFrame.Position = UDim2.new(0, 0, 0, 0)
+MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
+MainFrame.BorderSizePixel = 0
+MainFrame.ZIndex = 2
+MainFrame.Parent = MainContainer
+
+local MainCorner = Instance.new("UICorner")
+MainCorner.CornerRadius = UDim.new(0, 20)
+MainCorner.Parent = MainFrame
+
+local GradientOverlay = Instance.new("Frame")
+GradientOverlay.Size = UDim2.new(1, 0, 1, 0)
+GradientOverlay.BackgroundTransparency = 0.6
+GradientOverlay.BorderSizePixel = 0
+GradientOverlay.ZIndex = 3
+GradientOverlay.Parent = MainFrame
+
+local GradientOverlayCorner = Instance.new("UICorner")
+GradientOverlayCorner.CornerRadius = UDim.new(0, 20)
+GradientOverlayCorner.Parent = GradientOverlay
+
+local Gradient = Instance.new("UIGradient")
+Gradient.Color = ColorSequence.new{
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(150, 200, 255)),
+    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(200, 230, 255)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(180, 220, 255))
+}
+Gradient.Rotation = 45
+Gradient.Parent = GradientOverlay
+
+task.spawn(function()
+    while true do
+        local tween = TweenService:Create(Gradient, TweenInfo.new(3, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut), {Rotation = Gradient.Rotation + 360})
+        tween:Play()
+        task.wait(3)
+    end
+end)
+
+local BorderGlow = Instance.new("UIStroke")
+BorderGlow.Color = Color3.fromRGB(180, 220, 255)
+BorderGlow.Thickness = 3
+BorderGlow.Transparency = 0.3
+BorderGlow.Parent = MainFrame
+
+task.spawn(function()
+    while true do
+        local tween1 = TweenService:Create(BorderGlow, TweenInfo.new(1.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
+            Transparency = 0,
+            Color = Color3.fromRGB(200, 230, 255)
+        })
+        tween1:Play()
+        task.wait(1.5)
+        local tween2 = TweenService:Create(BorderGlow, TweenInfo.new(1.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
+            Transparency = 0.5,
+            Color = Color3.fromRGB(150, 200, 255)
+        })
+        tween2:Play()
+        task.wait(1.5)
+    end
+end)
+
+local BrandLabel = Instance.new("TextLabel")
+BrandLabel.Size = UDim2.new(1, -40, 0, 35)
+BrandLabel.Position = UDim2.new(0, 20, 0, 15)
+BrandLabel.BackgroundTransparency = 1
+BrandLabel.Text = "Metan Hub - Item Farm"
+BrandLabel.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.Bold, Enum.FontStyle.Normal)
+BrandLabel.TextSize = 20
+BrandLabel.TextColor3 = Color3.fromRGB(152, 181, 255)
+BrandLabel.TextTransparency = 0.2
+BrandLabel.TextXAlignment = Enum.TextXAlignment.Left
+BrandLabel.ZIndex = 6
+BrandLabel.Parent = MainFrame
+
+local BrandGradient = Instance.new("UIGradient")
+BrandGradient.Color = ColorSequence.new{
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(180, 200, 255)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 255, 255))
+}
+BrandGradient.Parent = BrandLabel
 
 local PlayerName = Instance.new("TextLabel")
 PlayerName.Name = "PlayerName"
-PlayerName.Size = UDim2.new(1, 0, 0, 30)
-PlayerName.Position = UDim2.new(0, 0, 0, 0)
+PlayerName.Size = UDim2.new(1, -40, 0, 30)
+PlayerName.Position = UDim2.new(0, 20, 0, 60)
 PlayerName.BackgroundTransparency = 1
-PlayerName.Text = Player.Name
-PlayerName.TextColor3 = Color3.fromRGB(152, 181, 255)
+PlayerName.Text = "Player: " .. Player.Name
+PlayerName.TextColor3 = Color3.fromRGB(200, 200, 220)
 PlayerName.TextTransparency = 0.2
 PlayerName.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
-PlayerName.TextSize = 24
-PlayerName.Parent = Container
+PlayerName.TextSize = 16
+PlayerName.TextXAlignment = Enum.TextXAlignment.Left
+PlayerName.ZIndex = 6
+PlayerName.Parent = MainFrame
 
-local Balance = Instance.new("TextLabel")
-Balance.Name = "Balance"
-Balance.Size = UDim2.new(1, 0, 0, 25)
-Balance.Position = UDim2.new(0, 0, 0, 40)
-Balance.BackgroundTransparency = 1
-Balance.Text = "Balance: $0"
-Balance.TextColor3 = Color3.fromRGB(255, 255, 255)
-Balance.TextTransparency = 0.2
-Balance.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
-Balance.TextSize = 18
-Balance.Parent = Container
+local InfoContainer = Instance.new("Frame")
+InfoContainer.Size = UDim2.new(1, -40, 0, 80)
+InfoContainer.Position = UDim2.new(0, 20, 0, 100)
+InfoContainer.BackgroundColor3 = Color3.fromRGB(15, 15, 25)
+InfoContainer.BackgroundTransparency = 0.3
+InfoContainer.BorderSizePixel = 0
+InfoContainer.ZIndex = 5
+InfoContainer.Parent = MainFrame
 
-local LuckyArrows = Instance.new("TextLabel")
-LuckyArrows.Name = "LuckyArrows"
-LuckyArrows.Size = UDim2.new(1, 0, 0, 25)
-LuckyArrows.Position = UDim2.new(0, 0, 0, 75)
-LuckyArrows.BackgroundTransparency = 1
-LuckyArrows.Text = "Lucky Arrows: 0"
-LuckyArrows.TextColor3 = Color3.fromRGB(255, 255, 255)
-LuckyArrows.TextTransparency = 0.2
-LuckyArrows.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
-LuckyArrows.TextSize = 18
-LuckyArrows.Parent = Container
+local InfoCorner = Instance.new("UICorner")
+InfoCorner.CornerRadius = UDim.new(0, 12)
+InfoCorner.Parent = InfoContainer
 
-local Status = Instance.new("TextLabel")
-Status.Name = "Status"
-Status.Size = UDim2.new(1, 0, 0, 30)
-Status.Position = UDim2.new(0, 0, 0, 120)
-Status.BackgroundTransparency = 1
-Status.Text = "[Loading...]"
-Status.TextColor3 = Color3.fromRGB(152, 181, 255)
-Status.TextTransparency = 0.2
-Status.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
-Status.TextSize = 20
-Status.Parent = Container
+local BalanceLabel = Instance.new("TextLabel")
+BalanceLabel.Name = "BalanceLabel"
+BalanceLabel.Size = UDim2.new(1, -20, 0, 25)
+BalanceLabel.Position = UDim2.new(0, 10, 0, 10)
+BalanceLabel.BackgroundTransparency = 1
+BalanceLabel.Text = "Balance: $0"
+BalanceLabel.TextColor3 = Color3.fromRGB(100, 255, 150)
+BalanceLabel.TextTransparency = 0.2
+BalanceLabel.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
+BalanceLabel.TextSize = 18
+BalanceLabel.TextXAlignment = Enum.TextXAlignment.Left
+BalanceLabel.ZIndex = 6
+BalanceLabel.Parent = InfoContainer
 
-local function addGradient(textLabel)
-    local UIGradient = Instance.new('UIGradient')
-    UIGradient.Color = ColorSequence.new{
-        ColorSequenceKeypoint.new(0, Color3.fromRGB(155, 155, 155)),
-        ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 255, 255))
-    }
-    UIGradient.Parent = textLabel
-end
+local ArrowsLabel = Instance.new("TextLabel")
+ArrowsLabel.Name = "ArrowsLabel"
+ArrowsLabel.Size = UDim2.new(1, -20, 0, 25)
+ArrowsLabel.Position = UDim2.new(0, 10, 0, 45)
+ArrowsLabel.BackgroundTransparency = 1
+ArrowsLabel.Text = "Lucky Arrows: 0"
+ArrowsLabel.TextColor3 = Color3.fromRGB(255, 220, 100)
+ArrowsLabel.TextTransparency = 0.2
+ArrowsLabel.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
+ArrowsLabel.TextSize = 18
+ArrowsLabel.TextXAlignment = Enum.TextXAlignment.Left
+ArrowsLabel.ZIndex = 6
+ArrowsLabel.Parent = InfoContainer
 
-addGradient(PlayerName)
-addGradient(Balance)
-addGradient(LuckyArrows)
-addGradient(Status)
+local StatusTitle = Instance.new("TextLabel")
+StatusTitle.Size = UDim2.new(1, -40, 0, 20)
+StatusTitle.Position = UDim2.new(0, 20, 0, 190)
+StatusTitle.BackgroundTransparency = 1
+StatusTitle.Text = "STATUS"
+StatusTitle.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
+StatusTitle.TextSize = 12
+StatusTitle.TextColor3 = Color3.fromRGB(180, 180, 200)
+StatusTitle.TextXAlignment = Enum.TextXAlignment.Left
+StatusTitle.ZIndex = 6
+StatusTitle.Parent = MainFrame
+
+local StatusContainer = Instance.new("Frame")
+StatusContainer.Size = UDim2.new(1, -40, 0, 50)
+StatusContainer.Position = UDim2.new(0, 20, 0, 215)
+StatusContainer.BackgroundColor3 = Color3.fromRGB(15, 15, 25)
+StatusContainer.BackgroundTransparency = 0.3
+StatusContainer.BorderSizePixel = 0
+StatusContainer.ZIndex = 5
+StatusContainer.Parent = MainFrame
+
+local StatusCorner = Instance.new("UICorner")
+StatusCorner.CornerRadius = UDim.new(0, 12)
+StatusCorner.Parent = StatusContainer
+
+local StatusLabel = Instance.new("TextLabel")
+StatusLabel.Name = "StatusText"
+StatusLabel.Size = UDim2.new(1, -60, 1, 0)
+StatusLabel.Position = UDim2.new(0, 15, 0, 0)
+StatusLabel.BackgroundTransparency = 1
+StatusLabel.Text = "Initializing..."
+StatusLabel.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+StatusLabel.TextSize = 14
+StatusLabel.TextColor3 = Color3.fromRGB(210, 210, 210)
+StatusLabel.TextXAlignment = Enum.TextXAlignment.Left
+StatusLabel.TextWrapped = true
+StatusLabel.ZIndex = 6
+StatusLabel.Parent = StatusContainer
+
+local LoadingDots = Instance.new("TextLabel")
+LoadingDots.Size = UDim2.new(0, 40, 1, 0)
+LoadingDots.Position = UDim2.new(1, -50, 0, 0)
+LoadingDots.BackgroundTransparency = 1
+LoadingDots.Text = "..."
+LoadingDots.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.Bold, Enum.FontStyle.Normal)
+LoadingDots.TextSize = 16
+LoadingDots.TextColor3 = Color3.fromRGB(152, 181, 255)
+LoadingDots.ZIndex = 6
+LoadingDots.Parent = StatusContainer
+
+task.spawn(function()
+    local dots = {".", "..", "..."}
+    local index = 1
+    while true do
+        LoadingDots.Text = dots[index]
+        index = index % 3 + 1
+        task.wait(0.5)
+    end
+end)
 
 local function updateBalance()
-    if Player.PlayerStats and Player.PlayerStats:FindFirstChild("Money") then
-        Balance.Text = "Balance: $" .. tostring(Player.PlayerStats.Money.Value)
-    end
+    pcall(function()
+        if Player.PlayerStats and Player.PlayerStats:FindFirstChild("Money") then
+            local newText = "Balance: $" .. tostring(Player.PlayerStats.Money.Value)
+            if BalanceLabel.Text ~= newText then
+                BalanceLabel.Text = newText
+                local pulse = TweenService:Create(BalanceLabel, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {TextSize = 20})
+                pulse:Play()
+                pulse.Completed:Wait()
+                TweenService:Create(BalanceLabel, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {TextSize = 18}):Play()
+            end
+        end
+    end)
 end
 
 local function updateLuckyArrows()
-    local count = 0
-    for _, tool in pairs(Player.Backpack:GetChildren()) do
-        if tool.Name == "Lucky Arrow" then
-            count = count + 1
+    pcall(function()
+        local count = 0
+        for _, tool in pairs(Player.Backpack:GetChildren()) do
+            if tool.Name == "Lucky Arrow" then
+                count = count + 1
+            end
         end
-    end
-    LuckyArrows.Text = "Lucky Arrows: " .. tostring(count)
+        local newText = "Lucky Arrows: " .. tostring(count)
+        if ArrowsLabel.Text ~= newText then
+            ArrowsLabel.Text = newText
+            local pulse = TweenService:Create(ArrowsLabel, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {TextSize = 20})
+            pulse:Play()
+            pulse.Completed:Wait()
+            TweenService:Create(ArrowsLabel, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {TextSize = 18}):Play()
+        end
+    end)
 end
 
 local function setStatus(text)
-    Status.Text = "[" .. text .. "]"
+    pcall(function()
+        local fadeOut = TweenService:Create(StatusLabel, TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+            TextTransparency = 1
+        })
+        fadeOut:Play()
+        fadeOut.Completed:Wait()
+        
+        StatusLabel.Text = text
+        
+        local fadeIn = TweenService:Create(StatusLabel, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
+            TextTransparency = 0
+        })
+        fadeIn:Play()
+        
+        local flash = TweenService:Create(StatusContainer, TweenInfo.new(0.15, Enum.EasingStyle.Quad), {
+            BackgroundTransparency = 0
+        })
+        flash:Play()
+        task.wait(0.15)
+        TweenService:Create(StatusContainer, TweenInfo.new(0.25, Enum.EasingStyle.Quad), {
+            BackgroundTransparency = 0.3
+        }):Play()
+    end)
 end
 
 task.spawn(function()
-    while task.wait(0.1) do
+    while task.wait(0.2) do
         updateBalance()
         updateLuckyArrows()
     end
 end)
+
+MainContainer.Position = UDim2.new(0.5, 0, -0.3, 0)
+MainContainer.Size = UDim2.new(0, 0, 0, 0)
+
+task.wait(0.3)
+
+local entranceTween = TweenService:Create(MainContainer, TweenInfo.new(0.8, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+    Position = UDim2.new(0.5, 0, 0.5, 0),
+    Size = UDim2.new(0, 500, 0, 280)
+})
+entranceTween:Play()
 
 getgenv().setStatus = setStatus
 
