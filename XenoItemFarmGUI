@@ -1,0 +1,122 @@
+-- Metan Item Farm GUI
+-- Load this file from GitHub at the start of your script
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+
+local Player = Players.LocalPlayer
+
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "MetanItemFarmGUI"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+ScreenGui.Parent = game:GetService("CoreGui")
+
+local BlurEffect = Instance.new("BlurEffect")
+BlurEffect.Size = 24
+BlurEffect.Parent = game:GetService("Lighting")
+
+local Container = Instance.new("Frame")
+Container.Name = "Container"
+Container.Size = UDim2.new(0, 400, 0, 200)
+Container.Position = UDim2.new(0.5, 0, 0.5, 0)
+Container.AnchorPoint = Vector2.new(0.5, 0.5)
+Container.BackgroundTransparency = 1
+Container.Parent = ScreenGui
+
+local PlayerName = Instance.new("TextLabel")
+PlayerName.Name = "PlayerName"
+PlayerName.Size = UDim2.new(1, 0, 0, 30)
+PlayerName.Position = UDim2.new(0, 0, 0, 0)
+PlayerName.BackgroundTransparency = 1
+PlayerName.Text = Player.Name
+PlayerName.TextColor3 = Color3.fromRGB(152, 181, 255)
+PlayerName.TextTransparency = 0.2
+PlayerName.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
+PlayerName.TextSize = 24
+PlayerName.Parent = Container
+
+local Balance = Instance.new("TextLabel")
+Balance.Name = "Balance"
+Balance.Size = UDim2.new(1, 0, 0, 25)
+Balance.Position = UDim2.new(0, 0, 0, 40)
+Balance.BackgroundTransparency = 1
+Balance.Text = "Balance: $0"
+Balance.TextColor3 = Color3.fromRGB(255, 255, 255)
+Balance.TextTransparency = 0.2
+Balance.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
+Balance.TextSize = 18
+Balance.Parent = Container
+
+local LuckyArrows = Instance.new("TextLabel")
+LuckyArrows.Name = "LuckyArrows"
+LuckyArrows.Size = UDim2.new(1, 0, 0, 25)
+LuckyArrows.Position = UDim2.new(0, 0, 0, 75)
+LuckyArrows.BackgroundTransparency = 1
+LuckyArrows.Text = "Lucky Arrows: 0"
+LuckyArrows.TextColor3 = Color3.fromRGB(255, 255, 255)
+LuckyArrows.TextTransparency = 0.2
+LuckyArrows.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
+LuckyArrows.TextSize = 18
+LuckyArrows.Parent = Container
+
+local Status = Instance.new("TextLabel")
+Status.Name = "Status"
+Status.Size = UDim2.new(1, 0, 0, 30)
+Status.Position = UDim2.new(0, 0, 0, 120)
+Status.BackgroundTransparency = 1
+Status.Text = "[Loading...]"
+Status.TextColor3 = Color3.fromRGB(152, 181, 255)
+Status.TextTransparency = 0.2
+Status.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
+Status.TextSize = 20
+Status.Parent = Container
+
+local function addGradient(textLabel)
+    local UIGradient = Instance.new('UIGradient')
+    UIGradient.Color = ColorSequence.new{
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(155, 155, 155)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 255, 255))
+    }
+    UIGradient.Parent = textLabel
+end
+
+addGradient(PlayerName)
+addGradient(Balance)
+addGradient(LuckyArrows)
+addGradient(Status)
+
+local function updateBalance()
+    if Player.PlayerStats and Player.PlayerStats:FindFirstChild("Money") then
+        Balance.Text = "Balance: $" .. tostring(Player.PlayerStats.Money.Value)
+    end
+end
+
+local function updateLuckyArrows()
+    local count = 0
+    for _, tool in pairs(Player.Backpack:GetChildren()) do
+        if tool.Name == "Lucky Arrow" then
+            count = count + 1
+        end
+    end
+    LuckyArrows.Text = "Lucky Arrows: " .. tostring(count)
+end
+
+local function setStatus(text)
+    Status.Text = "[" .. text .. "]"
+end
+
+task.spawn(function()
+    while task.wait(0.1) do
+        updateBalance()
+        updateLuckyArrows()
+    end
+end)
+
+getgenv().setStatus = setStatus
+
+return {
+    SetStatus = setStatus,
+    GUI = ScreenGui,
+    Blur = BlurEffect
+}
