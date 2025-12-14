@@ -226,13 +226,13 @@ end)
 
 local function updateBalance()
     pcall(function()
-        if Player.PlayerStats and Player.PlayerStats:FindFirstChild("Money") then
+        if Player and Player:FindFirstChild("PlayerStats") and Player.PlayerStats:FindFirstChild("Money") then
             local newText = "Balance: $" .. tostring(Player.PlayerStats.Money.Value)
-            if BalanceLabel.Text ~= newText then
+            if BalanceLabel and BalanceLabel.Text ~= newText then
                 BalanceLabel.Text = newText
                 local pulse = TweenService:Create(BalanceLabel, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {TextSize = 20})
                 pulse:Play()
-                pulse.Completed:Wait()
+                task.wait(0.2)
                 TweenService:Create(BalanceLabel, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {TextSize = 18}):Play()
             end
         end
@@ -241,50 +241,56 @@ end
 
 local function updateLuckyArrows()
     pcall(function()
-        local count = 0
-        for _, tool in pairs(Player.Backpack:GetChildren()) do
-            if tool.Name == "Lucky Arrow" then
-                count = count + 1
+        if Player and Player:FindFirstChild("Backpack") then
+            local count = 0
+            for _, tool in pairs(Player.Backpack:GetChildren()) do
+                if tool.Name == "Lucky Arrow" then
+                    count = count + 1
+                end
             end
-        end
-        local newText = "Lucky Arrows: " .. tostring(count)
-        if ArrowsLabel.Text ~= newText then
-            ArrowsLabel.Text = newText
-            local pulse = TweenService:Create(ArrowsLabel, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {TextSize = 20})
-            pulse:Play()
-            pulse.Completed:Wait()
-            TweenService:Create(ArrowsLabel, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {TextSize = 18}):Play()
+            local newText = "Lucky Arrows: " .. tostring(count)
+            if ArrowsLabel and ArrowsLabel.Text ~= newText then
+                ArrowsLabel.Text = newText
+                local pulse = TweenService:Create(ArrowsLabel, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {TextSize = 20})
+                pulse:Play()
+                task.wait(0.2)
+                TweenService:Create(ArrowsLabel, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {TextSize = 18}):Play()
+            end
         end
     end)
 end
 
 local function setStatus(text)
     pcall(function()
-        local fadeOut = TweenService:Create(StatusLabel, TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-            TextTransparency = 1
-        })
-        fadeOut:Play()
-        fadeOut.Completed:Wait()
-        
-        StatusLabel.Text = text
-        
-        local fadeIn = TweenService:Create(StatusLabel, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
-            TextTransparency = 0
-        })
-        fadeIn:Play()
-        
-        local flash = TweenService:Create(StatusContainer, TweenInfo.new(0.15, Enum.EasingStyle.Quad), {
-            BackgroundTransparency = 0
-        })
-        flash:Play()
-        task.wait(0.15)
-        TweenService:Create(StatusContainer, TweenInfo.new(0.25, Enum.EasingStyle.Quad), {
-            BackgroundTransparency = 0.3
-        }):Play()
+        if StatusLabel and StatusContainer then
+            local fadeOut = TweenService:Create(StatusLabel, TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+                TextTransparency = 1
+            })
+            fadeOut:Play()
+            task.wait(0.15)
+            
+            StatusLabel.Text = text
+            
+            local fadeIn = TweenService:Create(StatusLabel, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
+                TextTransparency = 0
+            })
+            fadeIn:Play()
+            
+            local flash = TweenService:Create(StatusContainer, TweenInfo.new(0.15, Enum.EasingStyle.Quad), {
+                BackgroundTransparency = 0
+            })
+            flash:Play()
+            task.wait(0.15)
+            TweenService:Create(StatusContainer, TweenInfo.new(0.25, Enum.EasingStyle.Quad), {
+                BackgroundTransparency = 0.3
+            }):Play()
+        end
     end)
 end
 
 task.spawn(function()
+    repeat task.wait(1) until Player:FindFirstChild("PlayerStats") and Player:FindFirstChild("Backpack")
+    task.wait(2)
     while task.wait(0.2) do
         updateBalance()
         updateLuckyArrows()
