@@ -2245,12 +2245,16 @@ function Library:create_ui()
                             end
                         end
                         
-                        -- Вызываем callback с валидными значениями
-                        settings.callback(validOptions)
+                        -- Вызываем callback с валидными значениями (отложенно чтобы UI успел загрузиться)
+                        task.defer(function()
+                            settings.callback(validOptions)
+                        end)
                     else
                         -- Нет сохранённых значений - вызываем callback с пустым массивом
                         Library._config._flags[settings.flag] = {}
-                        settings.callback({})
+                        task.defer(function()
+                            settings.callback({})
+                        end)
                     end
                 else
                     -- Обычный dropdown (одиночный выбор)
@@ -2274,9 +2278,11 @@ function Library:create_ui()
                         valueToUse = (typeof(firstOpt) == "string" and firstOpt) or firstOpt.Name
                     end
                     
-                    -- Применяем значение и вызываем callback
+                    -- Применяем значение и вызываем callback (отложенно)
                     if valueToUse then
-                        DropdownManager:update(valueToUse)
+                        task.defer(function()
+                            DropdownManager:update(valueToUse)
+                        end)
                     end
                 end
     
