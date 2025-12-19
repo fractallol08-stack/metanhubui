@@ -2215,22 +2215,68 @@ function Library:create_ui()
                 -- Загружаем сохраненные значения
                 if settings.multi_dropdown then
                     if Library:flag_type(settings.flag, 'table') and #Library._config._flags[settings.flag] > 0 then
-                        CurrentOption.Text = table.concat(Library._config._flags[settings.flag], ", ")
+                        -- Фильтруем сохранённые значения - оставляем только те что есть в текущих опциях
+                        local validOptions = {}
+                        for _, savedValue in ipairs(Library._config._flags[settings.flag]) do
+                            for _, opt in ipairs(settings.options) do
+                                local optName = (typeof(opt) == "string" and opt) or opt.Name
+                                if savedValue == optName then
+                                    table.insert(validOptions, savedValue)
+                                    break
+                                end
+                            end
+                        end
+                        
+                        -- Обновляем флаг только валидными значениями
+                        Library._config._flags[settings.flag] = validOptions
+                        
+                        if #validOptions > 0 then
+                            CurrentOption.Text = table.concat(validOptions, ", ")
+                        else
+                            CurrentOption.Text = "None"
+                        end
                         
                         -- Обновляем прозрачность для сохраненных опций
                         for _, object in Options:GetChildren() do
                             if object.Name == "Option" then
-                                if table.find(Library._config._flags[settings.flag], object.Text) then
+                                if table.find(validOptions, object.Text) then
                                     object.TextTransparency = 0.2
                                 end
                             end
                         end
+                        
+                        -- Вызываем callback с валидными значениями
+                        settings.callback(validOptions)
+                    else
+                        -- Нет сохранённых значений - вызываем callback с пустым массивом
+                        Library._config._flags[settings.flag] = {}
+                        settings.callback({})
                     end
                 else
-                    if Library:flag_type(settings.flag, 'string') then
-                        DropdownManager:update(Library._config._flags[settings.flag])
-                    else
-                        DropdownManager:update(settings.options[1])
+                    -- Обычный dropdown (одиночный выбор)
+                    local savedValue = Library._config._flags[settings.flag]
+                    local valueToUse = nil
+                    
+                    -- Проверяем что сохранённое значение существует в опциях
+                    if savedValue and typeof(savedValue) == "string" then
+                        for _, opt in ipairs(settings.options) do
+                            local optName = (typeof(opt) == "string" and opt) or opt.Name
+                            if savedValue == optName then
+                                valueToUse = savedValue
+                                break
+                            end
+                        end
+                    end
+                    
+                    -- Если сохранённое значение не найдено в опциях - используем первую опцию
+                    if not valueToUse and #settings.options > 0 then
+                        local firstOpt = settings.options[1]
+                        valueToUse = (typeof(firstOpt) == "string" and firstOpt) or firstOpt.Name
+                    end
+                    
+                    -- Применяем значение и вызываем callback
+                    if valueToUse then
+                        DropdownManager:update(valueToUse)
                     end
                 end
     
