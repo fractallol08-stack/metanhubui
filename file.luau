@@ -2535,6 +2535,123 @@ function Library:create_ui()
                 return Button
             end
 
+            function ModuleManager:create_keybind(settings)
+                LayoutOrderModule = LayoutOrderModule + 1
+            
+                local KeybindManager = {}
+            
+                if self._size == 0 then
+                    self._size = 11
+                end
+            
+                self._size += 20
+            
+                if ModuleManager._state then
+                    Module.Size = UDim2.fromOffset(241, 93 + self._size)
+                end
+            
+                Options.Size = UDim2.fromOffset(241, self._size)
+            
+                local KeybindFrame = Instance.new("Frame")
+                KeybindFrame.Name = "KeybindFrame"
+                KeybindFrame.Size = UDim2.new(0, 207, 0, 15)
+                KeybindFrame.BackgroundTransparency = 1
+                KeybindFrame.BorderSizePixel = 0
+                KeybindFrame.Parent = Options
+                KeybindFrame.LayoutOrder = LayoutOrderModule
+            
+                local TitleLabel = Instance.new("TextLabel")
+                TitleLabel.Name = "TitleLabel"
+                TitleLabel.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
+                TitleLabel.TextSize = 11
+                TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+                TitleLabel.TextTransparency = 0.2
+                TitleLabel.Text = settings.title or "Keybind"
+                TitleLabel.Size = UDim2.new(0, 142, 0, 13)
+                TitleLabel.AnchorPoint = Vector2.new(0, 0.5)
+                TitleLabel.Position = UDim2.new(0, 0, 0.5, 0)
+                TitleLabel.BackgroundTransparency = 1
+                TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
+                TitleLabel.Parent = KeybindFrame
+            
+                local KeybindBox = Instance.new("TextButton")
+                KeybindBox.Name = "KeybindBox"
+                KeybindBox.Size = UDim2.fromOffset(50, 15)
+                KeybindBox.Position = UDim2.new(1, 0, 0.5, 0)
+                KeybindBox.AnchorPoint = Vector2.new(1, 0.5)
+                KeybindBox.BackgroundColor3 = Color3.fromRGB(152, 181, 255)
+                KeybindBox.BackgroundTransparency = 0.8
+                KeybindBox.BorderSizePixel = 0
+                KeybindBox.Text = ""
+                KeybindBox.AutoButtonColor = false
+                KeybindBox.Parent = KeybindFrame
+            
+                local KeybindCorner = Instance.new("UICorner")
+                KeybindCorner.CornerRadius = UDim.new(0, 3)
+                KeybindCorner.Parent = KeybindBox
+            
+                local KeybindLabel = Instance.new("TextLabel")
+                KeybindLabel.Name = "KeybindLabel"
+                KeybindLabel.Size = UDim2.new(1, 0, 1, 0)
+                KeybindLabel.BackgroundTransparency = 1
+                KeybindLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+                KeybindLabel.TextSize = 9
+                KeybindLabel.Font = Enum.Font.GothamSemibold
+                KeybindLabel.Text = settings.default_key and settings.default_key.Name or "..."
+                KeybindLabel.Parent = KeybindBox
+            
+                -- Устанавливаем дефолтный keybind если указан
+                if settings.default_key then
+                    Library._config._keybinds[settings.flag] = settings.default_key.Name
+                    Config:save(game.GameId, Library._config)
+                end
+            
+                local function set_keybind(key)
+                    if key == "Backspace" or key == "Unknown" then
+                        Library._config._keybinds[settings.flag] = nil
+                        KeybindLabel.Text = "..."
+                    else
+                        Library._config._keybinds[settings.flag] = key
+                        KeybindLabel.Text = key
+                    end
+                    Config:save(game.GameId, Library._config)
+                end
+            
+                KeybindBox.MouseButton1Click:Connect(function()
+                    KeybindLabel.Text = "..."
+                    local connection
+                    connection = UserInputService.InputBegan:Connect(function(input, gameProcessed)
+                        if gameProcessed then return end
+                        if input.UserInputType == Enum.UserInputType.Keyboard then
+                            local key = input.KeyCode.Name
+                            set_keybind(key)
+                            connection:Disconnect()
+                        end
+                    end)
+                end)
+            
+                -- Проверка keybind при запуске
+                if Library._config._keybinds[settings.flag] then
+                    KeybindLabel.Text = Library._config._keybinds[settings.flag]
+                end
+            
+                -- Система активации по keybind
+                Connections['keybind_action_'..settings.flag] = UserInputService.InputBegan:Connect(function(input, gameProcessed)
+                    if gameProcessed then return end
+                    if input.UserInputType == Enum.UserInputType.Keyboard then
+                        local pressedKey = input.KeyCode.Name
+                        local savedKey = Library._config._keybinds[settings.flag]
+                        if savedKey and pressedKey == savedKey then
+                            if settings.callback then
+                                settings.callback()
+                            end
+                        end
+                    end
+                end)
+            
+                return KeybindManager
+            end
+
             return ModuleManager
         end
 
