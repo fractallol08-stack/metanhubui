@@ -184,8 +184,8 @@ function Library:CreateUI()
     self.MainFrame.Name = "MainFrame"
     self.MainFrame.Size = UDim2.new(0, 700, 0, 500)
     self.MainFrame.Position = UDim2.new(0.5, -350, 0.5, -250)
-    self.MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
-    self.MainFrame.BackgroundTransparency = 0.05
+    self.MainFrame.BackgroundColor3 = Color3.fromRGB(12, 13, 15)  -- March UI стиль
+    self.MainFrame.BackgroundTransparency = 0.05  -- March UI прозрачность
     self.MainFrame.BorderSizePixel = 0
     self.MainFrame.ClipsDescendants = false
     self.MainFrame.Parent = self.ScreenGui
@@ -195,7 +195,7 @@ function Library:CreateUI()
     MainCorner.Parent = self.MainFrame
     
     local MainStroke = Instance.new("UIStroke")
-    MainStroke.Color = Color3.fromRGB(60, 60, 70)
+    MainStroke.Color = Color3.fromRGB(52, 66, 89)
     MainStroke.Thickness = 1
     MainStroke.Transparency = 0.5
     MainStroke.Parent = self.MainFrame
@@ -218,9 +218,9 @@ function Library:CreateUI()
     TitleLabel.Position = UDim2.new(0, 20, 0, 0)
     TitleLabel.BackgroundTransparency = 1
     TitleLabel.Text = self.Title
-    TitleLabel.TextColor3 = Color3.fromRGB(200, 200, 220)
+    TitleLabel.TextColor3 = Color3.fromRGB(152, 181, 255)
     TitleLabel.TextSize = 16
-    TitleLabel.Font = Enum.Font.GothamBold
+    TitleLabel.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
     TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
     TitleLabel.Parent = TitleBar
     
@@ -326,7 +326,7 @@ function Library:CreateTab(name, icon)
     Tab.Button = Instance.new("TextButton")
     Tab.Button.Name = name
     Tab.Button.Size = UDim2.new(1, -10, 0, 35)
-    Tab.Button.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+    Tab.Button.BackgroundColor3 = Color3.fromRGB(22, 28, 38)
     Tab.Button.BorderSizePixel = 0
     Tab.Button.Text = ""
     Tab.Button.AutoButtonColor = false
@@ -341,9 +341,9 @@ function Library:CreateTab(name, icon)
     ButtonLabel.Position = UDim2.new(0, 35, 0, 0)
     ButtonLabel.BackgroundTransparency = 1
     ButtonLabel.Text = name
-    ButtonLabel.TextColor3 = Color3.fromRGB(150, 150, 170)
+    ButtonLabel.TextColor3 = Color3.fromRGB(200, 200, 220)
     ButtonLabel.TextSize = 14
-    ButtonLabel.Font = Enum.Font.GothamSemibold
+    ButtonLabel.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
     ButtonLabel.TextXAlignment = Enum.TextXAlignment.Left
     ButtonLabel.Parent = Tab.Button
     
@@ -390,7 +390,7 @@ function Library:CreateTab(name, icon)
     Tab.Button.MouseEnter:Connect(function()
         if not Tab.Active then
             TweenService:Create(Tab.Button, TweenInfo.new(0.2), {
-                BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+                BackgroundColor3 = Color3.fromRGB(32, 38, 51)
             }):Play()
         end
     end)
@@ -398,7 +398,7 @@ function Library:CreateTab(name, icon)
     Tab.Button.MouseLeave:Connect(function()
         if not Tab.Active then
             TweenService:Create(Tab.Button, TweenInfo.new(0.2), {
-                BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+                BackgroundColor3 = Color3.fromRGB(22, 28, 38)
             }):Play()
         end
     end)
@@ -424,7 +424,7 @@ function Library:SelectTab(tab)
     for _, t in ipairs(self.Tabs) do
         t.Active = false
         t.Container.Visible = false
-        t.Button.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+        t.Button.BackgroundColor3 = Color3.fromRGB(22, 28, 38)
         
         local label = t.Button:FindFirstChildOfClass("TextLabel")
         if label then
@@ -440,7 +440,7 @@ function Library:SelectTab(tab)
     -- Активируем выбранный таб
     tab.Active = true
     tab.Container.Visible = true
-    tab.Button.BackgroundColor3 = Color3.fromRGB(50, 50, 65)
+    tab.Button.BackgroundColor3 = Color3.fromRGB(32, 38, 51)
     
     local label = tab.Button:FindFirstChildOfClass("TextLabel")
     if label then
@@ -470,7 +470,7 @@ function Library:CreateModule(tab, config)
     Module.Frame = Instance.new("Frame")
     Module.Frame.Name = Module.Name
     Module.Frame.Size = UDim2.new(1, -20, 0, 80)
-    Module.Frame.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+    Module.Frame.BackgroundColor3 = Color3.fromRGB(22, 28, 38)
     Module.Frame.BorderSizePixel = 0
     Module.Frame.Parent = tab.Container
     
@@ -479,7 +479,7 @@ function Library:CreateModule(tab, config)
     FrameCorner.Parent = Module.Frame
     
     local FrameStroke = Instance.new("UIStroke")
-    FrameStroke.Color = Color3.fromRGB(60, 60, 70)
+    FrameStroke.Color = Color3.fromRGB(52, 66, 89)
     FrameStroke.Thickness = 1
     FrameStroke.Transparency = 0.5
     FrameStroke.Parent = Module.Frame
@@ -500,7 +500,7 @@ function Library:CreateModule(tab, config)
     NameLabel.Text = Module.Name
     NameLabel.TextColor3 = Color3.fromRGB(200, 200, 220)
     NameLabel.TextSize = 15
-    NameLabel.Font = Enum.Font.GothamBold
+    NameLabel.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
     NameLabel.TextXAlignment = Enum.TextXAlignment.Left
     NameLabel.Parent = Module.Frame
     
@@ -547,13 +547,13 @@ function Library:CreateModule(tab, config)
     -- Hover эффект
     Module.Button.MouseEnter:Connect(function()
         TweenService:Create(Module.Frame, TweenInfo.new(0.2), {
-            BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+            BackgroundColor3 = Color3.fromRGB(32, 38, 51)
         }):Play()
     end)
     
     Module.Button.MouseLeave:Connect(function()
         TweenService:Create(Module.Frame, TweenInfo.new(0.2), {
-            BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+            BackgroundColor3 = Color3.fromRGB(22, 28, 38)
         }):Play()
     end)
     
@@ -588,7 +588,7 @@ function Library:ShowSettingsPanel(module)
         self.SettingsPanel.Name = "SettingsPanel"
         self.SettingsPanel.Size = UDim2.new(0, 280, 0, 500)
         self.SettingsPanel.Position = UDim2.new(0, 720, 0, 0)
-        self.SettingsPanel.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
+        self.SettingsPanel.BackgroundColor3 = Color3.fromRGB(12, 13, 15)
         self.SettingsPanel.BackgroundTransparency = 0.05
         self.SettingsPanel.BorderSizePixel = 0
         self.SettingsPanel.ClipsDescendants = false
@@ -600,11 +600,11 @@ function Library:ShowSettingsPanel(module)
         PanelCorner.CornerRadius = UDim.new(0, 10)
         PanelCorner.Parent = self.SettingsPanel
         
-        local PanelStroke = Instance.new("UIStroke")
-        PanelStroke.Color = Color3.fromRGB(60, 60, 70)
-        PanelStroke.Thickness = 1
-        PanelStroke.Transparency = 0.5
-        PanelStroke.Parent = self.SettingsPanel
+    local PanelStroke = Instance.new("UIStroke")
+    PanelStroke.Color = Color3.fromRGB(52, 66, 89)
+    PanelStroke.Thickness = 1
+    PanelStroke.Transparency = 0.5
+    PanelStroke.Parent = self.SettingsPanel
         
         -- Заголовок панели (для перетаскивания)
         local PanelTitle = Instance.new("TextLabel")
@@ -613,9 +613,9 @@ function Library:ShowSettingsPanel(module)
         PanelTitle.Position = UDim2.new(0, 15, 0, 10)
         PanelTitle.BackgroundTransparency = 1
         PanelTitle.Text = "Settings"
-        PanelTitle.TextColor3 = Color3.fromRGB(200, 200, 220)
+        PanelTitle.TextColor3 = Color3.fromRGB(152, 181, 255)
         PanelTitle.TextSize = 16
-        PanelTitle.Font = Enum.Font.GothamBold
+        PanelTitle.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
         PanelTitle.TextXAlignment = Enum.TextXAlignment.Left
         PanelTitle.ZIndex = 11
         PanelTitle.Parent = self.SettingsPanel
@@ -658,7 +658,7 @@ function Library:ShowSettingsPanel(module)
         CloseButton.Name = "CloseButton"
         CloseButton.Size = UDim2.new(0, 30, 0, 30)
         CloseButton.Position = UDim2.new(1, -40, 0, 10)
-        CloseButton.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+        CloseButton.BackgroundColor3 = Color3.fromRGB(22, 28, 38)
         CloseButton.BorderSizePixel = 0
         CloseButton.Text = "×"
         CloseButton.TextColor3 = Color3.fromRGB(200, 200, 220)
@@ -683,7 +683,7 @@ function Library:ShowSettingsPanel(module)
         
         CloseButton.MouseLeave:Connect(function()
             TweenService:Create(CloseButton, TweenInfo.new(0.2), {
-                BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+                BackgroundColor3 = Color3.fromRGB(22, 28, 38)
             }):Play()
         end)
         
@@ -818,7 +818,7 @@ function Library:AddSlider(module, config)
     Track.Name = "Track"
     Track.Size = UDim2.new(1, 0, 0, 6)
     Track.Position = UDim2.new(0, 0, 0, 30)
-    Track.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+    Track.BackgroundColor3 = Color3.fromRGB(22, 28, 38)
     Track.BorderSizePixel = 0
     Track.Parent = Slider.Element
     
@@ -830,7 +830,7 @@ function Library:AddSlider(module, config)
     local Fill = Instance.new("Frame")
     Fill.Name = "Fill"
     Fill.Size = UDim2.new((value - min) / (max - min), 0, 1, 0)
-    Fill.BackgroundColor3 = Color3.fromRGB(100, 120, 200)
+    Fill.BackgroundColor3 = Color3.fromRGB(152, 181, 255)
     Fill.BorderSizePixel = 0
     Fill.Parent = Track
     
@@ -944,7 +944,7 @@ function Library:AddToggle(module, config)
     Switch.Name = "Switch"
     Switch.Size = UDim2.new(0, 40, 0, 20)
     Switch.Position = UDim2.new(1, -40, 0.5, -10)
-    Switch.BackgroundColor3 = value and Color3.fromRGB(100, 120, 200) or Color3.fromRGB(60, 60, 70)
+    Switch.BackgroundColor3 = value and Color3.fromRGB(152, 181, 255) or Color3.fromRGB(52, 66, 89)
     Switch.BorderSizePixel = 0
     Switch.Parent = Toggle.Element
     
@@ -970,7 +970,7 @@ function Library:AddToggle(module, config)
         self.Value = newValue
         
         TweenService:Create(Switch, TweenInfo.new(0.2), {
-            BackgroundColor3 = newValue and Color3.fromRGB(100, 120, 200) or Color3.fromRGB(60, 60, 70)
+            BackgroundColor3 = newValue and Color3.fromRGB(152, 181, 255) or Color3.fromRGB(52, 66, 89)
         }):Play()
         
         TweenService:Create(Knob, TweenInfo.new(0.2), {
@@ -1019,7 +1019,7 @@ function Library:AddDropdown(module, config)
     NameLabel.Text = name
     NameLabel.TextColor3 = Color3.fromRGB(200, 200, 220)
     NameLabel.TextSize = 13
-    NameLabel.Font = Enum.Font.GothamSemibold
+    NameLabel.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
     NameLabel.TextXAlignment = Enum.TextXAlignment.Left
     NameLabel.Parent = Dropdown.Element
     
@@ -1028,7 +1028,7 @@ function Library:AddDropdown(module, config)
     SelectButton.Name = "SelectButton"
     SelectButton.Size = UDim2.new(1, 0, 0, 35)
     SelectButton.Position = UDim2.new(0, 0, 0, 25)
-    SelectButton.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+    SelectButton.BackgroundColor3 = Color3.fromRGB(22, 28, 38)
     SelectButton.BorderSizePixel = 0
     SelectButton.Text = ""
     SelectButton.AutoButtonColor = false
@@ -1046,7 +1046,7 @@ function Library:AddDropdown(module, config)
     ValueLabel.Text = value
     ValueLabel.TextColor3 = Color3.fromRGB(200, 200, 220)
     ValueLabel.TextSize = 12
-    ValueLabel.Font = Enum.Font.Gotham
+    ValueLabel.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.Regular, Enum.FontStyle.Normal)
     ValueLabel.TextXAlignment = Enum.TextXAlignment.Left
     ValueLabel.Parent = SelectButton
     
@@ -1058,7 +1058,7 @@ function Library:AddDropdown(module, config)
     Arrow.Text = "▼"
     Arrow.TextColor3 = Color3.fromRGB(150, 150, 170)
     Arrow.TextSize = 10
-    Arrow.Font = Enum.Font.Gotham
+    Arrow.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.Regular, Enum.FontStyle.Normal)
     Arrow.Parent = SelectButton
     
     -- Список опций
@@ -1066,7 +1066,7 @@ function Library:AddDropdown(module, config)
     OptionsList.Name = "OptionsList"
     OptionsList.Size = UDim2.new(1, 0, 0, 0)
     OptionsList.Position = UDim2.new(0, 0, 0, 65)
-    OptionsList.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
+    OptionsList.BackgroundColor3 = Color3.fromRGB(22, 28, 38)
     OptionsList.BorderSizePixel = 0
     OptionsList.ClipsDescendants = true
     OptionsList.Visible = false
@@ -1086,21 +1086,21 @@ function Library:AddDropdown(module, config)
         local OptionButton = Instance.new("TextButton")
         OptionButton.Name = option
         OptionButton.Size = UDim2.new(1, 0, 0, 30)
-        OptionButton.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
+        OptionButton.BackgroundColor3 = Color3.fromRGB(22, 28, 38)
         OptionButton.BorderSizePixel = 0
         OptionButton.Text = option
         OptionButton.TextColor3 = Color3.fromRGB(180, 180, 200)
         OptionButton.TextSize = 12
-        OptionButton.Font = Enum.Font.Gotham
+        OptionButton.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.Regular, Enum.FontStyle.Normal)
         OptionButton.AutoButtonColor = false
         OptionButton.Parent = OptionsList
         
         OptionButton.MouseEnter:Connect(function()
-            OptionButton.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
+            OptionButton.BackgroundColor3 = Color3.fromRGB(32, 38, 51)
         end)
         
         OptionButton.MouseLeave:Connect(function()
-            OptionButton.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
+            OptionButton.BackgroundColor3 = Color3.fromRGB(22, 28, 38)
         end)
         
         OptionButton.MouseButton1Click:Connect(function()
@@ -1186,7 +1186,7 @@ function Library:AddTextbox(module, config)
     NameLabel.Text = name
     NameLabel.TextColor3 = Color3.fromRGB(200, 200, 220)
     NameLabel.TextSize = 13
-    NameLabel.Font = Enum.Font.GothamSemibold
+    NameLabel.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
     NameLabel.TextXAlignment = Enum.TextXAlignment.Left
     NameLabel.Parent = Textbox.Element
     
@@ -1195,14 +1195,14 @@ function Library:AddTextbox(module, config)
     Input.Name = "Input"
     Input.Size = UDim2.new(1, 0, 0, 35)
     Input.Position = UDim2.new(0, 0, 0, 25)
-    Input.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+    Input.BackgroundColor3 = Color3.fromRGB(22, 28, 38)
     Input.BorderSizePixel = 0
     Input.Text = value
     Input.PlaceholderText = placeholder
     Input.TextColor3 = Color3.fromRGB(200, 200, 220)
     Input.PlaceholderColor3 = Color3.fromRGB(100, 100, 120)
     Input.TextSize = 12
-    Input.Font = Enum.Font.Gotham
+    Input.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.Regular, Enum.FontStyle.Normal)
     Input.ClearTextOnFocus = false
     Input.Parent = Textbox.Element
     
@@ -1273,7 +1273,7 @@ function Library:AddColorPicker(module, config)
     NameLabel.Text = name
     NameLabel.TextColor3 = Color3.fromRGB(200, 200, 220)
     NameLabel.TextSize = 13
-    NameLabel.Font = Enum.Font.GothamSemibold
+    NameLabel.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
     NameLabel.TextXAlignment = Enum.TextXAlignment.Left
     NameLabel.Parent = ColorPicker.Element
     
@@ -1293,8 +1293,9 @@ function Library:AddColorPicker(module, config)
     ColorCorner.Parent = ColorButton
     
     local ColorStroke = Instance.new("UIStroke")
-    ColorStroke.Color = Color3.fromRGB(60, 60, 70)
+    ColorStroke.Color = Color3.fromRGB(52, 66, 89)
     ColorStroke.Thickness = 1
+    ColorStroke.Transparency = 0.5
     ColorStroke.Parent = ColorButton
     
     -- Создаем окно выбора цвета
@@ -1302,7 +1303,7 @@ function Library:AddColorPicker(module, config)
     PickerWindow.Name = "PickerWindow"
     PickerWindow.Size = UDim2.new(0, 220, 0, 200)
     PickerWindow.Position = UDim2.new(0.5, -110, 0.5, -100)
-    PickerWindow.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
+    PickerWindow.BackgroundColor3 = Color3.fromRGB(12, 13, 15)
     PickerWindow.BorderSizePixel = 0
     PickerWindow.Visible = false
     PickerWindow.ZIndex = 1000
@@ -1313,8 +1314,9 @@ function Library:AddColorPicker(module, config)
     PickerCorner.Parent = PickerWindow
     
     local PickerStroke = Instance.new("UIStroke")
-    PickerStroke.Color = Color3.fromRGB(60, 60, 70)
+    PickerStroke.Color = Color3.fromRGB(52, 66, 89)
     PickerStroke.Thickness = 1
+    PickerStroke.Transparency = 0.5
     PickerStroke.Parent = PickerWindow
     
     -- Палитра SV (Saturation/Value)
@@ -1621,7 +1623,7 @@ function Library:AddKeybind(module, config)
     NameLabel.Text = name
     NameLabel.TextColor3 = Color3.fromRGB(200, 200, 220)
     NameLabel.TextSize = 13
-    NameLabel.Font = Enum.Font.GothamSemibold
+    NameLabel.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
     NameLabel.TextXAlignment = Enum.TextXAlignment.Left
     NameLabel.Parent = Keybind.Element
     
@@ -1630,12 +1632,12 @@ function Library:AddKeybind(module, config)
     KeyButton.Name = "KeyButton"
     KeyButton.Size = UDim2.new(0, 70, 0, 25)
     KeyButton.Position = UDim2.new(1, -70, 0.5, -12.5)
-    KeyButton.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+    KeyButton.BackgroundColor3 = Color3.fromRGB(22, 28, 38)
     KeyButton.BorderSizePixel = 0
     KeyButton.Text = value.Name
     KeyButton.TextColor3 = Color3.fromRGB(200, 200, 220)
     KeyButton.TextSize = 12
-    KeyButton.Font = Enum.Font.GothamSemibold
+    KeyButton.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
     KeyButton.AutoButtonColor = false
     KeyButton.Parent = Keybind.Element
     
@@ -1682,14 +1684,14 @@ function Library:AddKeybind(module, config)
         
         Keybind.Listening = true
         KeyButton.Text = "..."
-        KeyButton.BackgroundColor3 = Color3.fromRGB(60, 60, 80)
+        KeyButton.BackgroundColor3 = Color3.fromRGB(32, 38, 51)
         
         local connection
         connection = UserInputService.InputBegan:Connect(function(input, gameProcessed)
             if input.UserInputType == Enum.UserInputType.Keyboard then
                 connection:Disconnect()
                 Keybind.Listening = false
-                KeyButton.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+                KeyButton.BackgroundColor3 = Color3.fromRGB(22, 28, 38)
                 
                 if input.KeyCode ~= Enum.KeyCode.Escape then
                     Keybind:SetValue(input.KeyCode)
@@ -1704,7 +1706,7 @@ function Library:AddKeybind(module, config)
     KeyButton.MouseEnter:Connect(function()
         if not Keybind.Listening then
             TweenService:Create(KeyButton, TweenInfo.new(0.2), {
-                BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+                BackgroundColor3 = Color3.fromRGB(32, 38, 51)
             }):Play()
         end
     end)
@@ -1712,7 +1714,7 @@ function Library:AddKeybind(module, config)
     KeyButton.MouseLeave:Connect(function()
         if not Keybind.Listening then
             TweenService:Create(KeyButton, TweenInfo.new(0.2), {
-                BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+                BackgroundColor3 = Color3.fromRGB(22, 28, 38)
             }):Play()
         end
     end)
@@ -1739,7 +1741,7 @@ function Library:AddLabel(module, config)
     TextLabel.Text = text
     TextLabel.TextColor3 = Color3.fromRGB(180, 180, 200)
     TextLabel.TextSize = 12
-    TextLabel.Font = Enum.Font.Gotham
+    TextLabel.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.Regular, Enum.FontStyle.Normal)
     TextLabel.TextXAlignment = Enum.TextXAlignment.Left
     TextLabel.TextWrapped = true
     TextLabel.Parent = Label.Element
@@ -1766,7 +1768,7 @@ function Library:AddDivider(module, config)
     local Line = Instance.new("Frame")
     Line.Size = UDim2.new(1, 0, 0, 1)
     Line.Position = UDim2.new(0, 0, 0.5, 0)
-    Line.BackgroundColor3 = Color3.fromRGB(60, 60, 70)
+    Line.BackgroundColor3 = Color3.fromRGB(52, 66, 89)
     Line.BorderSizePixel = 0
     Line.Parent = Divider.Element
     
