@@ -305,8 +305,11 @@ function Library:SetupToggle()
     UserInputService.InputBegan:Connect(function(input, gameProcessed)
         if gameProcessed then return end
         
-        if input.KeyCode == Enum.KeyCode.Insert then
+        if input.KeyCode == Enum.KeyCode.RightShift then
             self.MainFrame.Visible = not self.MainFrame.Visible
+            if self.SettingsPanel then
+                self.SettingsPanel.Visible = self.MainFrame.Visible and self.SettingsPanel.Visible
+            end
         end
     end)
 end
@@ -564,6 +567,8 @@ function Library:CreateModule(tab, config)
             return function(_, ...) return self:AddTextbox(Module, ...) end
         elseif k == "AddColorPicker" then
             return function(_, ...) return self:AddColorPicker(Module, ...) end
+        elseif k == "AddKeybind" then
+            return function(_, ...) return self:AddKeybind(Module, ...) end
         elseif k == "AddLabel" then
             return function(_, ...) return self:AddLabel(Module, ...) end
         elseif k == "AddDivider" then
@@ -596,7 +601,7 @@ function Library:ShowSettingsPanel(module)
         PanelStroke.Transparency = 0.5
         PanelStroke.Parent = self.SettingsPanel
         
-        -- Заголовок панели
+        -- Заголовок панели (для перетаскивания)
         local PanelTitle = Instance.new("TextLabel")
         PanelTitle.Name = "PanelTitle"
         PanelTitle.Size = UDim2.new(1, -60, 0, 40)
@@ -609,6 +614,36 @@ function Library:ShowSettingsPanel(module)
         PanelTitle.TextXAlignment = Enum.TextXAlignment.Left
         PanelTitle.ZIndex = 11
         PanelTitle.Parent = self.SettingsPanel
+        
+        -- Добавляем перетаскивание для панели настроек
+        local panelDragging = false
+        local panelDragStart, panelStartPos
+        
+        PanelTitle.InputBegan:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                panelDragging = true
+                panelDragStart = input.Position
+                panelStartPos = self.SettingsPanel.Position
+                
+                input.Changed:Connect(function()
+                    if input.UserInputState == Enum.UserInputState.End then
+                        panelDragging = false
+                    end
+                end)
+            end
+        end)
+        
+        UserInputService.InputChanged:Connect(function(input)
+            if panelDragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+                local delta = input.Position - panelDragStart
+                self.SettingsPanel.Position = UDim2.new(
+                    panelStartPos.X.Scale,
+                    panelStartPos.X.Offset + delta.X,
+                    panelStartPos.Y.Scale,
+                    panelStartPos.Y.Offset + delta.Y
+                )
+            end
+        end)
         
         -- Кнопка закрытия
         local CloseButton = Instance.new("TextButton")
@@ -1429,18 +1464,22 @@ function Library:AddColorPicker(module, config)
     -- Обработка SV Picker
     local svDragging = false
     
+    local function updateSVPicker(inputPos)
+        local relativePos = inputPos - SVPicker.AbsolutePosition
+        local pos = relativePos / SVPicker.AbsoluteSize
+        pos = Vector2.new(math.clamp(pos.X, 0, 1), math.clamp(pos.Y, 0, 1))
+        
+        ColorPicker.Saturation = pos.X
+        ColorPicker.Brightness = 1 - pos.Y
+        
+        SVCursor.Position = UDim2.new(pos.X, -6, pos.Y, -6)
+        updateColor()
+    end
+    
     SVPicker.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
             svDragging = true
-            
-            local pos = (input.Position - SVPicker.AbsolutePosition) / SVPicker.AbsoluteSize
-            pos = Vector2.new(math.clamp(pos.X, 0, 1), math.clamp(pos.Y, 0, 1))
-            
-            ColorPicker.Saturation = pos.X
-            ColorPicker.Brightness = 1 - pos.Y
-            
-            SVCursor.Position = UDim2.new(pos.X, -6, pos.Y, -6)
-            updateColor()
+            updateSVPicker(input.Position)
         end
     end)
     
@@ -1452,30 +1491,28 @@ function Library:AddColorPicker(module, config)
     
     UserInputService.InputChanged:Connect(function(input)
         if svDragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-            local pos = (input.Position - SVPicker.AbsolutePosition) / SVPicker.AbsoluteSize
-            pos = Vector2.new(math.clamp(pos.X, 0, 1), math.clamp(pos.Y, 0, 1))
-            
-            ColorPicker.Saturation = pos.X
-            ColorPicker.Brightness = 1 - pos.Y
-            
-            SVCursor.Position = UDim2.new(pos.X, -6, pos.Y, -6)
-            updateColor()
+            local mousePos = UserInputService:GetMouseLocation()
+            updateSVPicker(mousePos)
         end
     end)
     
     -- Обработка Hue Slider
     local hueDragging = false
     
+    local function updateHueSlider(inputPos)
+        local relativePos = inputPos.Y - HueSlider.AbsolutePosition.Y
+        local pos = relativePos / HueSlider.AbsoluteSize.Y
+        pos = math.clamp(pos, 0, 1)
+        
+        ColorPicker.Hue = pos
+        HueCursor.Position = UDim2.new(0.5, -2, pos, -2)
+        updateColor()
+    end
+    
     HueSlider.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
             hueDragging = true
-            
-            local pos = (input.Position.Y - HueSlider.AbsolutePosition.Y) / HueSlider.AbsoluteSize.Y
-            pos = math.clamp(pos, 0, 1)
-            
-            ColorPicker.Hue = pos
-            HueCursor.Position = UDim2.new(0.5, -2, pos, -2)
-            updateColor()
+            updateHueSlider(input.Position)
         end
     end)
     
@@ -1487,12 +1524,8 @@ function Library:AddColorPicker(module, config)
     
     UserInputService.InputChanged:Connect(function(input)
         if hueDragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-            local pos = (input.Position.Y - HueSlider.AbsolutePosition.Y) / HueSlider.AbsoluteSize.Y
-            pos = math.clamp(pos, 0, 1)
-            
-            ColorPicker.Hue = pos
-            HueCursor.Position = UDim2.new(0.5, -2, pos, -2)
-            updateColor()
+            local mousePos = UserInputService:GetMouseLocation()
+            updateHueSlider(mousePos)
         end
     end)
     
@@ -1539,6 +1572,118 @@ function Library:AddColorPicker(module, config)
     end)
     
     table.insert(module.Components, ColorPicker)
+    return ColorPicker
+end
+
+-- Компонент: Keybind (привязка клавиш)
+function Library:AddKeybind(module, config)
+    config = config or {}
+    local name = config.Name or "Keybind"
+    local default = config.Default or Enum.KeyCode.E
+    local flag = config.Flag or name
+    local callback = config.Callback or function() end
+    
+    local savedKey = self.Config:GetFlag(flag)
+    local value = default
+    
+    if savedKey and Enum.KeyCode[savedKey] then
+        value = Enum.KeyCode[savedKey]
+    end
+    
+    local Keybind = {}
+    Keybind.Value = value
+    Keybind.Listening = false
+    
+    -- Контейнер
+    Keybind.Element = Instance.new("Frame")
+    Keybind.Element.Name = name
+    Keybind.Element.Size = UDim2.new(1, -10, 0, 35)
+    Keybind.Element.BackgroundTransparency = 1
+    
+    -- Название
+    local NameLabel = Instance.new("TextLabel")
+    NameLabel.Size = UDim2.new(1, -80, 1, 0)
+    NameLabel.BackgroundTransparency = 1
+    NameLabel.Text = name
+    NameLabel.TextColor3 = Color3.fromRGB(200, 200, 220)
+    NameLabel.TextSize = 13
+    NameLabel.Font = Enum.Font.GothamSemibold
+    NameLabel.TextXAlignment = Enum.TextXAlignment.Left
+    NameLabel.Parent = Keybind.Element
+    
+    -- Кнопка с клавишей
+    local KeyButton = Instance.new("TextButton")
+    KeyButton.Name = "KeyButton"
+    KeyButton.Size = UDim2.new(0, 70, 0, 25)
+    KeyButton.Position = UDim2.new(1, -70, 0.5, -12.5)
+    KeyButton.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+    KeyButton.BorderSizePixel = 0
+    KeyButton.Text = value.Name
+    KeyButton.TextColor3 = Color3.fromRGB(200, 200, 220)
+    KeyButton.TextSize = 12
+    KeyButton.Font = Enum.Font.GothamSemibold
+    KeyButton.AutoButtonColor = false
+    KeyButton.Parent = Keybind.Element
+    
+    local KeyCorner = Instance.new("UICorner")
+    KeyCorner.CornerRadius = UDim.new(0, 6)
+    KeyCorner.Parent = KeyButton
+    
+    -- Функция обновления
+    function Keybind:SetValue(newKey)
+        self.Value = newKey
+        KeyButton.Text = newKey.Name
+        
+        Library.Config:SetFlag(flag, newKey.Name)
+        Library.Config:Save(Library.ConfigName)
+        
+        callback(newKey)
+    end
+    
+    -- Обработка клика
+    KeyButton.MouseButton1Click:Connect(function()
+        if Keybind.Listening then return end
+        
+        Keybind.Listening = true
+        KeyButton.Text = "..."
+        KeyButton.BackgroundColor3 = Color3.fromRGB(60, 60, 80)
+        
+        local connection
+        connection = UserInputService.InputBegan:Connect(function(input, gameProcessed)
+            if input.UserInputType == Enum.UserInputType.Keyboard then
+                connection:Disconnect()
+                Keybind.Listening = false
+                KeyButton.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+                
+                if input.KeyCode ~= Enum.KeyCode.Escape then
+                    Keybind:SetValue(input.KeyCode)
+                else
+                    KeyButton.Text = Keybind.Value.Name
+                end
+            end
+        end)
+    end)
+    
+    -- Hover эффект
+    KeyButton.MouseEnter:Connect(function()
+        if not Keybind.Listening then
+            TweenService:Create(KeyButton, TweenInfo.new(0.2), {
+                BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+            }):Play()
+        end
+    end)
+    
+    KeyButton.MouseLeave:Connect(function()
+        if not Keybind.Listening then
+            TweenService:Create(KeyButton, TweenInfo.new(0.2), {
+                BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+            }):Play()
+        end
+    end)
+    
+    table.insert(module.Components, Keybind)
+    return Keybind
+end
     return ColorPicker
 end
 
