@@ -371,7 +371,7 @@ UIListLayout.Parent = NotificationContainer
 
 -- Function to create notifications
 function Library.SendNotification(settings)
-    -- Звук уведомления
+    -- ���� �����������
     task.spawn(function()
         local NotifSound = Instance.new("Sound")
         NotifSound.SoundId = "rbxassetid://6026984224"
@@ -1489,7 +1489,7 @@ function Library:create_ui()
                 TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
                 TitleLabel.Parent = Checkbox
 
-                -- Keybind Box (СЃРїСЂР°РІР°)
+                -- Keybind Box (справа)
                 local KeybindBox = Instance.new("TextButton")
                 KeybindBox.Name = "KeybindBox"
                 KeybindBox.Size = UDim2.fromOffset(35, 15)
@@ -1516,7 +1516,7 @@ function Library:create_ui()
                 KeybindLabel.Text = "..."
                 KeybindLabel.Parent = KeybindBox
             
-                -- Checkbox Box (СЃРїСЂР°РІР° РѕС‚ keybind)
+                -- Checkbox Box (справа от keybind)
                 local Box = Instance.new("Frame")
                 Box.BorderColor3 = Color3.fromRGB(0, 0, 0)
                 Box.AnchorPoint = Vector2.new(1, 0.5)
@@ -1568,7 +1568,7 @@ function Library:create_ui()
                     settings.callback(self._state)
                 end
 
-                -- Keybind СЃРёСЃС‚РµРјР°
+                -- Keybind система
                 local function set_keybind(key)
                     if key == "Backspace" or key == "Unknown" then
                         Library._config._keybinds[settings.flag] = nil
@@ -1593,12 +1593,12 @@ function Library:create_ui()
                     end)
                 end)
 
-                -- РџСЂРѕРІРµСЂРєР° keybind РїСЂРё Р·Р°РїСѓСЃРєРµ
+                -- Проверка keybind при запуске
                 if Library._config._keybinds[settings.flag] then
                     KeybindLabel.Text = Library._config._keybinds[settings.flag]
                 end
 
-                -- РЎРёСЃС‚РµРјР° Р°РєС‚РёРІР°С†РёРё РїРѕ keybind
+                -- Система активации по keybind
                 Connections['keybind_checkbox_'..settings.flag] = UserInputService.InputBegan:Connect(function(input, gameProcessed)
                     if gameProcessed then return end
                     if input.UserInputType == Enum.UserInputType.Keyboard then
@@ -2040,22 +2040,22 @@ function Library:create_ui()
 
                 function DropdownManager:update(option)
                     if settings.multi_dropdown then
-                        -- Инициализируем флаг если нужно
+                        -- �������������� ���� ���� �����
                         if not Library._config._flags[settings.flag] then
                             Library._config._flags[settings.flag] = {}
                         end
                         
-                        -- Получаем текущий выбранный список
+                        -- �������� ������� ��������� ������
                         local selected = Library._config._flags[settings.flag]
                         
-                        -- Обновляем отображение текста
+                        -- ��������� ����������� ������
                         if #selected > 0 then
                             CurrentOption.Text = table.concat(selected, ", ")
                         else
                             CurrentOption.Text = "None"
                         end
                         
-                        -- Обновляем прозрачность опций
+                        -- ��������� ������������ �����
                         for _, object in Options:GetChildren() do
                             if object.Name == "Option" then
                                 if table.find(selected, object.Text) then
@@ -2066,11 +2066,11 @@ function Library:create_ui()
                             end
                         end
                         
-                        -- Сохраняем и вызываем callback с выбранным списком
+                        -- ��������� � �������� callback � ��������� �������
                         Config:save(game.GameId, Library._config)
                         settings.callback(selected)
                     else
-                        -- Обычный dropdown (одиночный выбор)
+                        -- ������� dropdown (��������� �����)
                         CurrentOption.Text = (typeof(option) == "string" and option) or option.Name
                         for _, object in Options:GetChildren() do
                             if object.Name == "Option" then
@@ -2184,7 +2184,7 @@ function Library:create_ui()
                             local optionText = (typeof(value) == "string" and value) or value.Name
 
                             if settings.multi_dropdown then
-                                -- Добавляем или удаляем из списка
+                                -- ��������� ��� ������� �� ������
                                 if table.find(Library._config._flags[settings.flag], optionText) then
                                     Library:remove_table_value(Library._config._flags[settings.flag], optionText)
                                 else
@@ -2212,10 +2212,10 @@ function Library:create_ui()
                     return ModuleManager:create_dropdown(value)
                 end;
 
-                -- Загружаем сохраненные значения
+                -- ��������� ����������� ��������
                 if settings.multi_dropdown then
                     if Library:flag_type(settings.flag, 'table') and #Library._config._flags[settings.flag] > 0 then
-                        -- Фильтруем сохранённые значения - оставляем только те что есть в текущих опциях
+                        -- ��������� ����������� �������� - ��������� ������ �� ��� ���� � ������� ������
                         local validOptions = {}
                         for _, savedValue in ipairs(Library._config._flags[settings.flag]) do
                             for _, opt in ipairs(settings.options) do
@@ -2227,7 +2227,7 @@ function Library:create_ui()
                             end
                         end
                         
-                        -- Обновляем флаг только валидными значениями
+                        -- ��������� ���� ������ ��������� ����������
                         Library._config._flags[settings.flag] = validOptions
                         
                         if #validOptions > 0 then
@@ -2236,7 +2236,7 @@ function Library:create_ui()
                             CurrentOption.Text = "None"
                         end
                         
-                        -- Обновляем прозрачность для сохраненных опций
+                        -- ��������� ������������ ��� ����������� �����
                         for _, object in Options:GetChildren() do
                             if object.Name == "Option" then
                                 if table.find(validOptions, object.Text) then
@@ -2245,23 +2245,23 @@ function Library:create_ui()
                             end
                         end
                         
-                        -- Вызываем callback с валидными значениями (отложенно чтобы UI успел загрузиться)
+                        -- �������� callback � ��������� ���������� (��������� ����� UI ����� �����������)
                         task.defer(function()
                             settings.callback(validOptions)
                         end)
                     else
-                        -- Нет сохранённых значений - вызываем callback с пустым массивом
+                        -- ��� ����������� �������� - �������� callback � ������ ��������
                         Library._config._flags[settings.flag] = {}
                         task.defer(function()
                             settings.callback({})
                         end)
                     end
                 else
-                    -- Обычный dropdown (одиночный выбор)
+                    -- ������� dropdown (��������� �����)
                     local savedValue = Library._config._flags[settings.flag]
                     local valueToUse = nil
                     
-                    -- Проверяем что сохранённое значение существует в опциях
+                    -- ��������� ��� ����������� �������� ���������� � ������
                     if savedValue and typeof(savedValue) == "string" then
                         for _, opt in ipairs(settings.options) do
                             local optName = (typeof(opt) == "string" and opt) or opt.Name
@@ -2272,13 +2272,13 @@ function Library:create_ui()
                         end
                     end
                     
-                    -- Если сохранённое значение не найдено в опциях - используем первую опцию
+                    -- ���� ����������� �������� �� ������� � ������ - ���������� ������ �����
                     if not valueToUse and #settings.options > 0 then
                         local firstOpt = settings.options[1]
                         valueToUse = (typeof(firstOpt) == "string" and firstOpt) or firstOpt.Name
                     end
                     
-                    -- Применяем значение и вызываем callback (отложенно)
+                    -- ��������� �������� � �������� callback (���������)
                     if valueToUse then
                         task.defer(function()
                             DropdownManager:update(valueToUse)
@@ -2297,7 +2297,7 @@ function Library:create_ui()
                 return DropdownManager
             end
 
-            -- Multi Dropdown - обертка над create_dropdown с multi_dropdown = true
+            -- Multi Dropdown - ������� ��� create_dropdown � multi_dropdown = true
             function ModuleManager:create_multi_dropdown(settings)
                 settings.multi_dropdown = true
                 return self:create_dropdown(settings)
@@ -2346,7 +2346,7 @@ function Library:create_ui()
                 TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
                 TitleLabel.Parent = Toggle
 
-                -- Keybind Box (СЃРїСЂР°РІР°)
+                -- Keybind Box (справа)
                 local KeybindBox = Instance.new("TextButton")
                 KeybindBox.Name = "KeybindBox"
                 KeybindBox.Size = UDim2.fromOffset(35, 15)
@@ -2373,7 +2373,7 @@ function Library:create_ui()
                 KeybindLabel.Text = "..."
                 KeybindLabel.Parent = KeybindBox
             
-                -- Toggle Switch (СЃРїСЂР°РІР° РѕС‚ keybind)
+                -- Toggle Switch (справа от keybind)
                 local Switch = Instance.new("Frame")
                 Switch.BorderColor3 = Color3.fromRGB(0, 0, 0)
                 Switch.AnchorPoint = Vector2.new(1, 0.5)
@@ -2428,7 +2428,7 @@ function Library:create_ui()
                     settings.callback(self._state)
                 end
 
-                -- Keybind СЃРёСЃС‚РµРјР°
+                -- Keybind система
                 local function set_keybind(key)
                     if key == "Backspace" or key == "Unknown" then
                         Library._config._keybinds[settings.flag] = nil
@@ -2453,12 +2453,12 @@ function Library:create_ui()
                     end)
                 end)
 
-                -- РџСЂРѕРІРµСЂРєР° keybind РїСЂРё Р·Р°РїСѓСЃРєРµ
+                -- Проверка keybind при запуске
                 if Library._config._keybinds[settings.flag] then
                     KeybindLabel.Text = Library._config._keybinds[settings.flag]
                 end
 
-                -- РЎРёСЃС‚РµРјР° Р°РєС‚РёРІР°С†РёРё РїРѕ keybind
+                -- Система активации по keybind
                 Connections['keybind_toggle_'..settings.flag] = UserInputService.InputBegan:Connect(function(input, gameProcessed)
                     if gameProcessed then return end
                     if input.UserInputType == Enum.UserInputType.Keyboard then
@@ -2600,7 +2600,7 @@ function Library:create_ui()
                 KeybindLabel.Text = settings.default_key and settings.default_key.Name or "..."
                 KeybindLabel.Parent = KeybindBox
             
-                -- Устанавливаем дефолтный keybind если указан
+                -- ������������� ��������� keybind ���� ������
                 if settings.default_key then
                     Library._config._keybinds[settings.flag] = settings.default_key.Name
                     Config:save(game.GameId, Library._config)
@@ -2630,12 +2630,12 @@ function Library:create_ui()
                     end)
                 end)
             
-                -- Проверка keybind при запуске
+                -- �������� keybind ��� �������
                 if Library._config._keybinds[settings.flag] then
                     KeybindLabel.Text = Library._config._keybinds[settings.flag]
                 end
             
-                -- Система активации по keybind
+                -- ������� ��������� �� keybind
                 Connections['keybind_action_'..settings.flag] = UserInputService.InputBegan:Connect(function(input, gameProcessed)
                     if gameProcessed then return end
                     if input.UserInputType == Enum.UserInputType.Keyboard then
@@ -2651,32 +2651,6 @@ function Library:create_ui()
             
                 return KeybindManager
             end
-
-            return ModuleManager
-        end
-
-        return TabManager
-    end
-
-    Connections['library_visiblity'] = UserInputService.InputBegan:Connect(function(input, process)
-        if input.KeyCode ~= Enum.KeyCode.Insert then
-            return
-        end
-
-        self._ui_open = not self._ui_open
-        self:change_visiblity(self._ui_open)
-    end)
-
-    self._ui.Container.Handler.Minimize.MouseButton1Click:Connect(function()
-        self._ui_open = not self._ui_open
-        self:change_visiblity(self._ui_open)
-    end)
-
-    return self
-end
-
-return Library
-
 
             -- Color Picker Element
             function ModuleManager:create_colorpicker(settings)
@@ -2735,97 +2709,105 @@ return Library
                 local ColorBoxCorner = Instance.new("UICorner")
                 ColorBoxCorner.CornerRadius = UDim.new(0, 3)
                 ColorBoxCorner.Parent = ColorBox
-            
-                -- Color Picker Window (hidden by default)
+
+                -- Picker Window (hidden by default)
                 local PickerWindow = Instance.new("Frame")
                 PickerWindow.Name = "PickerWindow"
-                PickerWindow.Size = UDim2.fromOffset(200, 150)
+                PickerWindow.Size = UDim2.fromOffset(200, 200)
                 PickerWindow.Position = UDim2.new(0, 0, 1, 5)
-                PickerWindow.BackgroundColor3 = Color3.fromRGB(32, 38, 51)
+                PickerWindow.BackgroundColor3 = Color3.fromRGB(22, 28, 38)
+                PickerWindow.BackgroundTransparency = 0.1
                 PickerWindow.BorderSizePixel = 0
                 PickerWindow.Visible = false
                 PickerWindow.ZIndex = 100
                 PickerWindow.Parent = ColorPicker
-            
+
                 local PickerCorner = Instance.new("UICorner")
-                PickerCorner.CornerRadius = UDim.new(0, 4)
+                PickerCorner.CornerRadius = UDim.new(0, 5)
                 PickerCorner.Parent = PickerWindow
-            
-                -- Saturation/Value Picker
-                local SatValPicker = Instance.new("ImageButton")
+
+                local PickerStroke = Instance.new("UIStroke")
+                PickerStroke.Color = Color3.fromRGB(52, 66, 89)
+                PickerStroke.Transparency = 0.5
+                PickerStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+                PickerStroke.Parent = PickerWindow
+
+                -- Saturation/Value Picker (2D area)
+                local SatValPicker = Instance.new("Frame")
                 SatValPicker.Name = "SatValPicker"
-                SatValPicker.Size = UDim2.fromOffset(150, 120)
-                SatValPicker.Position = UDim2.new(0, 10, 0, 10)
+                SatValPicker.Size = UDim2.fromOffset(160, 160)
+                SatValPicker.Position = UDim2.fromOffset(10, 10)
                 SatValPicker.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
                 SatValPicker.BorderSizePixel = 0
-                SatValPicker.AutoButtonColor = false
                 SatValPicker.Parent = PickerWindow
-            
+
                 local SatValCorner = Instance.new("UICorner")
-                SatValCorner.CornerRadius = UDim.new(0, 3)
+                SatValCorner.CornerRadius = UDim.new(0, 4)
                 SatValCorner.Parent = SatValPicker
-            
-                -- Saturation Gradient (white to transparent)
+
+                -- Saturation gradient (left to right: white to color)
                 local SatGradient = Instance.new("UIGradient")
-                SatGradient.Color = ColorSequence.new(Color3.fromRGB(255, 255, 255), Color3.fromRGB(255, 255, 255))
-                SatGradient.Transparency = NumberSequence.new({
+                SatGradient.Color = ColorSequence.new{
+                    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
+                    ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 255, 255))
+                }
+                SatGradient.Transparency = NumberSequence.new{
                     NumberSequenceKeypoint.new(0, 0),
                     NumberSequenceKeypoint.new(1, 1)
-                })
+                }
                 SatGradient.Parent = SatValPicker
-            
-                -- Value Gradient (transparent to black)
-                local ValFrame = Instance.new("Frame")
-                ValFrame.Size = UDim2.fromScale(1, 1)
-                ValFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-                ValFrame.BorderSizePixel = 0
-                ValFrame.Parent = SatValPicker
-            
+
+                -- Value gradient (top to bottom: transparent to black)
+                local ValOverlay = Instance.new("Frame")
+                ValOverlay.Size = UDim2.fromScale(1, 1)
+                ValOverlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+                ValOverlay.BorderSizePixel = 0
+                ValOverlay.Parent = SatValPicker
+
                 local ValCorner = Instance.new("UICorner")
-                ValCorner.CornerRadius = UDim.new(0, 3)
-                ValCorner.Parent = ValFrame
-            
+                ValCorner.CornerRadius = UDim.new(0, 4)
+                ValCorner.Parent = ValOverlay
+
                 local ValGradient = Instance.new("UIGradient")
                 ValGradient.Rotation = 90
-                ValGradient.Transparency = NumberSequence.new({
+                ValGradient.Transparency = NumberSequence.new{
                     NumberSequenceKeypoint.new(0, 1),
                     NumberSequenceKeypoint.new(1, 0)
-                })
-                ValGradient.Parent = ValFrame
-            
-                -- Cursor
+                }
+                ValGradient.Parent = ValOverlay
+
+                -- Cursor for Sat/Val picker
                 local Cursor = Instance.new("Frame")
                 Cursor.Name = "Cursor"
                 Cursor.Size = UDim2.fromOffset(8, 8)
                 Cursor.AnchorPoint = Vector2.new(0.5, 0.5)
+                Cursor.Position = UDim2.fromScale(1, 0)
                 Cursor.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-                Cursor.BorderColor3 = Color3.fromRGB(0, 0, 0)
                 Cursor.BorderSizePixel = 2
+                Cursor.BorderColor3 = Color3.fromRGB(0, 0, 0)
                 Cursor.ZIndex = 101
                 Cursor.Parent = SatValPicker
-            
+
                 local CursorCorner = Instance.new("UICorner")
                 CursorCorner.CornerRadius = UDim.new(1, 0)
                 CursorCorner.Parent = Cursor
-            
-                -- Hue Slider
-                local HueSlider = Instance.new("ImageButton")
+
+                -- Hue Slider (vertical)
+                local HueSlider = Instance.new("Frame")
                 HueSlider.Name = "HueSlider"
-                HueSlider.Size = UDim2.fromOffset(20, 120)
-                HueSlider.Position = UDim2.new(0, 165, 0, 10)
+                HueSlider.Size = UDim2.fromOffset(15, 160)
+                HueSlider.Position = UDim2.fromOffset(175, 10)
                 HueSlider.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
                 HueSlider.BorderSizePixel = 0
-                HueSlider.AutoButtonColor = false
                 HueSlider.Parent = PickerWindow
-            
+
                 local HueCorner = Instance.new("UICorner")
-                HueCorner.CornerRadius = UDim.new(0, 3)
+                HueCorner.CornerRadius = UDim.new(0, 4)
                 HueCorner.Parent = HueSlider
-            
-                -- Hue Gradient
+
                 local HueGradient = Instance.new("UIGradient")
                 HueGradient.Rotation = 90
-                HueGradient.Color = ColorSequence.new({
+                HueGradient.Color = ColorSequence.new{
                     ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 0, 0)),
                     ColorSequenceKeypoint.new(0.17, Color3.fromRGB(255, 255, 0)),
                     ColorSequenceKeypoint.new(0.33, Color3.fromRGB(0, 255, 0)),
@@ -2833,132 +2815,134 @@ return Library
                     ColorSequenceKeypoint.new(0.67, Color3.fromRGB(0, 0, 255)),
                     ColorSequenceKeypoint.new(0.83, Color3.fromRGB(255, 0, 255)),
                     ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 0, 0))
-                })
+                }
                 HueGradient.Parent = HueSlider
-            
-                -- Hue Cursor
+
+                -- Cursor for Hue slider
                 local HueCursor = Instance.new("Frame")
                 HueCursor.Name = "HueCursor"
-                HueCursor.Size = UDim2.fromOffset(20, 4)
+                HueCursor.Size = UDim2.fromOffset(15, 4)
                 HueCursor.AnchorPoint = Vector2.new(0.5, 0.5)
                 HueCursor.Position = UDim2.fromScale(0.5, 0)
                 HueCursor.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-                HueCursor.BorderColor3 = Color3.fromRGB(0, 0, 0)
                 HueCursor.BorderSizePixel = 2
+                HueCursor.BorderColor3 = Color3.fromRGB(0, 0, 0)
                 HueCursor.ZIndex = 101
                 HueCursor.Parent = HueSlider
-            
+
                 local HueCursorCorner = Instance.new("UICorner")
-                HueCursorCorner.CornerRadius = UDim.new(1, 0)
+                HueCursorCorner.CornerRadius = UDim.new(0, 2)
                 HueCursorCorner.Parent = HueCursor
-            
-                -- Variables
-                local hue, sat, val = 0, 1, 1
+
+                -- Color picker logic
+                local hue, sat, val = ColorPickerManager._color:ToHSV()
                 local draggingSatVal = false
                 local draggingHue = false
-            
-                -- Helper Functions
+
                 local function updateColor()
-                    local color = Color3.fromHSV(hue, sat, val)
-                    ColorPickerManager._color = color
-                    ColorBox.BackgroundColor3 = color
-                    Library._config._flags[settings.flag] = color
+                    local newColor = Color3.fromHSV(hue, sat, val)
+                    ColorPickerManager._color = newColor
+                    ColorBox.BackgroundColor3 = newColor
+                    SatValPicker.BackgroundColor3 = Color3.fromHSV(hue, 1, 1)
+                    
+                    Library._config._flags[settings.flag] = newColor
                     Config:save(game.GameId, Library._config)
-                    if settings.callback then
-                        settings.callback(color)
-                    end
+                    settings.callback(newColor)
                 end
-            
+
                 local function updateSatValFromInput(input)
                     local pos = input.Position
                     local absPos = SatValPicker.AbsolutePosition
                     local absSize = SatValPicker.AbsoluteSize
-                    
+
                     local relX = math.clamp((pos.X - absPos.X) / absSize.X, 0, 1)
                     local relY = math.clamp((pos.Y - absPos.Y) / absSize.Y, 0, 1)
-                    
+
                     sat = relX
                     val = 1 - relY
-                    
+
                     Cursor.Position = UDim2.fromScale(relX, relY)
                     updateColor()
                 end
-            
+
                 local function updateHueFromInput(input)
                     local pos = input.Position
                     local absPos = HueSlider.AbsolutePosition
                     local absSize = HueSlider.AbsoluteSize
-                    
+
                     local relY = math.clamp((pos.Y - absPos.Y) / absSize.Y, 0, 1)
-                    
+
                     hue = relY
                     HueCursor.Position = UDim2.fromScale(0.5, relY)
                     SatValPicker.BackgroundColor3 = Color3.fromHSV(hue, 1, 1)
                     updateColor()
                 end
-            
+
                 -- Event Handlers
                 ColorBox.MouseButton1Click:Connect(function()
                     PickerWindow.Visible = not PickerWindow.Visible
                 end)
-            
+
                 SatValPicker.MouseButton1Down:Connect(function()
                     draggingSatVal = true
                 end)
-            
+
                 SatValPicker.MouseButton1Up:Connect(function()
                     draggingSatVal = false
                 end)
-            
+
                 SatValPicker.MouseLeave:Connect(function()
                     draggingSatVal = false
                 end)
-            
+
                 SatValPicker.InputChanged:Connect(function(input)
                     if input.UserInputType == Enum.UserInputType.MouseMovement and draggingSatVal then
                         updateSatValFromInput(input)
                     end
                 end)
-            
+
                 SatValPicker.MouseButton1Click:Connect(function(input)
                     updateSatValFromInput(input)
                 end)
-            
+
                 HueSlider.MouseButton1Down:Connect(function()
                     draggingHue = true
                 end)
-            
+
                 HueSlider.MouseButton1Up:Connect(function()
                     draggingHue = false
                 end)
-            
+
                 HueSlider.MouseLeave:Connect(function()
                     draggingHue = false
                 end)
-            
+
                 HueSlider.InputChanged:Connect(function(input)
                     if input.UserInputType == Enum.UserInputType.MouseMovement and draggingHue then
                         updateHueFromInput(input)
                     end
                 end)
-            
+
                 HueSlider.MouseButton1Click:Connect(function(input)
                     updateHueFromInput(input)
                 end)
-            
+
                 -- Initialize from saved color
-                if Library:flag_type(settings.flag, 'Color3') then
-                    ColorPickerManager._color = Library._config._flags[settings.flag]
-                    ColorBox.BackgroundColor3 = ColorPickerManager._color
-                    hue, sat, val = ColorPickerManager._color:ToHSV()
-                    Cursor.Position = UDim2.fromScale(sat, 1 - val)
-                    HueCursor.Position = UDim2.fromScale(0.5, hue)
-                    SatValPicker.BackgroundColor3 = Color3.fromHSV(hue, 1, 1)
+                if Library:flag_type(settings.flag, 'table') then
+                    local savedColor = Library._config._flags[settings.flag]
+                    if typeof(savedColor) == "Color3" then
+                        ColorPickerManager._color = savedColor
+                        ColorBox.BackgroundColor3 = savedColor
+                        hue, sat, val = savedColor:ToHSV()
+                        Cursor.Position = UDim2.fromScale(sat, 1 - val)
+                        HueCursor.Position = UDim2.fromScale(0.5, hue)
+                        SatValPicker.BackgroundColor3 = Color3.fromHSV(hue, 1, 1)
+                    end
                 else
                     Library._config._flags[settings.flag] = ColorPickerManager._color
                     Config:save(game.GameId, Library._config)
                 end
-            
+
                 function ColorPickerManager:set_color(color)
                     self._color = color
                     ColorBox.BackgroundColor3 = color
@@ -2969,6 +2953,31 @@ return Library
                     Library._config._flags[settings.flag] = color
                     Config:save(game.GameId, Library._config)
                 end
-            
+
                 return ColorPickerManager
             end
+
+            return ModuleManager
+        end
+
+        return TabManager
+    end
+
+    Connections['library_visiblity'] = UserInputService.InputBegan:Connect(function(input, process)
+        if input.KeyCode ~= Enum.KeyCode.Insert then
+            return
+        end
+
+        self._ui_open = not self._ui_open
+        self:change_visiblity(self._ui_open)
+    end)
+
+    self._ui.Container.Handler.Minimize.MouseButton1Click:Connect(function()
+        self._ui_open = not self._ui_open
+        self:change_visiblity(self._ui_open)
+    end)
+
+    return self
+end
+
+return Library
