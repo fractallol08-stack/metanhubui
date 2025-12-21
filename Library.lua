@@ -303,7 +303,6 @@ end
 
 -- Notification System
 function Library.SendNotification(settings)
-    -- Create notification (simplified version)
     print("[March Notification]", settings.title, "-", settings.text)
 end
 
@@ -665,7 +664,8 @@ function Library:create_tab(title, icon)
         local Options = Instance.new('Frame')
         Options.Name = 'Options'
         Options.BackgroundTransparency = 1
-        Options.Size = UDim2.new(0, 241, 0, 8)
+        Options.Size = UDim2.new(1, -20, 0, 0)
+        Options.AutomaticSize = Enum.AutomaticSize.Y
         Options.Visible = false
         Options.Parent = Module
         
@@ -704,7 +704,7 @@ function Library:create_tab(title, icon)
         end
         
         ModuleManager.create_colorpicker = function(self, colorpicker_settings)
-            return create_colorpicker(Options, colorpicker_settings, March)
+            return create_colorpicker(Options, colorpicker_settings, Library._ui)
         end
         
         ModuleManager.create_textbox = function(self, textbox_settings)
@@ -725,7 +725,7 @@ function Library:create_tab(title, icon)
     return TabManager
 end
 
--- Component Creation Functions (must be before Library:load and return Library)
+-- Component Creation Functions
 
 function create_slider(parent, settings)
     local SliderManager = {}
@@ -733,7 +733,7 @@ function create_slider(parent, settings)
     local Slider = Instance.new('TextButton')
     Slider.Name = 'Slider'
     Slider.Text = ''
-    Slider.Size = UDim2.new(0, 207, 0, 22)
+    Slider.Size = UDim2.new(0, 230, 0, 22)
     Slider.BackgroundTransparency = 1
     Slider.AutoButtonColor = false
     Slider.Parent = parent
@@ -743,7 +743,7 @@ function create_slider(parent, settings)
     Title.TextColor3 = Color3.fromRGB(255, 255, 255)
     Title.TextTransparency = 0.2
     Title.Text = settings.title or "Slider"
-    Title.Size = UDim2.new(0, 153, 0, 13)
+    Title.Size = UDim2.new(0, 170, 0, 13)
     Title.Position = UDim2.new(0, 0, 0.05, 0)
     Title.BackgroundTransparency = 1
     Title.TextXAlignment = Enum.TextXAlignment.Left
@@ -756,7 +756,7 @@ function create_slider(parent, settings)
     Value.TextTransparency = 0.2
     Value.Text = tostring(settings.value or 50)
     Value.Name = 'Value'
-    Value.Size = UDim2.new(0, 42, 0, 13)
+    Value.Size = UDim2.new(0, 50, 0, 13)
     Value.AnchorPoint = Vector2.new(1, 0)
     Value.Position = UDim2.new(1, 0, 0, 0)
     Value.BackgroundTransparency = 1
@@ -769,7 +769,7 @@ function create_slider(parent, settings)
     Drag.AnchorPoint = Vector2.new(0.5, 1)
     Drag.BackgroundTransparency = 0.9
     Drag.Position = UDim2.new(0.5, 0, 0.95, 0)
-    Drag.Size = UDim2.new(0, 207, 0, 4)
+    Drag.Size = UDim2.new(0, 230, 0, 4)
     Drag.BackgroundColor3 = Color3.fromRGB(152, 181, 255)
     Drag.BorderSizePixel = 0
     Drag.Parent = Slider
@@ -860,7 +860,7 @@ function create_checkbox(parent, settings)
     local Checkbox = Instance.new('TextButton')
     Checkbox.Name = 'Checkbox'
     Checkbox.Text = ''
-    Checkbox.Size = UDim2.new(0, 207, 0, 15)
+    Checkbox.Size = UDim2.new(0, 230, 0, 15)
     Checkbox.BackgroundTransparency = 1
     Checkbox.AutoButtonColor = false
     Checkbox.Parent = parent
@@ -870,7 +870,7 @@ function create_checkbox(parent, settings)
     Title.TextColor3 = Color3.fromRGB(255, 255, 255)
     Title.TextTransparency = 0.2
     Title.Text = settings.title or "Checkbox"
-    Title.Size = UDim2.new(0, 142, 0, 13)
+    Title.Size = UDim2.new(0, 200, 0, 13)
     Title.AnchorPoint = Vector2.new(0, 0.5)
     Title.Position = UDim2.new(0, 0, 0.5, 0)
     Title.BackgroundTransparency = 1
@@ -950,7 +950,7 @@ function create_dropdown(parent, settings)
     local Dropdown = Instance.new('TextButton')
     Dropdown.Name = 'Dropdown'
     Dropdown.Text = ''
-    Dropdown.Size = UDim2.new(0, 207, 0, 39)
+    Dropdown.Size = UDim2.new(0, 230, 0, 39)
     Dropdown.BackgroundTransparency = 1
     Dropdown.AutoButtonColor = false
     Dropdown.Parent = parent
@@ -960,7 +960,7 @@ function create_dropdown(parent, settings)
     Title.TextColor3 = Color3.fromRGB(255, 255, 255)
     Title.TextTransparency = 0.2
     Title.Text = settings.title or "Dropdown"
-    Title.Size = UDim2.new(0, 207, 0, 13)
+    Title.Size = UDim2.new(0, 230, 0, 13)
     Title.BackgroundTransparency = 1
     Title.TextXAlignment = Enum.TextXAlignment.Left
     Title.TextSize = 11
@@ -972,7 +972,7 @@ function create_dropdown(parent, settings)
     Box.AnchorPoint = Vector2.new(0.5, 0)
     Box.BackgroundTransparency = 0.9
     Box.Position = UDim2.new(0.5, 0, 1.2, 0)
-    Box.Size = UDim2.new(0, 207, 0, 22)
+    Box.Size = UDim2.new(0, 230, 0, 22)
     Box.BackgroundColor3 = Color3.fromRGB(152, 181, 255)
     Box.BorderSizePixel = 0
     Box.Parent = Title
@@ -987,7 +987,7 @@ function create_dropdown(parent, settings)
     CurrentOption.TextTransparency = 0.2
     CurrentOption.Text = settings.options[1] or "None"
     CurrentOption.Name = 'CurrentOption'
-    CurrentOption.Size = UDim2.new(0, 161, 0, 13)
+    CurrentOption.Size = UDim2.new(0, 200, 0, 13)
     CurrentOption.AnchorPoint = Vector2.new(0, 0.5)
     CurrentOption.Position = UDim2.new(0.05, 0, 0.5, 0)
     CurrentOption.BackgroundTransparency = 1
@@ -999,7 +999,7 @@ function create_dropdown(parent, settings)
     Options.Name = 'Options'
     Options.ScrollBarThickness = 0
     Options.AutomaticCanvasSize = Enum.AutomaticSize.Y
-    Options.Size = UDim2.new(0, 207, 0, 0)
+    Options.Size = UDim2.new(0, 230, 0, 0)
     Options.Position = UDim2.new(0, 0, 1, 0)
     Options.BackgroundTransparency = 1
     Options.BorderSizePixel = 0
@@ -1013,7 +1013,7 @@ function create_dropdown(parent, settings)
         local OptionButton = Instance.new('TextButton')
         OptionButton.Name = option
         OptionButton.Text = '  ' .. option
-        OptionButton.Size = UDim2.new(0, 207, 0, 16)
+        OptionButton.Size = UDim2.new(0, 230, 0, 16)
         OptionButton.BackgroundColor3 = Color3.fromRGB(22, 28, 38)
         OptionButton.BackgroundTransparency = 0.5
         OptionButton.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -1042,11 +1042,11 @@ function create_dropdown(parent, settings)
         
         if self._state then
             TweenService:Create(Box, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {
-                Size = UDim2.new(0, 207, 0, math.min(#settings.options * 16 + 22, 100))
+                Size = UDim2.new(0, 230, 0, math.min(#settings.options * 16 + 22, 100))
             }):Play()
         else
             TweenService:Create(Box, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {
-                Size = UDim2.new(0, 207, 0, 22)
+                Size = UDim2.new(0, 230, 0, 22)
             }):Play()
         end
     end
@@ -1067,7 +1067,7 @@ function create_textbox(parent, settings)
     
     local Container = Instance.new('Frame')
     Container.Name = 'Textbox'
-    Container.Size = UDim2.new(0, 207, 0, 27)
+    Container.Size = UDim2.new(0, 230, 0, 27)
     Container.BackgroundTransparency = 1
     Container.Parent = parent
     
@@ -1076,7 +1076,7 @@ function create_textbox(parent, settings)
     Title.TextColor3 = Color3.fromRGB(255, 255, 255)
     Title.TextTransparency = 0.2
     Title.Text = settings.title or "Textbox"
-    Title.Size = UDim2.new(0, 207, 0, 13)
+    Title.Size = UDim2.new(0, 230, 0, 13)
     Title.BackgroundTransparency = 1
     Title.TextXAlignment = Enum.TextXAlignment.Left
     Title.TextSize = 11
@@ -1088,7 +1088,7 @@ function create_textbox(parent, settings)
     Textbox.Text = ""
     Textbox.TextColor3 = Color3.fromRGB(255, 255, 255)
     Textbox.TextSize = 10
-    Textbox.Size = UDim2.new(0, 207, 0, 18)
+    Textbox.Size = UDim2.new(0, 230, 0, 18)
     Textbox.Position = UDim2.new(0, 0, 1, -18)
     Textbox.BackgroundColor3 = Color3.fromRGB(32, 38, 51)
     Textbox.BackgroundTransparency = 0.5
@@ -1121,7 +1121,7 @@ end
 function create_paragraph(parent, settings)
     local Paragraph = Instance.new('Frame')
     Paragraph.Name = 'Paragraph'
-    Paragraph.Size = UDim2.new(0, 207, 0, 50)
+    Paragraph.Size = UDim2.new(0, 230, 0, 50)
     Paragraph.BackgroundColor3 = Color3.fromRGB(32, 38, 51)
     Paragraph.BackgroundTransparency = 0.1
     Paragraph.BorderSizePixel = 0
@@ -1164,7 +1164,7 @@ end
 function create_divider(parent, settings)
     local Divider = Instance.new('Frame')
     Divider.Name = 'Divider'
-    Divider.Size = UDim2.new(0, 207, 0, 20)
+    Divider.Size = UDim2.new(0, 230, 0, 20)
     Divider.BackgroundTransparency = 1
     Divider.Parent = parent
     
@@ -1210,7 +1210,7 @@ function create_colorpicker(parent, settings, screen_gui)
     -- Main container
     local ColorPicker = Instance.new('Frame')
     ColorPicker.Name = 'ColorPicker'
-    ColorPicker.Size = UDim2.new(0, 207, 0, 22)
+    ColorPicker.Size = UDim2.new(0, 230, 0, 22)
     ColorPicker.BackgroundTransparency = 1
     ColorPicker.Parent = parent
     
@@ -1219,7 +1219,7 @@ function create_colorpicker(parent, settings, screen_gui)
     Title.TextColor3 = Color3.fromRGB(255, 255, 255)
     Title.TextTransparency = 0.2
     Title.Text = settings.title or "Color"
-    Title.Size = UDim2.new(0, 153, 0, 13)
+    Title.Size = UDim2.new(0, 180, 0, 13)
     Title.Position = UDim2.new(0, 0, 0.5, 0)
     Title.AnchorPoint = Vector2.new(0, 0.5)
     Title.BackgroundTransparency = 1
