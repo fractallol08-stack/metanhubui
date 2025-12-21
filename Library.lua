@@ -23,6 +23,9 @@ local SelectedLanguage = GG.Language
 
 function convertStringToTable(inputString)
     local result = {}
+    if not inputString or inputString == "" then
+        return result
+    end
     for value in string.gmatch(inputString, "([^,]+)") do
         local trimmedValue = value:match("^%s*(.-)%s*$")
         table.insert(result, trimmedValue)
