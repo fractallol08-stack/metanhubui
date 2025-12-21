@@ -1684,8 +1684,6 @@ function Library:AddKeybind(module, config)
     table.insert(module.Components, Keybind)
     return Keybind
 end
-    return ColorPicker
-end
 
 -- Компонент: Label (текстовая метка)
 function Library:AddLabel(module, config)
