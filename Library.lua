@@ -156,6 +156,8 @@ function Library.new(config)
     self.SettingsPanel = nil
     self.CurrentModule = nil
     self.ActiveColorPicker = nil
+    self.SettingsPanelPosition = nil -- Сохраненная позиция панели
+    self.SwitchingModule = false -- Флаг для предотвращения быстрого переключения
     
     self:CreateUI()
     self:SetupDragging()
@@ -184,6 +186,7 @@ function Library:CreateUI()
     self.MainFrame.Size = UDim2.new(0, 700, 0, 500)
     self.MainFrame.Position = UDim2.new(0.5, -350, 0.5, -250)
     self.MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
+    self.MainFrame.BackgroundTransparency = 0.05
     self.MainFrame.BorderSizePixel = 0
     self.MainFrame.ClipsDescendants = false
     self.MainFrame.Parent = self.ScreenGui
@@ -578,6 +581,10 @@ function Library:CreateModule(tab, config)
 end
 
 function Library:ShowSettingsPanel(module)
+    -- Предотвращаем быстрое переключение
+    if self.SwitchingModule then return end
+    self.SwitchingModule = true
+    
     -- Создаем панель если её нет
     if not self.SettingsPanel then
         self.SettingsPanel = Instance.new("Frame")
@@ -585,6 +592,7 @@ function Library:ShowSettingsPanel(module)
         self.SettingsPanel.Size = UDim2.new(0, 280, 0, 500)
         self.SettingsPanel.Position = UDim2.new(0, 720, 0, 0)
         self.SettingsPanel.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
+        self.SettingsPanel.BackgroundTransparency = 0.05
         self.SettingsPanel.BorderSizePixel = 0
         self.SettingsPanel.ClipsDescendants = false
         self.SettingsPanel.Visible = false
@@ -636,12 +644,15 @@ function Library:ShowSettingsPanel(module)
         UserInputService.InputChanged:Connect(function(input)
             if panelDragging and input.UserInputType == Enum.UserInputType.MouseMovement then
                 local delta = input.Position - panelDragStart
-                self.SettingsPanel.Position = UDim2.new(
+                local newPos = UDim2.new(
                     panelStartPos.X.Scale,
                     panelStartPos.X.Offset + delta.X,
                     panelStartPos.Y.Scale,
                     panelStartPos.Y.Offset + delta.Y
                 )
+                self.SettingsPanel.Position = newPos
+                -- Сохраняем позицию
+                self.SettingsPanelPosition = newPos
             end
         end)
         
@@ -730,22 +741,28 @@ function Library:ShowSettingsPanel(module)
         end
     end
     
-    -- Синхронизируем позицию с MainFrame
-    local mainPos = self.MainFrame.AbsolutePosition
-    local mainSize = self.MainFrame.AbsoluteSize
-    
     -- Показываем панель
     self.SettingsPanel.Visible = true
-    self.SettingsPanel.Position = UDim2.new(0, mainPos.X + mainSize.X + 20, 0, mainPos.Y)
+    
+    -- Используем сохраненную позицию или вычисляем новую
+    if self.SettingsPanelPosition then
+        self.SettingsPanel.Position = self.SettingsPanelPosition
+    else
+        local mainPos = self.MainFrame.AbsolutePosition
+        local mainSize = self.MainFrame.AbsoluteSize
+        self.SettingsPanel.Position = UDim2.new(0, mainPos.X + mainSize.X + 10, 0, mainPos.Y)
+        self.SettingsPanelPosition = self.SettingsPanel.Position
+    end
     
     print("Панель показана на позиции:", self.SettingsPanel.Position)
     
-    -- Анимация появления
-    TweenService:Create(self.SettingsPanel, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-        Position = UDim2.new(0, mainPos.X + mainSize.X + 10, 0, mainPos.Y)
-    }):Play()
-    
     self.CurrentModule = module
+    
+    -- Разрешаем переключение после небольшой задержки
+    task.delay(0.1, function()
+        self.SwitchingModule = false
+    end)
+end
 end
 
 function Library:HideSettingsPanel()
@@ -753,14 +770,9 @@ function Library:HideSettingsPanel()
     
     print("HideSettingsPanel вызван")
     
-    local mainPos = self.MainFrame.AbsolutePosition
-    local mainSize = self.MainFrame.AbsoluteSize
+    -- Сохраняем текущую позицию перед скрытием
+    self.SettingsPanelPosition = self.SettingsPanel.Position
     
-    TweenService:Create(self.SettingsPanel, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.In), {
-        Position = UDim2.new(0, mainPos.X + mainSize.X + 20, 0, mainPos.Y)
-    }):Play()
-    
-    task.wait(0.3)
     self.SettingsPanel.Visible = false
     self.CurrentModule = nil
 end
@@ -1465,7 +1477,11 @@ function Library:AddColorPicker(module, config)
     local svDragging = false
     
     local function updateSVPicker(inputPos)
-        local relativePos = inputPos - SVPicker.AbsolutePosition
+        -- Учитываем GUI inset (36 пикселей сверху для топбара Roblox)
+        local guiInset = game:GetService("GuiService"):GetGuiInset()
+        local adjustedPos = Vector2.new(inputPos.X, inputPos.Y - guiInset.Y)
+        
+        local relativePos = adjustedPos - SVPicker.AbsolutePosition
         local pos = relativePos / SVPicker.AbsoluteSize
         pos = Vector2.new(math.clamp(pos.X, 0, 1), math.clamp(pos.Y, 0, 1))
         
@@ -1500,7 +1516,11 @@ function Library:AddColorPicker(module, config)
     local hueDragging = false
     
     local function updateHueSlider(inputPos)
-        local relativePos = inputPos.Y - HueSlider.AbsolutePosition.Y
+        -- Учитываем GUI inset
+        local guiInset = game:GetService("GuiService"):GetGuiInset()
+        local adjustedY = inputPos.Y - guiInset.Y
+        
+        local relativePos = adjustedY - HueSlider.AbsolutePosition.Y
         local pos = relativePos / HueSlider.AbsoluteSize.Y
         pos = math.clamp(pos, 0, 1)
         
@@ -1582,6 +1602,7 @@ function Library:AddKeybind(module, config)
     local default = config.Default or Enum.KeyCode.E
     local flag = config.Flag or name
     local callback = config.Callback or function() end
+    local mode = config.Mode or "Toggle" -- Toggle или Hold
     
     local savedKey = self.Config:GetFlag(flag)
     local value = default
@@ -1593,6 +1614,8 @@ function Library:AddKeybind(module, config)
     local Keybind = {}
     Keybind.Value = value
     Keybind.Listening = false
+    Keybind.Mode = mode
+    Keybind.Active = false
     
     -- Контейнер
     Keybind.Element = Instance.new("Frame")
@@ -1640,7 +1663,29 @@ function Library:AddKeybind(module, config)
         callback(newKey)
     end
     
-    -- Обработка клика
+    -- Глобальный обработчик нажатий клавиш
+    UserInputService.InputBegan:Connect(function(input, gameProcessed)
+        if gameProcessed or Keybind.Listening then return end
+        
+        if input.KeyCode == Keybind.Value then
+            if Keybind.Mode == "Toggle" then
+                Keybind.Active = not Keybind.Active
+                callback(Keybind.Active)
+            else
+                Keybind.Active = true
+                callback(true)
+            end
+        end
+    end)
+    
+    UserInputService.InputEnded:Connect(function(input, gameProcessed)
+        if Keybind.Mode == "Hold" and input.KeyCode == Keybind.Value then
+            Keybind.Active = false
+            callback(false)
+        end
+    end)
+    
+    -- Обработка клика для установки клавиши
     KeyButton.MouseButton1Click:Connect(function()
         if Keybind.Listening then return end
         
