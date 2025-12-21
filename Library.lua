@@ -465,69 +465,157 @@ function Library:CreateModule(tab, config)
     Module.Name = config.Name or "Module"
     Module.Description = config.Description or ""
     Module.Components = {}
+    Module.Expanded = false
     
-    -- Контейнер модуля
+    -- Контейнер модуля (карточка)
     Module.Frame = Instance.new("Frame")
     Module.Frame.Name = Module.Name
-    Module.Frame.Size = UDim2.new(1, -20, 0, 80)
+    Module.Frame.Size = UDim2.new(1, -20, 0, 93)  -- Высота как в LibraryMarch
     Module.Frame.BackgroundColor3 = Color3.fromRGB(22, 28, 38)
     Module.Frame.BorderSizePixel = 0
     Module.Frame.Parent = tab.Container
     
     local FrameCorner = Instance.new("UICorner")
-    FrameCorner.CornerRadius = UDim.new(0, 8)
+    FrameCorner.CornerRadius = UDim.new(0, 5)
     FrameCorner.Parent = Module.Frame
     
     local FrameStroke = Instance.new("UIStroke")
     FrameStroke.Color = Color3.fromRGB(52, 66, 89)
     FrameStroke.Thickness = 1
     FrameStroke.Transparency = 0.5
+    FrameStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
     FrameStroke.Parent = Module.Frame
     
-    -- Кнопка модуля
-    Module.Button = Instance.new("TextButton")
-    Module.Button.Size = UDim2.new(1, 0, 1, 0)
-    Module.Button.BackgroundTransparency = 1
-    Module.Button.Text = ""
-    Module.Button.Parent = Module.Frame
+    -- Заголовок модуля (Header)
+    local Header = Instance.new("TextButton")
+    Header.Name = "Header"
+    Header.Size = UDim2.new(1, 0, 0, 93)
+    Header.BackgroundTransparency = 1
+    Header.Text = ""
+    Header.AutoButtonColor = false
+    Header.Parent = Module.Frame
+    
+    -- Иконка
+    local Icon = Instance.new("ImageLabel")
+    Icon.Name = "Icon"
+    Icon.Size = UDim2.new(0, 15, 0, 15)
+    Icon.Position = UDim2.new(0.071, 0, 0.82, 0)
+    Icon.AnchorPoint = Vector2.new(0, 0.5)
+    Icon.BackgroundTransparency = 1
+    Icon.Image = "rbxassetid://79095934438045"
+    Icon.ImageColor3 = Color3.fromRGB(152, 181, 255)
+    Icon.ImageTransparency = 0.7
+    Icon.ScaleType = Enum.ScaleType.Fit
+    Icon.Parent = Header
     
     -- Название модуля
-    local NameLabel = Instance.new("TextLabel")
-    NameLabel.Name = "NameLabel"
-    NameLabel.Size = UDim2.new(1, -20, 0, 25)
-    NameLabel.Position = UDim2.new(0, 15, 0, 10)
-    NameLabel.BackgroundTransparency = 1
-    NameLabel.Text = Module.Name
-    NameLabel.TextColor3 = Color3.fromRGB(200, 200, 220)
-    NameLabel.TextSize = 15
-    NameLabel.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
-    NameLabel.TextXAlignment = Enum.TextXAlignment.Left
-    NameLabel.Parent = Module.Frame
+    local ModuleName = Instance.new("TextLabel")
+    ModuleName.Name = "ModuleName"
+    ModuleName.Size = UDim2.new(0, 205, 0, 13)
+    ModuleName.Position = UDim2.new(0.073, 0, 0.24, 0)
+    ModuleName.AnchorPoint = Vector2.new(0, 0.5)
+    ModuleName.BackgroundTransparency = 1
+    ModuleName.Text = Module.Name
+    ModuleName.TextColor3 = Color3.fromRGB(152, 181, 255)
+    ModuleName.TextTransparency = 0.2
+    ModuleName.TextSize = 13
+    ModuleName.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
+    ModuleName.TextXAlignment = Enum.TextXAlignment.Left
+    ModuleName.Parent = Header
     
     -- Описание модуля
-    local DescLabel = Instance.new("TextLabel")
-    DescLabel.Name = "DescLabel"
-    DescLabel.Size = UDim2.new(1, -20, 0, 20)
-    DescLabel.Position = UDim2.new(0, 15, 0, 35)
-    DescLabel.BackgroundTransparency = 1
-    DescLabel.Text = Module.Description
-    DescLabel.TextColor3 = Color3.fromRGB(120, 120, 140)
-    DescLabel.TextSize = 12
-    DescLabel.Font = Enum.Font.Gotham
-    DescLabel.TextXAlignment = Enum.TextXAlignment.Left
-    DescLabel.TextWrapped = true
-    DescLabel.Parent = Module.Frame
+    local Description = Instance.new("TextLabel")
+    Description.Name = "Description"
+    Description.Size = UDim2.new(0, 205, 0, 13)
+    Description.Position = UDim2.new(0.073, 0, 0.42, 0)
+    Description.AnchorPoint = Vector2.new(0, 0.5)
+    Description.BackgroundTransparency = 1
+    Description.Text = Module.Description
+    Description.TextColor3 = Color3.fromRGB(152, 181, 255)
+    Description.TextTransparency = 0.7
+    Description.TextSize = 10
+    Description.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
+    Description.TextXAlignment = Enum.TextXAlignment.Left
+    Description.Parent = Header
     
-    -- Контейнер для компонентов (скрыт по умолчанию)
-    Module.ComponentsFrame = Instance.new("Frame")
-    Module.ComponentsFrame.Name = "ComponentsFrame"
-    Module.ComponentsFrame.Size = UDim2.new(1, 0, 0, 0)
-    Module.ComponentsFrame.BackgroundTransparency = 1
-    Module.ComponentsFrame.Visible = false
-    Module.ComponentsFrame.Parent = Module.Frame
+    -- Toggle переключатель
+    local Toggle = Instance.new("Frame")
+    Toggle.Name = "Toggle"
+    Toggle.Size = UDim2.new(0, 25, 0, 12)
+    Toggle.Position = UDim2.new(0.82, 0, 0.757, 0)
+    Toggle.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    Toggle.BackgroundTransparency = 0.7
+    Toggle.BorderSizePixel = 0
+    Toggle.Parent = Header
+    
+    local ToggleCorner = Instance.new("UICorner")
+    ToggleCorner.CornerRadius = UDim.new(1, 0)
+    ToggleCorner.Parent = Toggle
+    
+    local Circle = Instance.new("Frame")
+    Circle.Name = "Circle"
+    Circle.Size = UDim2.new(0, 12, 0, 12)
+    Circle.Position = UDim2.new(0, 0, 0.5, 0)
+    Circle.AnchorPoint = Vector2.new(0, 0.5)
+    Circle.BackgroundColor3 = Color3.fromRGB(66, 80, 115)
+    Circle.BackgroundTransparency = 0.2
+    Circle.BorderSizePixel = 0
+    Circle.Parent = Toggle
+    
+    local CircleCorner = Instance.new("UICorner")
+    CircleCorner.CornerRadius = UDim.new(1, 0)
+    CircleCorner.Parent = Circle
+    
+    -- Keybind
+    local Keybind = Instance.new("Frame")
+    Keybind.Name = "Keybind"
+    Keybind.Size = UDim2.new(0, 33, 0, 15)
+    Keybind.Position = UDim2.new(0.15, 0, 0.735, 0)
+    Keybind.BackgroundColor3 = Color3.fromRGB(152, 181, 255)
+    Keybind.BackgroundTransparency = 0.7
+    Keybind.BorderSizePixel = 0
+    Keybind.Parent = Header
+    
+    local KeybindCorner = Instance.new("UICorner")
+    KeybindCorner.CornerRadius = UDim.new(0, 3)
+    KeybindCorner.Parent = Keybind
+    
+    local KeybindLabel = Instance.new("TextLabel")
+    KeybindLabel.Size = UDim2.new(0, 25, 0, 13)
+    KeybindLabel.Position = UDim2.new(0.5, 0, 0.5, 0)
+    KeybindLabel.AnchorPoint = Vector2.new(0.5, 0.5)
+    KeybindLabel.BackgroundTransparency = 1
+    KeybindLabel.Text = "None"
+    KeybindLabel.TextColor3 = Color3.fromRGB(209, 222, 255)
+    KeybindLabel.TextSize = 10
+    KeybindLabel.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
+    KeybindLabel.TextXAlignment = Enum.TextXAlignment.Left
+    KeybindLabel.Parent = Keybind
+    
+    -- Разделитель 1 (под описанием)
+    local Divider1 = Instance.new("Frame")
+    Divider1.Name = "Divider1"
+    Divider1.Size = UDim2.new(0, 241, 0, 1)
+    Divider1.Position = UDim2.new(0.5, 0, 0.62, 0)
+    Divider1.AnchorPoint = Vector2.new(0.5, 0)
+    Divider1.BackgroundColor3 = Color3.fromRGB(52, 66, 89)
+    Divider1.BackgroundTransparency = 0.5
+    Divider1.BorderSizePixel = 0
+    Divider1.Parent = Header
+    
+    -- Разделитель 2 (внизу заголовка)
+    local Divider2 = Instance.new("Frame")
+    Divider2.Name = "Divider2"
+    Divider2.Size = UDim2.new(0, 241, 0, 1)
+    Divider2.Position = UDim2.new(0.5, 0, 1, 0)
+    Divider2.AnchorPoint = Vector2.new(0.5, 0)
+    Divider2.BackgroundColor3 = Color3.fromRGB(52, 66, 89)
+    Divider2.BackgroundTransparency = 0.5
+    Divider2.BorderSizePixel = 0
+    Divider2.Parent = Header
     
     -- Обработчик клика - открывает панель настроек
-    Module.Button.MouseButton1Click:Connect(function()
+    Header.MouseButton1Click:Connect(function()
         print("=== КЛИК ПО МОДУЛЮ ===")
         print("Модуль:", Module.Name)
         print("Текущий модуль:", self.CurrentModule and self.CurrentModule.Name or "nil")
@@ -545,13 +633,13 @@ function Library:CreateModule(tab, config)
     end)
     
     -- Hover эффект
-    Module.Button.MouseEnter:Connect(function()
+    Header.MouseEnter:Connect(function()
         TweenService:Create(Module.Frame, TweenInfo.new(0.2), {
             BackgroundColor3 = Color3.fromRGB(32, 38, 51)
         }):Play()
     end)
     
-    Module.Button.MouseLeave:Connect(function()
+    Header.MouseLeave:Connect(function()
         TweenService:Create(Module.Frame, TweenInfo.new(0.2), {
             BackgroundColor3 = Color3.fromRGB(22, 28, 38)
         }):Play()
@@ -787,8 +875,14 @@ function Library:AddSlider(module, config)
     -- Контейнер
     Slider.Element = Instance.new("Frame")
     Slider.Element.Name = name
-    Slider.Element.Size = UDim2.new(1, -10, 0, 50)
-    Slider.Element.BackgroundTransparency = 1
+    Slider.Element.Size = UDim2.new(1, -10, 0, 60)
+    Slider.Element.BackgroundColor3 = Color3.fromRGB(32, 38, 51)
+    Slider.Element.BackgroundTransparency = 0.1
+    Slider.Element.BorderSizePixel = 0
+    
+    local ElementCorner = Instance.new("UICorner")
+    ElementCorner.CornerRadius = UDim.new(0, 4)
+    ElementCorner.Parent = Slider.Element
     
     -- Название
     local NameLabel = Instance.new("TextLabel")
@@ -918,8 +1012,14 @@ function Library:AddToggle(module, config)
     -- Контейнер
     Toggle.Element = Instance.new("Frame")
     Toggle.Element.Name = name
-    Toggle.Element.Size = UDim2.new(1, -10, 0, 35)
-    Toggle.Element.BackgroundTransparency = 1
+    Toggle.Element.Size = UDim2.new(1, -10, 0, 40)
+    Toggle.Element.BackgroundColor3 = Color3.fromRGB(32, 38, 51)
+    Toggle.Element.BackgroundTransparency = 0.1
+    Toggle.Element.BorderSizePixel = 0
+    
+    local ElementCorner = Instance.new("UICorner")
+    ElementCorner.CornerRadius = UDim.new(0, 4)
+    ElementCorner.Parent = Toggle.Element
     
     -- Кнопка
     local Button = Instance.new("TextButton")
@@ -1009,16 +1109,24 @@ function Library:AddDropdown(module, config)
     -- Контейнер
     Dropdown.Element = Instance.new("Frame")
     Dropdown.Element.Name = name
-    Dropdown.Element.Size = UDim2.new(1, -10, 0, 70)
-    Dropdown.Element.BackgroundTransparency = 1
+    Dropdown.Element.Size = UDim2.new(1, -10, 0, 75)
+    Dropdown.Element.BackgroundColor3 = Color3.fromRGB(32, 38, 51)
+    Dropdown.Element.BackgroundTransparency = 0.1
+    Dropdown.Element.BorderSizePixel = 0
+    
+    local ElementCorner = Instance.new("UICorner")
+    ElementCorner.CornerRadius = UDim.new(0, 4)
+    ElementCorner.Parent = Dropdown.Element
     
     -- Название
     local NameLabel = Instance.new("TextLabel")
-    NameLabel.Size = UDim2.new(1, 0, 0, 20)
+    NameLabel.Size = UDim2.new(1, -20, 0, 20)
+    NameLabel.Position = UDim2.new(0, 10, 0, 5)
     NameLabel.BackgroundTransparency = 1
     NameLabel.Text = name
-    NameLabel.TextColor3 = Color3.fromRGB(200, 200, 220)
-    NameLabel.TextSize = 13
+    NameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    NameLabel.TextTransparency = 0.2
+    NameLabel.TextSize = 11
     NameLabel.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
     NameLabel.TextXAlignment = Enum.TextXAlignment.Left
     NameLabel.Parent = Dropdown.Element
@@ -1176,16 +1284,24 @@ function Library:AddTextbox(module, config)
     -- Контейнер
     Textbox.Element = Instance.new("Frame")
     Textbox.Element.Name = name
-    Textbox.Element.Size = UDim2.new(1, -10, 0, 60)
-    Textbox.Element.BackgroundTransparency = 1
+    Textbox.Element.Size = UDim2.new(1, -10, 0, 65)
+    Textbox.Element.BackgroundColor3 = Color3.fromRGB(32, 38, 51)
+    Textbox.Element.BackgroundTransparency = 0.1
+    Textbox.Element.BorderSizePixel = 0
+    
+    local ElementCorner = Instance.new("UICorner")
+    ElementCorner.CornerRadius = UDim.new(0, 4)
+    ElementCorner.Parent = Textbox.Element
     
     -- Название
     local NameLabel = Instance.new("TextLabel")
-    NameLabel.Size = UDim2.new(1, 0, 0, 20)
+    NameLabel.Size = UDim2.new(1, -20, 0, 20)
+    NameLabel.Position = UDim2.new(0, 10, 0, 5)
     NameLabel.BackgroundTransparency = 1
     NameLabel.Text = name
-    NameLabel.TextColor3 = Color3.fromRGB(200, 200, 220)
-    NameLabel.TextSize = 13
+    NameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    NameLabel.TextTransparency = 0.2
+    NameLabel.TextSize = 11
     NameLabel.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
     NameLabel.TextXAlignment = Enum.TextXAlignment.Left
     NameLabel.Parent = Textbox.Element
@@ -1263,16 +1379,24 @@ function Library:AddColorPicker(module, config)
     -- Контейнер
     ColorPicker.Element = Instance.new("Frame")
     ColorPicker.Element.Name = name
-    ColorPicker.Element.Size = UDim2.new(1, -10, 0, 35)
-    ColorPicker.Element.BackgroundTransparency = 1
+    ColorPicker.Element.Size = UDim2.new(1, -10, 0, 40)
+    ColorPicker.Element.BackgroundColor3 = Color3.fromRGB(32, 38, 51)
+    ColorPicker.Element.BackgroundTransparency = 0.1
+    ColorPicker.Element.BorderSizePixel = 0
+    
+    local ElementCorner = Instance.new("UICorner")
+    ElementCorner.CornerRadius = UDim.new(0, 4)
+    ElementCorner.Parent = ColorPicker.Element
     
     -- Название
     local NameLabel = Instance.new("TextLabel")
-    NameLabel.Size = UDim2.new(1, -50, 1, 0)
+    NameLabel.Size = UDim2.new(1, -60, 1, 0)
+    NameLabel.Position = UDim2.new(0, 10, 0, 0)
     NameLabel.BackgroundTransparency = 1
     NameLabel.Text = name
-    NameLabel.TextColor3 = Color3.fromRGB(200, 200, 220)
-    NameLabel.TextSize = 13
+    NameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    NameLabel.TextTransparency = 0.2
+    NameLabel.TextSize = 11
     NameLabel.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
     NameLabel.TextXAlignment = Enum.TextXAlignment.Left
     NameLabel.Parent = ColorPicker.Element
@@ -1613,16 +1737,24 @@ function Library:AddKeybind(module, config)
     -- Контейнер
     Keybind.Element = Instance.new("Frame")
     Keybind.Element.Name = name
-    Keybind.Element.Size = UDim2.new(1, -10, 0, 35)
-    Keybind.Element.BackgroundTransparency = 1
+    Keybind.Element.Size = UDim2.new(1, -10, 0, 40)
+    Keybind.Element.BackgroundColor3 = Color3.fromRGB(32, 38, 51)
+    Keybind.Element.BackgroundTransparency = 0.1
+    Keybind.Element.BorderSizePixel = 0
+    
+    local ElementCorner = Instance.new("UICorner")
+    ElementCorner.CornerRadius = UDim.new(0, 4)
+    ElementCorner.Parent = Keybind.Element
     
     -- Название
     local NameLabel = Instance.new("TextLabel")
-    NameLabel.Size = UDim2.new(1, -80, 1, 0)
+    NameLabel.Size = UDim2.new(1, -90, 1, 0)
+    NameLabel.Position = UDim2.new(0, 10, 0, 0)
     NameLabel.BackgroundTransparency = 1
     NameLabel.Text = name
-    NameLabel.TextColor3 = Color3.fromRGB(200, 200, 220)
-    NameLabel.TextSize = 13
+    NameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    NameLabel.TextTransparency = 0.2
+    NameLabel.TextSize = 11
     NameLabel.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
     NameLabel.TextXAlignment = Enum.TextXAlignment.Left
     NameLabel.Parent = Keybind.Element
