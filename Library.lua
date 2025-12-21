@@ -245,26 +245,27 @@ function Library:CreateUI()
     -- Контейнер для табов (слева)
     self.TabContainer = Instance.new("ScrollingFrame")
     self.TabContainer.Name = "TabContainer"
-    self.TabContainer.Size = UDim2.new(0, 150, 1, -50)
-    self.TabContainer.Position = UDim2.new(0, 10, 0, 45)
+    self.TabContainer.Size = UDim2.new(0, 129, 0, 401)
+    self.TabContainer.Position = UDim2.new(0.026, 0, 0.111, 0)
     self.TabContainer.BackgroundTransparency = 1
     self.TabContainer.BorderSizePixel = 0
-    self.TabContainer.ScrollBarThickness = 4
-    self.TabContainer.ScrollBarImageColor3 = Color3.fromRGB(100, 100, 120)
-    self.TabContainer.CanvasSize = UDim2.new(0, 0, 0, 0)
-    self.TabContainer.AutomaticCanvasSize = Enum.AutomaticSize.Y
+    self.TabContainer.ScrollBarThickness = 0
+    self.TabContainer.ScrollBarImageTransparency = 1
+    self.TabContainer.CanvasSize = UDim2.new(0, 0, 0.5, 0)
+    self.TabContainer.AutomaticCanvasSize = Enum.AutomaticSize.XY
+    self.TabContainer.Selectable = false
     self.TabContainer.Parent = self.MainFrame
     
     local TabLayout = Instance.new("UIListLayout")
-    TabLayout.Padding = UDim.new(0, 5)
+    TabLayout.Padding = UDim.new(0, 4)
     TabLayout.SortOrder = Enum.SortOrder.LayoutOrder
     TabLayout.Parent = self.TabContainer
     
     -- Разделитель
     local Divider = Instance.new("Frame")
     Divider.Name = "Divider"
-    Divider.Size = UDim2.new(0, 1, 1, -50)
-    Divider.Position = UDim2.new(0, 170, 0, 45)
+    Divider.Size = UDim2.new(0, 1, 0, 479)
+    Divider.Position = UDim2.new(0.235, 0, 0, 0)
     Divider.BackgroundColor3 = Color3.fromRGB(52, 66, 89)
     Divider.BackgroundTransparency = 0.5
     Divider.BorderSizePixel = 0
@@ -274,7 +275,7 @@ function Library:CreateUI()
     self.TabPin = Instance.new("Frame")
     self.TabPin.Name = "Pin"
     self.TabPin.Size = UDim2.new(0, 2, 0, 16)
-    self.TabPin.Position = UDim2.new(0, 10, 0, 65)
+    self.TabPin.Position = UDim2.new(0.026, 0, 0.136, 0)
     self.TabPin.BackgroundColor3 = Color3.fromRGB(152, 181, 255)
     self.TabPin.BorderSizePixel = 0
     self.TabPin.Parent = self.MainFrame
@@ -287,7 +288,7 @@ function Library:CreateUI()
     self.ContentContainer = Instance.new("Frame")
     self.ContentContainer.Name = "ContentContainer"
     self.ContentContainer.Size = UDim2.new(1, -190, 1, -50)
-    self.ContentContainer.Position = UDim2.new(0, 180, 0, 45)
+    self.ContentContainer.Position = UDim2.new(0.259, 0, 0, 0)
     self.ContentContainer.BackgroundTransparency = 1
     self.ContentContainer.BorderSizePixel = 0
     self.ContentContainer.ClipsDescendants = true
@@ -408,28 +409,30 @@ function Library:CreateTab(name, icon)
     -- Контейнер для модулей (сетка 2 колонки)
     Tab.Container = Instance.new("ScrollingFrame")
     Tab.Container.Name = name .. "Container"
-    Tab.Container.Size = UDim2.new(1, 0, 1, 0)
+    Tab.Container.Size = UDim2.new(0, 492, 0, 479)
+    Tab.Container.Position = UDim2.new(0, 0, 0, 0)
     Tab.Container.BackgroundTransparency = 1
     Tab.Container.BorderSizePixel = 0
-    Tab.Container.ScrollBarThickness = 4
-    Tab.Container.ScrollBarImageColor3 = Color3.fromRGB(100, 100, 120)
+    Tab.Container.ScrollBarThickness = 0
+    Tab.Container.ScrollBarImageTransparency = 1
     Tab.Container.CanvasSize = UDim2.new(0, 0, 0, 0)
     Tab.Container.AutomaticCanvasSize = Enum.AutomaticSize.Y
     Tab.Container.Visible = false
+    Tab.Container.Selectable = false
     Tab.Container.Parent = self.ContentContainer
     
     -- UIGridLayout для 2 колонок
     local ContainerLayout = Instance.new("UIGridLayout")
     ContainerLayout.CellSize = UDim2.new(0, 241, 0, 93)
-    ContainerLayout.CellPadding = UDim2.new(0, 10, 0, 10)
+    ContainerLayout.CellPadding = UDim2.new(0, 11, 0, 11)
     ContainerLayout.SortOrder = Enum.SortOrder.LayoutOrder
     ContainerLayout.HorizontalAlignment = Enum.HorizontalAlignment.Left
     ContainerLayout.Parent = Tab.Container
     
     local ContainerPadding = Instance.new("UIPadding")
-    ContainerPadding.PaddingTop = UDim.new(0, 10)
+    ContainerPadding.PaddingTop = UDim.new(0, 1)
     ContainerPadding.PaddingBottom = UDim.new(0, 10)
-    ContainerPadding.PaddingLeft = UDim.new(0, 10)
+    ContainerPadding.PaddingLeft = UDim.new(0, 0)
     ContainerPadding.PaddingRight = UDim.new(0, 10)
     ContainerPadding.Parent = Tab.Container
     
@@ -547,9 +550,9 @@ function Library:SelectTab(tab)
             end
         end
         
-        local offset = tabIndex * (38 + 5) -- 38 высота таба + 5 padding
+        local offset = tabIndex * (0.113 / 1.3) -- Расчет как в LibraryMarch
         TweenService:Create(self.TabPin, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-            Position = UDim2.new(0, 10, 0, 65 + offset)
+            Position = UDim2.fromScale(0.026, 0.135 + offset)
         }):Play()
     end
     
@@ -693,7 +696,27 @@ function Library:CreateModule(tab, config)
     KeybindLabel.TextXAlignment = Enum.TextXAlignment.Left
     KeybindLabel.Parent = Keybind
     
-    -- УДАЛЯЕМ DIVIDERS - их не должно быть!
+    -- Divider 1 (между header и options)
+    local Divider1 = Instance.new("Frame")
+    Divider1.Name = "Divider"
+    Divider1.Size = UDim2.new(0, 241, 0, 1)
+    Divider1.Position = UDim2.new(0.5, 0, 0.62, 0)
+    Divider1.AnchorPoint = Vector2.new(0.5, 0)
+    Divider1.BackgroundColor3 = Color3.fromRGB(52, 66, 89)
+    Divider1.BackgroundTransparency = 0.5
+    Divider1.BorderSizePixel = 0
+    Divider1.Parent = Header
+    
+    -- Divider 2 (внизу header)
+    local Divider2 = Instance.new("Frame")
+    Divider2.Name = "Divider"
+    Divider2.Size = UDim2.new(0, 241, 0, 1)
+    Divider2.Position = UDim2.new(0.5, 0, 1, 0)
+    Divider2.AnchorPoint = Vector2.new(0.5, 0)
+    Divider2.BackgroundColor3 = Color3.fromRGB(52, 66, 89)
+    Divider2.BackgroundTransparency = 0.5
+    Divider2.BorderSizePixel = 0
+    Divider2.Parent = Header
     
     -- Обработчик клика - открывает панель настроек
     Header.MouseButton1Click:Connect(function()
@@ -775,19 +798,42 @@ function Library:ShowSettingsPanel(module)
     PanelStroke.Transparency = 0.5
     PanelStroke.Parent = self.SettingsPanel
         
+        -- Иконка панели
+        local PanelIcon = Instance.new("ImageLabel")
+        PanelIcon.Name = "Icon"
+        PanelIcon.Size = UDim2.new(0, 18, 0, 18)
+        PanelIcon.Position = UDim2.new(0, 18, 0, 26)
+        PanelIcon.AnchorPoint = Vector2.new(0, 0.5)
+        PanelIcon.BackgroundTransparency = 1
+        PanelIcon.Image = "rbxassetid://107819132007001"
+        PanelIcon.ImageColor3 = Color3.fromRGB(152, 181, 255)
+        PanelIcon.ScaleType = Enum.ScaleType.Fit
+        PanelIcon.ZIndex = 11
+        PanelIcon.Parent = self.SettingsPanel
+        
         -- Заголовок панели (для перетаскивания)
         local PanelTitle = Instance.new("TextLabel")
         PanelTitle.Name = "PanelTitle"
-        PanelTitle.Size = UDim2.new(1, -60, 0, 40)
-        PanelTitle.Position = UDim2.new(0, 15, 0, 10)
+        PanelTitle.Size = UDim2.new(0, 200, 0, 13)
+        PanelTitle.Position = UDim2.new(0, 42, 0, 26)
+        PanelTitle.AnchorPoint = Vector2.new(0, 0.5)
         PanelTitle.BackgroundTransparency = 1
         PanelTitle.Text = "Settings"
         PanelTitle.TextColor3 = Color3.fromRGB(152, 181, 255)
-        PanelTitle.TextSize = 16
+        PanelTitle.TextTransparency = 0.2
+        PanelTitle.TextSize = 13
         PanelTitle.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
         PanelTitle.TextXAlignment = Enum.TextXAlignment.Left
         PanelTitle.ZIndex = 11
         PanelTitle.Parent = self.SettingsPanel
+        
+        -- Градиент для заголовка панели
+        local PanelTitleGradient = Instance.new("UIGradient")
+        PanelTitleGradient.Color = ColorSequence.new{
+            ColorSequenceKeypoint.new(0, Color3.fromRGB(155, 155, 155)),
+            ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 255, 255))
+        }
+        PanelTitleGradient.Parent = PanelTitle
         
         -- Добавляем перетаскивание для панели настроек
         local panelDragging = false
@@ -825,59 +871,65 @@ function Library:ShowSettingsPanel(module)
         -- Кнопка закрытия
         local CloseButton = Instance.new("TextButton")
         CloseButton.Name = "CloseButton"
-        CloseButton.Size = UDim2.new(0, 30, 0, 30)
-        CloseButton.Position = UDim2.new(1, -40, 0, 10)
-        CloseButton.BackgroundColor3 = Color3.fromRGB(22, 28, 38)
+        CloseButton.Size = UDim2.new(0, 24, 0, 24)
+        CloseButton.Position = UDim2.new(0, 14, 0, 14)
+        CloseButton.BackgroundTransparency = 1
         CloseButton.BorderSizePixel = 0
-        CloseButton.Text = "×"
-        CloseButton.TextColor3 = Color3.fromRGB(200, 200, 220)
-        CloseButton.TextSize = 20
-        CloseButton.Font = Enum.Font.GothamBold
+        CloseButton.Text = ""
+        CloseButton.AutoButtonColor = false
         CloseButton.ZIndex = 11
         CloseButton.Parent = self.SettingsPanel
         
-        local CloseCorner = Instance.new("UICorner")
-        CloseCorner.CornerRadius = UDim.new(0, 6)
-        CloseCorner.Parent = CloseButton
+        -- Иконка закрытия (крестик)
+        local CloseIcon = Instance.new("ImageLabel")
+        CloseIcon.Size = UDim2.new(1, 0, 1, 0)
+        CloseIcon.BackgroundTransparency = 1
+        CloseIcon.Image = "rbxassetid://10747384394"
+        CloseIcon.ImageColor3 = Color3.fromRGB(255, 255, 255)
+        CloseIcon.ImageTransparency = 0.7
+        CloseIcon.ScaleType = Enum.ScaleType.Fit
+        CloseIcon.ZIndex = 11
+        CloseIcon.Parent = CloseButton
         
         CloseButton.MouseButton1Click:Connect(function()
             self:HideSettingsPanel()
         end)
         
         CloseButton.MouseEnter:Connect(function()
-            TweenService:Create(CloseButton, TweenInfo.new(0.2), {
-                BackgroundColor3 = Color3.fromRGB(60, 40, 40)
+            TweenService:Create(CloseIcon, TweenInfo.new(0.2), {
+                ImageTransparency = 0.2
             }):Play()
         end)
         
         CloseButton.MouseLeave:Connect(function()
-            TweenService:Create(CloseButton, TweenInfo.new(0.2), {
-                BackgroundColor3 = Color3.fromRGB(22, 28, 38)
+            TweenService:Create(CloseIcon, TweenInfo.new(0.2), {
+                ImageTransparency = 0.7
             }):Play()
         end)
         
         -- Контейнер для компонентов
         self.SettingsContent = Instance.new("ScrollingFrame")
         self.SettingsContent.Name = "SettingsContent"
-        self.SettingsContent.Size = UDim2.new(1, -20, 1, -60)
-        self.SettingsContent.Position = UDim2.new(0, 10, 0, 50)
+        self.SettingsContent.Size = UDim2.new(0, 260, 0, 445)
+        self.SettingsContent.Position = UDim2.new(0, 10, 0, 45)
         self.SettingsContent.BackgroundTransparency = 1
         self.SettingsContent.BorderSizePixel = 0
-        self.SettingsContent.ScrollBarThickness = 4
-        self.SettingsContent.ScrollBarImageColor3 = Color3.fromRGB(100, 100, 120)
+        self.SettingsContent.ScrollBarThickness = 0
+        self.SettingsContent.ScrollBarImageTransparency = 1
         self.SettingsContent.CanvasSize = UDim2.new(0, 0, 0, 0)
         self.SettingsContent.AutomaticCanvasSize = Enum.AutomaticSize.Y
+        self.SettingsContent.Selectable = false
         self.SettingsContent.ZIndex = 11
         self.SettingsContent.Parent = self.SettingsPanel
         
         local ContentLayout = Instance.new("UIListLayout")
-        ContentLayout.Padding = UDim.new(0, 8)
+        ContentLayout.Padding = UDim.new(0, 5)
         ContentLayout.SortOrder = Enum.SortOrder.LayoutOrder
         ContentLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
         ContentLayout.Parent = self.SettingsContent
         
         local ContentPadding = Instance.new("UIPadding")
-        ContentPadding.PaddingTop = UDim.new(0, 5)
+        ContentPadding.PaddingTop = UDim.new(0, 8)
         ContentPadding.PaddingBottom = UDim.new(0, 10)
         ContentPadding.Parent = self.SettingsContent
     end
