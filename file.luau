@@ -2676,3 +2676,299 @@ function Library:create_ui()
 end
 
 return Library
+
+
+            -- Color Picker Element
+            function ModuleManager:create_colorpicker(settings)
+                LayoutOrderModule = LayoutOrderModule + 1
+                local ColorPickerManager = { _color = settings.default or Color3.fromRGB(255, 255, 255) }
+            
+                if self._size == 0 then
+                    self._size = 11
+                end
+                self._size += 20
+            
+                if ModuleManager._state then
+                    Module.Size = UDim2.fromOffset(241, 93 + self._size)
+                end
+                Options.Size = UDim2.fromOffset(241, self._size)
+            
+                local ColorPicker = Instance.new("TextButton")
+                ColorPicker.FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+                ColorPicker.TextColor3 = Color3.fromRGB(0, 0, 0)
+                ColorPicker.BorderColor3 = Color3.fromRGB(0, 0, 0)
+                ColorPicker.Text = ""
+                ColorPicker.AutoButtonColor = false
+                ColorPicker.BackgroundTransparency = 1
+                ColorPicker.Name = "ColorPicker"
+                ColorPicker.Size = UDim2.new(0, 207, 0, 15)
+                ColorPicker.BorderSizePixel = 0
+                ColorPicker.TextSize = 14
+                ColorPicker.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+                ColorPicker.Parent = Options
+                ColorPicker.LayoutOrder = LayoutOrderModule
+            
+                local TitleLabel = Instance.new("TextLabel")
+                TitleLabel.Name = "TitleLabel"
+                TitleLabel.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
+                TitleLabel.TextSize = 11
+                TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+                TitleLabel.TextTransparency = 0.2
+                TitleLabel.Text = settings.title or "Color Picker"
+                TitleLabel.Size = UDim2.new(0, 142, 0, 13)
+                TitleLabel.AnchorPoint = Vector2.new(0, 0.5)
+                TitleLabel.Position = UDim2.new(0, 0, 0.5, 0)
+                TitleLabel.BackgroundTransparency = 1
+                TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
+                TitleLabel.Parent = ColorPicker
+
+                -- Color Display Box
+                local ColorBox = Instance.new("Frame")
+                ColorBox.Name = "ColorBox"
+                ColorBox.Size = UDim2.fromOffset(60, 15)
+                ColorBox.Position = UDim2.new(1, -60, 0.5, 0)
+                ColorBox.AnchorPoint = Vector2.new(0, 0.5)
+                ColorBox.BackgroundColor3 = ColorPickerManager._color
+                ColorBox.BorderSizePixel = 0
+                ColorBox.Parent = ColorPicker
+            
+                local ColorBoxCorner = Instance.new("UICorner")
+                ColorBoxCorner.CornerRadius = UDim.new(0, 3)
+                ColorBoxCorner.Parent = ColorBox
+            
+                -- Color Picker Window (hidden by default)
+                local PickerWindow = Instance.new("Frame")
+                PickerWindow.Name = "PickerWindow"
+                PickerWindow.Size = UDim2.fromOffset(200, 150)
+                PickerWindow.Position = UDim2.new(0, 0, 1, 5)
+                PickerWindow.BackgroundColor3 = Color3.fromRGB(32, 38, 51)
+                PickerWindow.BorderSizePixel = 0
+                PickerWindow.Visible = false
+                PickerWindow.ZIndex = 100
+                PickerWindow.Parent = ColorPicker
+            
+                local PickerCorner = Instance.new("UICorner")
+                PickerCorner.CornerRadius = UDim.new(0, 4)
+                PickerCorner.Parent = PickerWindow
+            
+                -- Saturation/Value Picker
+                local SatValPicker = Instance.new("ImageButton")
+                SatValPicker.Name = "SatValPicker"
+                SatValPicker.Size = UDim2.fromOffset(150, 120)
+                SatValPicker.Position = UDim2.new(0, 10, 0, 10)
+                SatValPicker.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+                SatValPicker.BorderSizePixel = 0
+                SatValPicker.AutoButtonColor = false
+                SatValPicker.Parent = PickerWindow
+            
+                local SatValCorner = Instance.new("UICorner")
+                SatValCorner.CornerRadius = UDim.new(0, 3)
+                SatValCorner.Parent = SatValPicker
+            
+                -- Saturation Gradient (white to transparent)
+                local SatGradient = Instance.new("UIGradient")
+                SatGradient.Color = ColorSequence.new(Color3.fromRGB(255, 255, 255), Color3.fromRGB(255, 255, 255))
+                SatGradient.Transparency = NumberSequence.new({
+                    NumberSequenceKeypoint.new(0, 0),
+                    NumberSequenceKeypoint.new(1, 1)
+                })
+                SatGradient.Parent = SatValPicker
+            
+                -- Value Gradient (transparent to black)
+                local ValFrame = Instance.new("Frame")
+                ValFrame.Size = UDim2.fromScale(1, 1)
+                ValFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+                ValFrame.BorderSizePixel = 0
+                ValFrame.Parent = SatValPicker
+            
+                local ValCorner = Instance.new("UICorner")
+                ValCorner.CornerRadius = UDim.new(0, 3)
+                ValCorner.Parent = ValFrame
+            
+                local ValGradient = Instance.new("UIGradient")
+                ValGradient.Rotation = 90
+                ValGradient.Transparency = NumberSequence.new({
+                    NumberSequenceKeypoint.new(0, 1),
+                    NumberSequenceKeypoint.new(1, 0)
+                })
+                ValGradient.Parent = ValFrame
+            
+                -- Cursor
+                local Cursor = Instance.new("Frame")
+                Cursor.Name = "Cursor"
+                Cursor.Size = UDim2.fromOffset(8, 8)
+                Cursor.AnchorPoint = Vector2.new(0.5, 0.5)
+                Cursor.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+                Cursor.BorderColor3 = Color3.fromRGB(0, 0, 0)
+                Cursor.BorderSizePixel = 2
+                Cursor.ZIndex = 101
+                Cursor.Parent = SatValPicker
+            
+                local CursorCorner = Instance.new("UICorner")
+                CursorCorner.CornerRadius = UDim.new(1, 0)
+                CursorCorner.Parent = Cursor
+            
+                -- Hue Slider
+                local HueSlider = Instance.new("ImageButton")
+                HueSlider.Name = "HueSlider"
+                HueSlider.Size = UDim2.fromOffset(20, 120)
+                HueSlider.Position = UDim2.new(0, 165, 0, 10)
+                HueSlider.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+                HueSlider.BorderSizePixel = 0
+                HueSlider.AutoButtonColor = false
+                HueSlider.Parent = PickerWindow
+            
+                local HueCorner = Instance.new("UICorner")
+                HueCorner.CornerRadius = UDim.new(0, 3)
+                HueCorner.Parent = HueSlider
+            
+                -- Hue Gradient
+                local HueGradient = Instance.new("UIGradient")
+                HueGradient.Rotation = 90
+                HueGradient.Color = ColorSequence.new({
+                    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 0, 0)),
+                    ColorSequenceKeypoint.new(0.17, Color3.fromRGB(255, 255, 0)),
+                    ColorSequenceKeypoint.new(0.33, Color3.fromRGB(0, 255, 0)),
+                    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(0, 255, 255)),
+                    ColorSequenceKeypoint.new(0.67, Color3.fromRGB(0, 0, 255)),
+                    ColorSequenceKeypoint.new(0.83, Color3.fromRGB(255, 0, 255)),
+                    ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 0, 0))
+                })
+                HueGradient.Parent = HueSlider
+            
+                -- Hue Cursor
+                local HueCursor = Instance.new("Frame")
+                HueCursor.Name = "HueCursor"
+                HueCursor.Size = UDim2.fromOffset(20, 4)
+                HueCursor.AnchorPoint = Vector2.new(0.5, 0.5)
+                HueCursor.Position = UDim2.fromScale(0.5, 0)
+                HueCursor.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+                HueCursor.BorderColor3 = Color3.fromRGB(0, 0, 0)
+                HueCursor.BorderSizePixel = 2
+                HueCursor.ZIndex = 101
+                HueCursor.Parent = HueSlider
+            
+                local HueCursorCorner = Instance.new("UICorner")
+                HueCursorCorner.CornerRadius = UDim.new(1, 0)
+                HueCursorCorner.Parent = HueCursor
+            
+                -- Variables
+                local hue, sat, val = 0, 1, 1
+                local draggingSatVal = false
+                local draggingHue = false
+            
+                -- Helper Functions
+                local function updateColor()
+                    local color = Color3.fromHSV(hue, sat, val)
+                    ColorPickerManager._color = color
+                    ColorBox.BackgroundColor3 = color
+                    Library._config._flags[settings.flag] = color
+                    Config:save(game.GameId, Library._config)
+                    if settings.callback then
+                        settings.callback(color)
+                    end
+                end
+            
+                local function updateSatValFromInput(input)
+                    local pos = input.Position
+                    local absPos = SatValPicker.AbsolutePosition
+                    local absSize = SatValPicker.AbsoluteSize
+                    
+                    local relX = math.clamp((pos.X - absPos.X) / absSize.X, 0, 1)
+                    local relY = math.clamp((pos.Y - absPos.Y) / absSize.Y, 0, 1)
+                    
+                    sat = relX
+                    val = 1 - relY
+                    
+                    Cursor.Position = UDim2.fromScale(relX, relY)
+                    updateColor()
+                end
+            
+                local function updateHueFromInput(input)
+                    local pos = input.Position
+                    local absPos = HueSlider.AbsolutePosition
+                    local absSize = HueSlider.AbsoluteSize
+                    
+                    local relY = math.clamp((pos.Y - absPos.Y) / absSize.Y, 0, 1)
+                    
+                    hue = relY
+                    HueCursor.Position = UDim2.fromScale(0.5, relY)
+                    SatValPicker.BackgroundColor3 = Color3.fromHSV(hue, 1, 1)
+                    updateColor()
+                end
+            
+                -- Event Handlers
+                ColorBox.MouseButton1Click:Connect(function()
+                    PickerWindow.Visible = not PickerWindow.Visible
+                end)
+            
+                SatValPicker.MouseButton1Down:Connect(function()
+                    draggingSatVal = true
+                end)
+            
+                SatValPicker.MouseButton1Up:Connect(function()
+                    draggingSatVal = false
+                end)
+            
+                SatValPicker.MouseLeave:Connect(function()
+                    draggingSatVal = false
+                end)
+            
+                SatValPicker.InputChanged:Connect(function(input)
+                    if input.UserInputType == Enum.UserInputType.MouseMovement and draggingSatVal then
+                        updateSatValFromInput(input)
+                    end
+                end)
+            
+                SatValPicker.MouseButton1Click:Connect(function(input)
+                    updateSatValFromInput(input)
+                end)
+            
+                HueSlider.MouseButton1Down:Connect(function()
+                    draggingHue = true
+                end)
+            
+                HueSlider.MouseButton1Up:Connect(function()
+                    draggingHue = false
+                end)
+            
+                HueSlider.MouseLeave:Connect(function()
+                    draggingHue = false
+                end)
+            
+                HueSlider.InputChanged:Connect(function(input)
+                    if input.UserInputType == Enum.UserInputType.MouseMovement and draggingHue then
+                        updateHueFromInput(input)
+                    end
+                end)
+            
+                HueSlider.MouseButton1Click:Connect(function(input)
+                    updateHueFromInput(input)
+                end)
+            
+                -- Initialize from saved color
+                if Library:flag_type(settings.flag, 'Color3') then
+                    ColorPickerManager._color = Library._config._flags[settings.flag]
+                    ColorBox.BackgroundColor3 = ColorPickerManager._color
+                    hue, sat, val = ColorPickerManager._color:ToHSV()
+                    Cursor.Position = UDim2.fromScale(sat, 1 - val)
+                    HueCursor.Position = UDim2.fromScale(0.5, hue)
+                    SatValPicker.BackgroundColor3 = Color3.fromHSV(hue, 1, 1)
+                else
+                    Library._config._flags[settings.flag] = ColorPickerManager._color
+                    Config:save(game.GameId, Library._config)
+                end
+            
+                function ColorPickerManager:set_color(color)
+                    self._color = color
+                    ColorBox.BackgroundColor3 = color
+                    hue, sat, val = color:ToHSV()
+                    Cursor.Position = UDim2.fromScale(sat, 1 - val)
+                    HueCursor.Position = UDim2.fromScale(0.5, hue)
+                    SatValPicker.BackgroundColor3 = Color3.fromHSV(hue, 1, 1)
+                    Library._config._flags[settings.flag] = color
+                    Config:save(game.GameId, Library._config)
+                end
+            
+                return ColorPickerManager
+            end
