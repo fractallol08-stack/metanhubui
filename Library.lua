@@ -1396,33 +1396,6 @@ function Library:create_ui()
             UICorner.CornerRadius = UDim.new(1, 0)
             UICorner.Parent = Circle
             
-            -- Settings Icon Button
-            local SettingsIcon = Instance.new('TextButton')
-            SettingsIcon.Name = 'SettingsIcon'
-            SettingsIcon.Text = '⚙'
-            SettingsIcon.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.Regular, Enum.FontStyle.Normal)
-            SettingsIcon.TextColor3 = Color3.fromRGB(152, 181, 255)
-            SettingsIcon.TextTransparency = 0.5
-            SettingsIcon.TextSize = 14
-            SettingsIcon.Size = UDim2.new(0, 20, 0, 20)
-            SettingsIcon.Position = UDim2.new(0.65, 0, 0.75, 0)
-            SettingsIcon.AnchorPoint = Vector2.new(0, 0.5)
-            SettingsIcon.BackgroundTransparency = 1
-            SettingsIcon.AutoButtonColor = false
-            SettingsIcon.Parent = Header
-            
-            SettingsIcon.MouseEnter:Connect(function()
-                TweenService:Create(SettingsIcon, TweenInfo.new(0.2), {
-                    TextTransparency = 0.2
-                }):Play()
-            end)
-            
-            SettingsIcon.MouseLeave:Connect(function()
-                TweenService:Create(SettingsIcon, TweenInfo.new(0.2), {
-                    TextTransparency = 0.5
-                }):Play()
-            end)
-            
             local Keybind = Instance.new('Frame')
             Keybind.Name = 'Keybind'
             Keybind.BackgroundTransparency = 0.699999988079071
@@ -1508,6 +1481,10 @@ function Library:create_ui()
                         BackgroundColor3 = Color3.fromRGB(152, 181, 255),
                         Position = UDim2.fromScale(0.53, 0.5)
                     }):Play()
+                    
+                    -- Open settings panel when module is enabled
+                    local module_title = settings.title or "Module"
+                    Library:show_settings_panel(module_title, Options)
                 else
                     TweenService:Create(Toggle, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
                         BackgroundColor3 = Color3.fromRGB(0, 0, 0)
@@ -1517,6 +1494,12 @@ function Library:create_ui()
                         BackgroundColor3 = Color3.fromRGB(66, 80, 115),
                         Position = UDim2.fromScale(0, 0.5)
                     }):Play()
+                    
+                    -- Close settings panel when module is disabled
+                    local module_title = settings.title or "Module"
+                    if Library._current_settings_module == module_title then
+                        Library:hide_settings_panel()
+                    end
                 end
 
                 Library._config._flags[settings.flag] = self._state
@@ -1650,16 +1633,6 @@ function Library:create_ui()
                     local keybind_string = string.gsub(tostring(Library._config._keybinds[settings.flag]), 'Enum.KeyCode.', '')
                     TextLabel.Text = Library:truncate_keybind_text(keybind_string)
                 end)
-            end)
-
-            -- Settings icon click - open settings panel
-            SettingsIcon.MouseButton1Click:Connect(function()
-                local module_title = settings.title or "Module"
-                if Library._current_settings_module == module_title then
-                    Library:hide_settings_panel()
-                else
-                    Library:show_settings_panel(module_title, Options)
-                end
             end)
 
             Header.MouseButton1Click:Connect(function()
