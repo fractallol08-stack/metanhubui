@@ -398,6 +398,8 @@ local Library = {
     -- Settings Panel state
     _settings_panel = nil,
     _current_settings_module = nil,
+    _current_options_frame = nil,
+    _current_options_parent = nil,
     
     -- Keybind abbreviations
     _keybind_abbreviations = {
@@ -462,24 +464,18 @@ function Library:show_settings_panel(module_name, options_frame)
         title.Text = module_name .. ' Settings'
     end
     
-    -- Clear previous content
-    if content then
-        for _, child in content:GetChildren() do
-            if not child:IsA('UIListLayout') and not child:IsA('UIPadding') then
-                child:Destroy()
-            end
-        end
-        
-        -- Clone options to panel
-        if options_frame then
-            for _, option in options_frame:GetChildren() do
-                if option:IsA('UIListLayout') or option:IsA('UIPadding') then
-                    continue
-                end
-                local clone = option:Clone()
-                clone.Parent = content
-            end
-        end
+    -- Return previous options to their module
+    if self._current_options_frame and self._current_options_parent then
+        self._current_options_frame.Parent = self._current_options_parent
+        self._current_options_frame.Visible = false
+    end
+    
+    -- Move options to panel
+    if options_frame then
+        self._current_options_parent = options_frame.Parent
+        self._current_options_frame = options_frame
+        options_frame.Visible = true
+        options_frame.Parent = content
     end
     
     -- Show panel with animation
@@ -498,6 +494,13 @@ function Library:hide_settings_panel()
     
     local panel = self._settings_panel
     
+    -- Return options to their module
+    if self._current_options_frame and self._current_options_parent then
+        self._current_options_frame.Parent = self._current_options_parent
+        self._current_options_frame.Visible = false
+        self._current_options_frame = nil
+        self._current_options_parent = nil
+    end
     TweenService:Create(panel, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.In), {
         Position = UDim2.new(1, 20, 0, 0)
     }):Play()
@@ -1479,6 +1482,7 @@ function Library:create_ui()
             Options.Size = UDim2.new(0, 241, 0, 8)
             Options.BorderSizePixel = 0
             Options.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+            Options.Visible = false -- Hidden by default, shown in Settings Panel
             Options.Parent = Module
 
             local UIPadding = Instance.new('UIPadding')
@@ -1494,11 +1498,8 @@ function Library:create_ui()
             function ModuleManager:change_state(state: boolean)
                 self._state = state
 
+                -- Module no longer expands - settings are in Settings Panel
                 if self._state then
-                    TweenService:Create(Module, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-                        Size = UDim2.fromOffset(241, 93 + self._size + self._multiplier)
-                    }):Play()
-
                     TweenService:Create(Toggle, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
                         BackgroundColor3 = Color3.fromRGB(152, 181, 255)
                     }):Play()
@@ -1508,10 +1509,6 @@ function Library:create_ui()
                         Position = UDim2.fromScale(0.53, 0.5)
                     }):Play()
                 else
-                    TweenService:Create(Module, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-                        Size = UDim2.fromOffset(241, 93)
-                    }):Play()
-
                     TweenService:Create(Toggle, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
                         BackgroundColor3 = Color3.fromRGB(0, 0, 0)
                     }):Play()
@@ -1680,9 +1677,7 @@ function Library:create_ui()
             
                 self._size += settings.customScale or 70
             
-                if ModuleManager._state then
-                    Module.Size = UDim2.fromOffset(241, 93 + self._size)
-                end
+                -- Module size no longer changes - settings shown in Settings Panel
             
                 Options.Size = UDim2.fromOffset(241, self._size)
             
@@ -1844,9 +1839,7 @@ function Library:create_ui()
             
                 self._size += 32
             
-                if ModuleManager._state then
-                    Module.Size = UDim2.fromOffset(241, 93 + self._size)
-                end
+                -- Module size no longer changes - settings shown in Settings Panel
             
                 Options.Size = UDim2.fromOffset(241, self._size)
             
@@ -1912,9 +1905,7 @@ function Library:create_ui()
                 end
                 self._size += 20
             
-                if ModuleManager._state then
-                    Module.Size = UDim2.fromOffset(241, 93 + self._size)
-                end
+                -- Module size no longer changes - settings shown in Settings Panel
                 Options.Size = UDim2.fromOffset(241, self._size)
             
                 local Checkbox = Instance.new("TextButton")
@@ -2102,9 +2093,7 @@ function Library:create_ui()
             
                 self._size += 27
             
-                if ModuleManager._state then
-                    Module.Size = UDim2.fromOffset(241, 93 + self._size)
-                end
+                -- Module size no longer changes - settings shown in Settings Panel
 
                 local dividerHeight = 1
                 local dividerWidth = 207 -- Adjust this to fit your UI width
@@ -2185,9 +2174,7 @@ function Library:create_ui()
 
                 self._size += 27
 
-                if ModuleManager._state then
-                    Module.Size = UDim2.fromOffset(241, 93 + self._size)
-                end
+                -- Module size no longer changes - settings shown in Settings Panel
 
                 Options.Size = UDim2.fromOffset(241, self._size)
 
@@ -2384,9 +2371,7 @@ function Library:create_ui()
                 end;
 
                 if not settings.Order then
-                    if ModuleManager._state then
-                        Module.Size = UDim2.fromOffset(241, 93 + self._size)
-                    end
+                    -- Module size no longer changes - settings shown in Settings Panel
                     Options.Size = UDim2.fromOffset(241, self._size)
                 end
 
@@ -2777,9 +2762,7 @@ function Library:create_ui()
             
                 self._size += 20
             
-                if ModuleManager._state then
-                    Module.Size = UDim2.fromOffset(241, 93 + self._size);
-                end
+                -- Module size no longer changes - settings shown in Settings Panel
             
                 Options.Size = UDim2.fromOffset(241, self._size);
             
@@ -2966,9 +2949,7 @@ function Library:create_ui()
                 
                 self._size += 27
                 
-                if ModuleManager._state then
-                    Module.Size = UDim2.fromOffset(241, 93 + self._size)
-                end
+                -- Module size no longer changes - settings shown in Settings Panel
                 
                 Options.Size = UDim2.fromOffset(241, self._size)
                 
@@ -3028,14 +3009,15 @@ function Library:create_ui()
                 
                 -- Color Picker Popup Frame
                 local PickerFrame = Instance.new('Frame')
-                PickerFrame.Name = 'PickerFrame'
+                PickerFrame.Name = 'PickerFrame_' .. settings.flag
                 PickerFrame.Size = UDim2.new(0, 200, 0, 170)
-                PickerFrame.Position = UDim2.new(1, 10, 0, 0)
+                PickerFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
+                PickerFrame.AnchorPoint = Vector2.new(0.5, 0.5)
                 PickerFrame.BackgroundColor3 = Color3.fromRGB(22, 28, 38)
                 PickerFrame.BorderSizePixel = 0
                 PickerFrame.Visible = false
-                PickerFrame.ZIndex = 100
-                PickerFrame.Parent = ColorPicker
+                PickerFrame.ZIndex = 1000
+                PickerFrame.Parent = Library._ui -- Parent to ScreenGui directly for top layer
                 ColorPickerManager._picker_frame = PickerFrame
                 
                 local PickerCorner = Instance.new('UICorner')
@@ -3055,7 +3037,7 @@ function Library:create_ui()
                 SVPicker.BackgroundColor3 = HSVtoRGB(ColorPickerManager._hue, 1, 1)
                 SVPicker.BorderSizePixel = 0
                 SVPicker.AutoButtonColor = false
-                SVPicker.ZIndex = 101
+                SVPicker.ZIndex = 1001
                 SVPicker.Parent = PickerFrame
                 
                 local SVCorner = Instance.new('UICorner')
@@ -3079,7 +3061,7 @@ function Library:create_ui()
                 BlackOverlay.Size = UDim2.new(1, 0, 1, 0)
                 BlackOverlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
                 BlackOverlay.BorderSizePixel = 0
-                BlackOverlay.ZIndex = 102
+                BlackOverlay.ZIndex = 1002
                 BlackOverlay.Parent = SVPicker
                 
                 local BlackCorner = Instance.new('UICorner')
@@ -3102,7 +3084,7 @@ function Library:create_ui()
                 SVCursor.AnchorPoint = Vector2.new(0.5, 0.5)
                 SVCursor.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
                 SVCursor.BorderSizePixel = 0
-                SVCursor.ZIndex = 103
+                SVCursor.ZIndex = 1003
                 SVCursor.Parent = SVPicker
                 
                 local SVCursorCorner = Instance.new('UICorner')
@@ -3122,7 +3104,7 @@ function Library:create_ui()
                 HueSlider.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
                 HueSlider.BorderSizePixel = 0
                 HueSlider.AutoButtonColor = false
-                HueSlider.ZIndex = 101
+                HueSlider.ZIndex = 1001
                 HueSlider.Parent = PickerFrame
                 
                 local HueCorner = Instance.new('UICorner')
@@ -3151,7 +3133,7 @@ function Library:create_ui()
                 HueCursor.AnchorPoint = Vector2.new(0.5, 0.5)
                 HueCursor.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
                 HueCursor.BorderSizePixel = 0
-                HueCursor.ZIndex = 102
+                HueCursor.ZIndex = 1002
                 HueCursor.Parent = HueSlider
                 
                 local HueCursorCorner = Instance.new('UICorner')
@@ -3170,7 +3152,7 @@ function Library:create_ui()
                 ColorDisplay.Position = UDim2.new(0, 10, 1, -20)
                 ColorDisplay.BackgroundColor3 = ColorPickerManager._color
                 ColorDisplay.BorderSizePixel = 0
-                ColorDisplay.ZIndex = 101
+                ColorDisplay.ZIndex = 1001
                 ColorDisplay.Parent = PickerFrame
                 
                 local DisplayCorner = Instance.new('UICorner')
