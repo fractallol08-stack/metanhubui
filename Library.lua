@@ -763,7 +763,6 @@ function Library:ShowSettingsPanel(module)
         self.SwitchingModule = false
     end)
 end
-end
 
 function Library:HideSettingsPanel()
     if not self.SettingsPanel or not self.SettingsPanel.Visible then return end
