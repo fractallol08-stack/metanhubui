@@ -2983,7 +2983,7 @@ function Library:create_ui()
                 -- Main container
                 local ColorPicker = Instance.new('Frame')
                 ColorPicker.BackgroundTransparency = 1
-                ColorPicker.Name = 'ColorPicker'
+                ColorPicker.Name = 'ColorPicker_' .. settings.flag
                 ColorPicker.Size = UDim2.new(0, 207, 0, 22)
                 ColorPicker.Parent = Options
                 ColorPicker.LayoutOrder = LayoutOrderModule
@@ -3002,8 +3002,9 @@ function Library:create_ui()
                 Title.TextSize = 11
                 Title.Parent = ColorPicker
                 
-                -- Color Preview Box
+                -- Color Preview Box (TextButton for click events)
                 local ColorPreview = Instance.new('TextButton')
+                ColorPreview.Name = 'ColorPreview'
                 ColorPreview.Text = ''
                 ColorPreview.AutoButtonColor = false
                 ColorPreview.Size = UDim2.new(0, 40, 0, 15)
