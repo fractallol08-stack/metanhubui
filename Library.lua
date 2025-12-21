@@ -2338,30 +2338,6 @@ function Library:AddDivider(module)
     table.insert(module.Components, Divider)
     return Divider
 end
-    return Label
-end
-
--- Компонент: Divider (разделитель)
-function Library:AddDivider(module, config)
-    config = config or {}
-    
-    local Divider = {}
-    
-    Divider.Element = Instance.new("Frame")
-    Divider.Element.Name = "Divider"
-    Divider.Element.Size = UDim2.new(1, -10, 0, 15)
-    Divider.Element.BackgroundTransparency = 1
-    
-    local Line = Instance.new("Frame")
-    Line.Size = UDim2.new(1, 0, 0, 1)
-    Line.Position = UDim2.new(0, 0, 0.5, 0)
-    Line.BackgroundColor3 = Color3.fromRGB(52, 66, 89)
-    Line.BorderSizePixel = 0
-    Line.Parent = Divider.Element
-    
-    table.insert(module.Components, Divider)
-    return Divider
-end
 
 -- Финальная функция - возвращаем библиотеку
 return Library
