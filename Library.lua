@@ -185,7 +185,7 @@ function Library:CreateUI()
     self.MainFrame.Position = UDim2.new(0.5, -350, 0.5, -250)
     self.MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
     self.MainFrame.BorderSizePixel = 0
-    self.MainFrame.ClipsDescendants = true
+    self.MainFrame.ClipsDescendants = false
     self.MainFrame.Parent = self.ScreenGui
     
     local MainCorner = Instance.new("UICorner")
