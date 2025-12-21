@@ -725,13 +725,7 @@ function Library:create_tab(title, icon)
     return TabManager
 end
 
-function Library:load()
-    self._loaded = true
-end
-
-return Library
-
--- Component Creation Functions
+-- Component Creation Functions (must be before Library:load and return Library)
 
 function create_slider(parent, settings)
     local SliderManager = {}
@@ -1513,3 +1507,48 @@ function create_colorpicker(parent, settings, screen_gui)
     
     return ColorPickerManager
 end
+
+-- Load Library
+function Library:load()
+    if self._loaded then return end
+    self._loaded = true
+    
+    -- Make UI draggable
+    local Container = self._ui.Container
+    local dragging = false
+    local dragInput, mousePos, framePos
+    
+    Container.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = true
+            mousePos = input.Position
+            framePos = Container.Position
+            
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                end
+            end)
+        end
+    end)
+    
+    Container.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement then
+            dragInput = input
+        end
+    end)
+    
+    UserInputService.InputChanged:Connect(function(input)
+        if input == dragInput and dragging then
+            local delta = input.Position - mousePos
+            Container.Position = UDim2.new(
+                framePos.X.Scale,
+                framePos.X.Offset + delta.X,
+                framePos.Y.Scale,
+                framePos.Y.Offset + delta.Y
+            )
+        end
+    end)
+end
+
+return Library
