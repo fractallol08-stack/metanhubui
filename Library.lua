@@ -729,21 +729,12 @@ function Library:ShowSettingsPanel(module)
     print("ShowSettingsPanel вызван для модуля:", module.Name)
     print("Компонентов в модуле:", #module.Components)
     
-    -- Очищаем предыдущие компоненты более тщательно
-    local childrenToDestroy = {}
+    -- Отсоединяем предыдущие компоненты (НЕ уничтожаем!)
     for _, child in ipairs(self.SettingsContent:GetChildren()) do
         if not child:IsA("UIListLayout") and not child:IsA("UIPadding") then
-            table.insert(childrenToDestroy, child)
+            child.Parent = nil  -- Просто отсоединяем, не уничтожаем
         end
     end
-    
-    -- Уничтожаем все старые компоненты
-    for _, child in ipairs(childrenToDestroy) do
-        child:Destroy()
-    end
-    
-    -- Ждем один кадр чтобы убедиться что все уничтожено
-    task.wait()
     
     -- Обновляем заголовок
     local titleLabel = self.SettingsPanel:FindFirstChild("PanelTitle")
@@ -1396,7 +1387,7 @@ function Library:AddColorPicker(module, config)
     local SVCursor = Instance.new("Frame")
     SVCursor.Name = "SVCursor"
     SVCursor.Size = UDim2.new(0, 12, 0, 12)
-    SVCursor.Position = UDim2.new(s, -6, 1 - v, -6)  -- Y = 1 - V (инверсия для правильного отображения)
+    SVCursor.Position = UDim2.new(s, -6, v, -6)  -- ИСПРАВЛЕНО: убрал инверсию
     SVCursor.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
     SVCursor.BorderSizePixel = 0
     SVCursor.ZIndex = 1003
@@ -1505,7 +1496,7 @@ function Library:AddColorPicker(module, config)
         pos = Vector2.new(math.clamp(pos.X, 0, 1), math.clamp(pos.Y, 0, 1))
         
         ColorPicker.Saturation = pos.X
-        ColorPicker.Brightness = 1 - pos.Y  -- Верх (Y=0) = V=1, Низ (Y=1) = V=0
+        ColorPicker.Brightness = pos.Y  -- ИСПРАВЛЕНО: убрал инверсию, градиент уже инвертирован
         
         SVCursor.Position = UDim2.new(pos.X, -6, pos.Y, -6)
         updateColor()
