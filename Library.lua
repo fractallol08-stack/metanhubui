@@ -523,9 +523,16 @@ function Library:CreateModule(tab, config)
     
     -- Обработчик клика - открывает панель настроек
     Module.Button.MouseButton1Click:Connect(function()
+        print("=== КЛИК ПО МОДУЛЮ ===")
+        print("Модуль:", Module.Name)
+        print("Текущий модуль:", self.CurrentModule and self.CurrentModule.Name or "nil")
+        print("Компонентов:", #Module.Components)
+        
         if self.CurrentModule == Module then
+            print("Закрываем текущий модуль")
             self:HideSettingsPanel()
         else
+            print("Открываем новый модуль")
             self:ShowSettingsPanel(Module)
         end
     end)
@@ -570,13 +577,14 @@ function Library:ShowSettingsPanel(module)
     if not self.SettingsPanel then
         self.SettingsPanel = Instance.new("Frame")
         self.SettingsPanel.Name = "SettingsPanel"
-        self.SettingsPanel.Size = UDim2.new(0, 280, 1, -50)
-        self.SettingsPanel.Position = UDim2.new(1, 10, 0, 45)
+        self.SettingsPanel.Size = UDim2.new(0, 280, 0, 500)
+        self.SettingsPanel.Position = UDim2.new(0, 720, 0, 0)
         self.SettingsPanel.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
         self.SettingsPanel.BorderSizePixel = 0
-        self.SettingsPanel.ClipsDescendants = true
+        self.SettingsPanel.ClipsDescendants = false
         self.SettingsPanel.Visible = false
-        self.SettingsPanel.Parent = self.MainFrame
+        self.SettingsPanel.ZIndex = 10
+        self.SettingsPanel.Parent = self.ScreenGui
         
         local PanelCorner = Instance.new("UICorner")
         PanelCorner.CornerRadius = UDim.new(0, 10)
@@ -599,6 +607,7 @@ function Library:ShowSettingsPanel(module)
         PanelTitle.TextSize = 16
         PanelTitle.Font = Enum.Font.GothamBold
         PanelTitle.TextXAlignment = Enum.TextXAlignment.Left
+        PanelTitle.ZIndex = 11
         PanelTitle.Parent = self.SettingsPanel
         
         -- Кнопка закрытия
@@ -612,6 +621,7 @@ function Library:ShowSettingsPanel(module)
         CloseButton.TextColor3 = Color3.fromRGB(200, 200, 220)
         CloseButton.TextSize = 20
         CloseButton.Font = Enum.Font.GothamBold
+        CloseButton.ZIndex = 11
         CloseButton.Parent = self.SettingsPanel
         
         local CloseCorner = Instance.new("UICorner")
@@ -645,6 +655,7 @@ function Library:ShowSettingsPanel(module)
         self.SettingsContent.ScrollBarImageColor3 = Color3.fromRGB(100, 100, 120)
         self.SettingsContent.CanvasSize = UDim2.new(0, 0, 0, 0)
         self.SettingsContent.AutomaticCanvasSize = Enum.AutomaticSize.Y
+        self.SettingsContent.ZIndex = 11
         self.SettingsContent.Parent = self.SettingsPanel
         
         local ContentLayout = Instance.new("UIListLayout")
@@ -658,6 +669,9 @@ function Library:ShowSettingsPanel(module)
         ContentPadding.PaddingBottom = UDim.new(0, 10)
         ContentPadding.Parent = self.SettingsContent
     end
+    
+    print("ShowSettingsPanel вызван для модуля:", module.Name)
+    print("Компонентов в модуле:", #module.Components)
     
     -- Очищаем предыдущие компоненты
     for _, child in ipairs(self.SettingsContent:GetChildren()) do
@@ -673,18 +687,27 @@ function Library:ShowSettingsPanel(module)
     end
     
     -- Добавляем компоненты модуля в панель
-    for _, component in ipairs(module.Components) do
+    for i, component in ipairs(module.Components) do
         if component.Element then
+            print("Добавляем компонент", i, "в панель")
             component.Element.Parent = self.SettingsContent
+            component.Element.ZIndex = 11
         end
     end
     
-    -- Показываем панель с анимацией
-    self.SettingsPanel.Visible = true
-    self.SettingsPanel.Position = UDim2.new(1, 20, 0, 45)
+    -- Синхронизируем позицию с MainFrame
+    local mainPos = self.MainFrame.AbsolutePosition
+    local mainSize = self.MainFrame.AbsoluteSize
     
+    -- Показываем панель
+    self.SettingsPanel.Visible = true
+    self.SettingsPanel.Position = UDim2.new(0, mainPos.X + mainSize.X + 20, 0, mainPos.Y)
+    
+    print("Панель показана на позиции:", self.SettingsPanel.Position)
+    
+    -- Анимация появления
     TweenService:Create(self.SettingsPanel, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-        Position = UDim2.new(1, 10, 0, 45)
+        Position = UDim2.new(0, mainPos.X + mainSize.X + 10, 0, mainPos.Y)
     }):Play()
     
     self.CurrentModule = module
@@ -693,8 +716,13 @@ end
 function Library:HideSettingsPanel()
     if not self.SettingsPanel or not self.SettingsPanel.Visible then return end
     
+    print("HideSettingsPanel вызван")
+    
+    local mainPos = self.MainFrame.AbsolutePosition
+    local mainSize = self.MainFrame.AbsoluteSize
+    
     TweenService:Create(self.SettingsPanel, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.In), {
-        Position = UDim2.new(1, 20, 0, 45)
+        Position = UDim2.new(0, mainPos.X + mainSize.X + 20, 0, mainPos.Y)
     }):Play()
     
     task.wait(0.3)
