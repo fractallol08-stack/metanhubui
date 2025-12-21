@@ -2706,16 +2706,16 @@ function Library:create_ui()
                 ColorBoxStroke.Parent = ColorBox
                 
                 -- Color picker window (hidden by default)
+                -- Parent to main UI to avoid clipping
                 local PickerWindow = Instance.new("Frame")
-                PickerWindow.Name = "PickerWindow"
+                PickerWindow.Name = "PickerWindow_" .. settings.flag
                 PickerWindow.Size = UDim2.fromOffset(200, 220)
-                PickerWindow.Position = UDim2.new(1, 10, 0, 0)
                 PickerWindow.BackgroundColor3 = Color3.fromRGB(12, 13, 15)
                 PickerWindow.BackgroundTransparency = 0.05
                 PickerWindow.BorderSizePixel = 0
                 PickerWindow.Visible = false
-                PickerWindow.ZIndex = 100
-                PickerWindow.Parent = ColorButton
+                PickerWindow.ZIndex = 1000
+                PickerWindow.Parent = Library._ui
                 
                 local PickerCorner = Instance.new("UICorner")
                 PickerCorner.CornerRadius = UDim.new(0, 10)
@@ -2726,6 +2726,13 @@ function Library:create_ui()
                 PickerStroke.Transparency = 0.5
                 PickerStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
                 PickerStroke.Parent = PickerWindow
+                
+                -- Update picker position based on button position
+                local function update_picker_position()
+                    local button_pos = ColorButton.AbsolutePosition
+                    local button_size = ColorButton.AbsoluteSize
+                    PickerWindow.Position = UDim2.fromOffset(button_pos.X + button_size.X + 10, button_pos.Y)
+                end
                 
                 -- Saturation/Value picker (2D)
                 local SVPicker = Instance.new("ImageButton")
@@ -2990,6 +2997,9 @@ function Library:create_ui()
                 -- Toggle picker window
                 ColorButton.MouseButton1Click:Connect(function()
                     PickerWindow.Visible = not PickerWindow.Visible
+                    if PickerWindow.Visible then
+                        update_picker_position()
+                    end
                 end)
                 
                 -- Initialize
