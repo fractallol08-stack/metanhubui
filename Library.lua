@@ -534,12 +534,26 @@ function Library:CreateModule(tab, config)
         print("Текущий модуль:", self.CurrentModule and self.CurrentModule.Name or "nil")
         print("Компонентов:", #Module.Components)
         
+        -- Debounce - предотвращаем множественные клики
+        if self.SwitchingModule then 
+            print("Переключение уже в процессе, игнорируем клик")
+            return 
+        end
+        
+        -- Блокируем переключение сразу
+        self.SwitchingModule = true
+        
         if self.CurrentModule == Module then
             print("Закрываем текущий модуль")
             self:HideSettingsPanel()
+            -- Разблокируем после небольшой задержки
+            task.delay(0.3, function()
+                self.SwitchingModule = false
+            end)
         else
             print("Открываем новый модуль")
             self:ShowSettingsPanel(Module)
+            -- Разблокировка происходит в ShowSettingsPanel
         end
     end)
     
@@ -581,10 +595,6 @@ function Library:CreateModule(tab, config)
 end
 
 function Library:ShowSettingsPanel(module)
-    -- Предотвращаем быстрое переключение
-    if self.SwitchingModule then return end
-    self.SwitchingModule = true
-    
     -- Создаем панель если её нет
     if not self.SettingsPanel then
         self.SettingsPanel = Instance.new("Frame")
@@ -719,12 +729,21 @@ function Library:ShowSettingsPanel(module)
     print("ShowSettingsPanel вызван для модуля:", module.Name)
     print("Компонентов в модуле:", #module.Components)
     
-    -- Очищаем предыдущие компоненты
+    -- Очищаем предыдущие компоненты более тщательно
+    local childrenToDestroy = {}
     for _, child in ipairs(self.SettingsContent:GetChildren()) do
         if not child:IsA("UIListLayout") and not child:IsA("UIPadding") then
-            child:Destroy()
+            table.insert(childrenToDestroy, child)
         end
     end
+    
+    -- Уничтожаем все старые компоненты
+    for _, child in ipairs(childrenToDestroy) do
+        child:Destroy()
+    end
+    
+    -- Ждем один кадр чтобы убедиться что все уничтожено
+    task.wait()
     
     -- Обновляем заголовок
     local titleLabel = self.SettingsPanel:FindFirstChild("PanelTitle")
@@ -758,9 +777,10 @@ function Library:ShowSettingsPanel(module)
     
     self.CurrentModule = module
     
-    -- Разрешаем переключение после небольшой задержки
-    task.delay(0.1, function()
+    -- Разрешаем переключение после задержки (увеличено до 0.3 секунды)
+    task.delay(0.3, function()
         self.SwitchingModule = false
+        print("Переключение разблокировано")
     end)
 end
 
@@ -1367,8 +1387,8 @@ function Library:AddColorPicker(module, config)
     local BlackGradient = Instance.new("UIGradient")
     BlackGradient.Rotation = 90
     BlackGradient.Transparency = NumberSequence.new{
-        NumberSequenceKeypoint.new(0, 1),
-        NumberSequenceKeypoint.new(1, 0)
+        NumberSequenceKeypoint.new(0, 0),  -- Верх: непрозрачный черный (темный)
+        NumberSequenceKeypoint.new(1, 1)   -- Низ: прозрачный (яркий)
     }
     BlackGradient.Parent = BlackOverlay
     
@@ -1376,7 +1396,7 @@ function Library:AddColorPicker(module, config)
     local SVCursor = Instance.new("Frame")
     SVCursor.Name = "SVCursor"
     SVCursor.Size = UDim2.new(0, 12, 0, 12)
-    SVCursor.Position = UDim2.new(s, -6, 1 - v, -6)
+    SVCursor.Position = UDim2.new(s, -6, 1 - v, -6)  -- Y = 1 - V (инверсия для правильного отображения)
     SVCursor.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
     SVCursor.BorderSizePixel = 0
     SVCursor.ZIndex = 1003
@@ -1485,7 +1505,7 @@ function Library:AddColorPicker(module, config)
         pos = Vector2.new(math.clamp(pos.X, 0, 1), math.clamp(pos.Y, 0, 1))
         
         ColorPicker.Saturation = pos.X
-        ColorPicker.Brightness = 1 - pos.Y
+        ColorPicker.Brightness = 1 - pos.Y  -- Верх (Y=0) = V=1, Низ (Y=1) = V=0
         
         SVCursor.Position = UDim2.new(pos.X, -6, pos.Y, -6)
         updateColor()
