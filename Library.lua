@@ -157,7 +157,6 @@ function Library.new(config)
     self.CurrentModule = nil
     self.ActiveColorPicker = nil
     self.SettingsPanelPosition = nil -- Сохраненная позиция панели
-    self.SwitchingModule = false -- Флаг для предотвращения быстрого переключения
     
     self:CreateUI()
     self:SetupDragging()
@@ -534,26 +533,14 @@ function Library:CreateModule(tab, config)
         print("Текущий модуль:", self.CurrentModule and self.CurrentModule.Name or "nil")
         print("Компонентов:", #Module.Components)
         
-        -- Debounce - предотвращаем множественные клики
-        if self.SwitchingModule then 
-            print("Переключение уже в процессе, игнорируем клик")
-            return 
-        end
-        
-        -- Блокируем переключение сразу
-        self.SwitchingModule = true
-        
+        -- Если кликнули на тот же модуль - закрываем
         if self.CurrentModule == Module then
             print("Закрываем текущий модуль")
             self:HideSettingsPanel()
-            -- Разблокируем после небольшой задержки
-            task.delay(0.3, function()
-                self.SwitchingModule = false
-            end)
         else
+            -- Открываем новый модуль (мгновенно, без debounce)
             print("Открываем новый модуль")
             self:ShowSettingsPanel(Module)
-            -- Разблокировка происходит в ShowSettingsPanel
         end
     end)
     
@@ -767,12 +754,6 @@ function Library:ShowSettingsPanel(module)
     print("Панель показана на позиции:", self.SettingsPanel.Position)
     
     self.CurrentModule = module
-    
-    -- Разрешаем переключение после задержки (увеличено до 0.3 секунды)
-    task.delay(0.3, function()
-        self.SwitchingModule = false
-        print("Переключение разблокировано")
-    end)
 end
 
 function Library:HideSettingsPanel()
