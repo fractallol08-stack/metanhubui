@@ -1471,7 +1471,6 @@ function Library:create_ui()
             function ModuleManager:change_state(state: boolean)
                 self._state = state
 
-                -- Module no longer expands - settings are in Settings Panel
                 if self._state then
                     TweenService:Create(Toggle, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
                         BackgroundColor3 = Color3.fromRGB(152, 181, 255)
@@ -1481,10 +1480,6 @@ function Library:create_ui()
                         BackgroundColor3 = Color3.fromRGB(152, 181, 255),
                         Position = UDim2.fromScale(0.53, 0.5)
                     }):Play()
-                    
-                    -- Open settings panel when module is enabled
-                    local module_title = settings.title or "Module"
-                    Library:show_settings_panel(module_title, Options)
                 else
                     TweenService:Create(Toggle, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
                         BackgroundColor3 = Color3.fromRGB(0, 0, 0)
@@ -1494,12 +1489,6 @@ function Library:create_ui()
                         BackgroundColor3 = Color3.fromRGB(66, 80, 115),
                         Position = UDim2.fromScale(0, 0.5)
                     }):Play()
-                    
-                    -- Close settings panel when module is disabled
-                    local module_title = settings.title or "Module"
-                    if Library._current_settings_module == module_title then
-                        Library:hide_settings_panel()
-                    end
                 end
 
                 Library._config._flags[settings.flag] = self._state
@@ -1636,7 +1625,15 @@ function Library:create_ui()
             end)
 
             Header.MouseButton1Click:Connect(function()
-                ModuleManager:change_state(not ModuleManager._state)
+                local module_title = settings.title or "Module"
+                
+                -- If this module's settings panel is already open, close it
+                if Library._current_settings_module == module_title then
+                    Library:hide_settings_panel()
+                else
+                    -- Open this module's settings panel (will close previous if any)
+                    Library:show_settings_panel(module_title, Options)
+                end
             end)
 
             function ModuleManager:create_paragraph(settings: any)
