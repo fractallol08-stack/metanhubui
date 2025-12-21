@@ -1,3 +1,4 @@
+
 getgenv().GG = {
     Language = {
         CheckboxEnabled = "Enabled",
@@ -23,16 +24,35 @@ local SelectedLanguage = GG.Language
 
 function convertStringToTable(inputString)
     local result = {}
+    if not inputString or inputString == "" then
+        return result
+    end
+    
     for value in string.gmatch(inputString, "([^,]+)") do
         local trimmedValue = value:match("^%s*(.-)%s*$")
-        tablein(result, trimmedValue)
+        table.insert(result, trimmedValue)
     end
 
     return result
 end
 
 function convertTableToString(inputTable)
-    return table.concat(inputTable, ", ")
+    if not inputTable or type(inputTable) ~= "table" then
+        return ""
+    end
+    
+    local stringTable = {}
+    for _, value in ipairs(inputTable) do
+        if type(value) == "string" then
+            table.insert(stringTable, value)
+        elseif type(value) == "table" and value.Name then
+            table.insert(stringTable, value.Name)
+        elseif value ~= nil then
+            table.insert(stringTable, tostring(value))
+        end
+    end
+    
+    return table.concat(stringTable, ", ")
 end
 
 local UserInputService = cloneref(game:GetService('UserInputService'))
@@ -1648,13 +1668,6 @@ function Library:create_ui()
                 KeybindLabel.TextScaled = false
                 KeybindLabel.TextSize = 10
                 KeybindLabel.Font = Enum.Font.SourceSans
-                
-                -- Initialize keybind from config or default_keybind
-                if not Library._config._keybinds[settings.flag] and settings.default_keybind then
-                    Library._config._keybinds[settings.flag] = "Enum.KeyCode." .. settings.default_keybind
-                    Config:save(game.GameId, Library._config)
-                end
-                
                 KeybindLabel.Text = Library._config._keybinds[settings.flag] 
                     and string.gsub(tostring(Library._config._keybinds[settings.flag]), "Enum.KeyCode.", "") 
                     or "..."
@@ -2629,369 +2642,6 @@ function Library:create_ui()
                 end;
             
                 return FeatureContainer
-            end
-
-            function ModuleManager:create_colorpicker(settings: any)
-                LayoutOrderModule = LayoutOrderModule + 1
-                
-                if self._size == 0 then
-                    self._size = 11
-                end
-                self._size += 20
-                
-                if ModuleManager._state then
-                    Module.Size = UDim2.fromOffset(241, 93 + self._size)
-                end
-                Options.Size = UDim2.fromOffset(241, self._size)
-                
-                -- Initialize color from config or default
-                local current_color = Library._config._flags[settings.flag] or settings.default or Color3.fromRGB(152, 181, 255)
-                
-                -- Main button
-                local ColorButton = Instance.new("TextButton")
-                ColorButton.Name = "ColorPicker"
-                ColorButton.Size = UDim2.new(0, 207, 0, 15)
-                ColorButton.BackgroundTransparency = 1
-                ColorButton.BorderSizePixel = 0
-                ColorButton.Text = ""
-                ColorButton.AutoButtonColor = false
-                ColorButton.Parent = Options
-                ColorButton.LayoutOrder = LayoutOrderModule
-                
-                local TitleLabel = Instance.new("TextLabel")
-                TitleLabel.Name = "TitleLabel"
-                TitleLabel.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
-                TitleLabel.TextSize = 11
-                TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-                TitleLabel.TextTransparency = 0.2
-                TitleLabel.Text = settings.title or "Color"
-                TitleLabel.Size = UDim2.new(0, 142, 0, 13)
-                TitleLabel.AnchorPoint = Vector2.new(0, 0.5)
-                TitleLabel.Position = UDim2.new(0, 0, 0.5, 0)
-                TitleLabel.BackgroundTransparency = 1
-                TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
-                TitleLabel.Parent = ColorButton
-                
-                -- Color preview box
-                local ColorBox = Instance.new("Frame")
-                ColorBox.Name = "ColorBox"
-                ColorBox.Size = UDim2.fromOffset(30, 14)
-                ColorBox.Position = UDim2.new(1, 0, 0.5, 0)
-                ColorBox.AnchorPoint = Vector2.new(1, 0.5)
-                ColorBox.BackgroundColor3 = current_color
-                ColorBox.BorderSizePixel = 0
-                ColorBox.Parent = ColorButton
-                
-                local ColorBoxCorner = Instance.new("UICorner")
-                ColorBoxCorner.CornerRadius = UDim.new(0, 4)
-                ColorBoxCorner.Parent = ColorBox
-                
-                local ColorBoxStroke = Instance.new("UIStroke")
-                ColorBoxStroke.Color = Color3.fromRGB(152, 181, 255)
-                ColorBoxStroke.Transparency = 0.5
-                ColorBoxStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-                ColorBoxStroke.Parent = ColorBox
-                
-                -- Color picker window (hidden by default)
-                local PickerWindow = Instance.new("Frame")
-                PickerWindow.Name = "PickerWindow"
-                PickerWindow.Size = UDim2.fromOffset(200, 220)
-                PickerWindow.Position = UDim2.new(1, 10, 0, 0)
-                PickerWindow.BackgroundColor3 = Color3.fromRGB(12, 13, 15)
-                PickerWindow.BackgroundTransparency = 0.05
-                PickerWindow.BorderSizePixel = 0
-                PickerWindow.Visible = false
-                PickerWindow.ZIndex = 100
-                PickerWindow.Parent = ColorButton
-                
-                local PickerCorner = Instance.new("UICorner")
-                PickerCorner.CornerRadius = UDim.new(0, 10)
-                PickerCorner.Parent = PickerWindow
-                
-                local PickerStroke = Instance.new("UIStroke")
-                PickerStroke.Color = Color3.fromRGB(52, 66, 89)
-                PickerStroke.Transparency = 0.5
-                PickerStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-                PickerStroke.Parent = PickerWindow
-                
-                -- Saturation/Value picker (2D)
-                local SVPicker = Instance.new("ImageButton")
-                SVPicker.Name = "SVPicker"
-                SVPicker.Size = UDim2.fromOffset(180, 140)
-                SVPicker.Position = UDim2.fromOffset(10, 10)
-                SVPicker.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
-                SVPicker.BorderSizePixel = 0
-                SVPicker.AutoButtonColor = false
-                SVPicker.Parent = PickerWindow
-                
-                local SVCorner = Instance.new("UICorner")
-                SVCorner.CornerRadius = UDim.new(0, 6)
-                SVCorner.Parent = SVPicker
-                
-                -- Gradient overlays for SV picker
-                local WhiteGradient = Instance.new("UIGradient")
-                WhiteGradient.Color = ColorSequence.new(Color3.new(1, 1, 1), Color3.new(1, 1, 1))
-                WhiteGradient.Transparency = NumberSequence.new({
-                    NumberSequenceKeypoint.new(0, 0),
-                    NumberSequenceKeypoint.new(1, 1)
-                })
-                WhiteGradient.Rotation = 0
-                WhiteGradient.Parent = SVPicker
-                
-                local BlackOverlay = Instance.new("Frame")
-                BlackOverlay.Size = UDim2.new(1, 0, 1, 0)
-                BlackOverlay.BackgroundColor3 = Color3.new(0, 0, 0)
-                BlackOverlay.BorderSizePixel = 0
-                BlackOverlay.Parent = SVPicker
-                
-                local BlackOverlayCorner = Instance.new("UICorner")
-                BlackOverlayCorner.CornerRadius = UDim.new(0, 6)
-                BlackOverlayCorner.Parent = BlackOverlay
-                
-                local BlackGradient = Instance.new("UIGradient")
-                BlackGradient.Transparency = NumberSequence.new({
-                    NumberSequenceKeypoint.new(0, 1),
-                    NumberSequenceKeypoint.new(1, 0)
-                })
-                BlackGradient.Rotation = 90
-                BlackGradient.Parent = BlackOverlay
-                
-                -- SV cursor
-                local SVCursor = Instance.new("Frame")
-                SVCursor.Name = "Cursor"
-                SVCursor.Size = UDim2.fromOffset(8, 8)
-                SVCursor.AnchorPoint = Vector2.new(0.5, 0.5)
-                SVCursor.BackgroundColor3 = Color3.new(1, 1, 1)
-                SVCursor.BorderSizePixel = 0
-                SVCursor.ZIndex = 101
-                SVCursor.Parent = SVPicker
-                
-                local SVCursorCorner = Instance.new("UICorner")
-                SVCursorCorner.CornerRadius = UDim.new(1, 0)
-                SVCursorCorner.Parent = SVCursor
-                
-                local SVCursorStroke = Instance.new("UIStroke")
-                SVCursorStroke.Color = Color3.new(0, 0, 0)
-                SVCursorStroke.Thickness = 2
-                SVCursorStroke.Parent = SVCursor
-                
-                -- Hue slider
-                local HueSlider = Instance.new("ImageButton")
-                HueSlider.Name = "HueSlider"
-                HueSlider.Size = UDim2.fromOffset(180, 20)
-                HueSlider.Position = UDim2.fromOffset(10, 160)
-                HueSlider.BackgroundColor3 = Color3.new(1, 1, 1)
-                HueSlider.BorderSizePixel = 0
-                HueSlider.AutoButtonColor = false
-                HueSlider.Parent = PickerWindow
-                
-                local HueCorner = Instance.new("UICorner")
-                HueCorner.CornerRadius = UDim.new(0, 6)
-                HueCorner.Parent = HueSlider
-                
-                local HueGradient = Instance.new("UIGradient")
-                HueGradient.Color = ColorSequence.new({
-                    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 0, 0)),
-                    ColorSequenceKeypoint.new(0.17, Color3.fromRGB(255, 255, 0)),
-                    ColorSequenceKeypoint.new(0.33, Color3.fromRGB(0, 255, 0)),
-                    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(0, 255, 255)),
-                    ColorSequenceKeypoint.new(0.67, Color3.fromRGB(0, 0, 255)),
-                    ColorSequenceKeypoint.new(0.83, Color3.fromRGB(255, 0, 255)),
-                    ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 0, 0))
-                })
-                HueGradient.Rotation = 0
-                HueGradient.Parent = HueSlider
-                
-                -- Hue cursor
-                local HueCursor = Instance.new("Frame")
-                HueCursor.Name = "Cursor"
-                HueCursor.Size = UDim2.fromOffset(4, 24)
-                HueCursor.AnchorPoint = Vector2.new(0.5, 0.5)
-                HueCursor.Position = UDim2.new(0, 0, 0.5, 0)
-                HueCursor.BackgroundColor3 = Color3.new(1, 1, 1)
-                HueCursor.BorderSizePixel = 0
-                HueCursor.ZIndex = 101
-                HueCursor.Parent = HueSlider
-                
-                local HueCursorCorner = Instance.new("UICorner")
-                HueCursorCorner.CornerRadius = UDim.new(0, 2)
-                HueCursorCorner.Parent = HueCursor
-                
-                local HueCursorStroke = Instance.new("UIStroke")
-                HueCursorStroke.Color = Color3.new(0, 0, 0)
-                HueCursorStroke.Thickness = 2
-                HueCursorStroke.Parent = HueCursor
-                
-                -- Color values (HSV)
-                local h, s, v = 0, 1, 1
-                
-                -- Convert RGB to HSV
-                local function rgb_to_hsv(color)
-                    local r, g, b = color.R, color.G, color.B
-                    local max = math.max(r, g, b)
-                    local min = math.min(r, g, b)
-                    local delta = max - min
-                    
-                    local hue = 0
-                    if delta > 0 then
-                        if max == r then
-                            hue = ((g - b) / delta) % 6
-                        elseif max == g then
-                            hue = (b - r) / delta + 2
-                        else
-                            hue = (r - g) / delta + 4
-                        end
-                        hue = hue / 6
-                    end
-                    
-                    local sat = max == 0 and 0 or delta / max
-                    local val = max
-                    
-                    return hue, sat, val
-                end
-                
-                -- Convert HSV to RGB
-                local function hsv_to_rgb(hue, sat, val)
-                    local c = val * sat
-                    local x = c * (1 - math.abs((hue * 6) % 2 - 1))
-                    local m = val - c
-                    
-                    local r, g, b = 0, 0, 0
-                    if hue < 1/6 then
-                        r, g, b = c, x, 0
-                    elseif hue < 2/6 then
-                        r, g, b = x, c, 0
-                    elseif hue < 3/6 then
-                        r, g, b = 0, c, x
-                    elseif hue < 4/6 then
-                        r, g, b = 0, x, c
-                    elseif hue < 5/6 then
-                        r, g, b = x, 0, c
-                    else
-                        r, g, b = c, 0, x
-                    end
-                    
-                    return Color3.new(r + m, g + m, b + m)
-                end
-                
-                -- Initialize HSV from current color
-                h, s, v = rgb_to_hsv(current_color)
-                
-                -- Update color
-                local function update_color()
-                    local color = hsv_to_rgb(h, s, v)
-                    ColorBox.BackgroundColor3 = color
-                    Library._config._flags[settings.flag] = color
-                    Config:save(game.GameId, Library._config)
-                    
-                    if settings.callback then
-                        settings.callback(color)
-                    end
-                end
-                
-                -- Update SV picker background
-                local function update_sv_background()
-                    SVPicker.BackgroundColor3 = hsv_to_rgb(h, 1, 1)
-                end
-                
-                -- Update cursors
-                local function update_cursors()
-                    SVCursor.Position = UDim2.new(s, 0, 1 - v, 0)
-                    HueCursor.Position = UDim2.new(h, 0, 0.5, 0)
-                end
-                
-                -- SV picker dragging
-                local sv_dragging = false
-                SVPicker.InputBegan:Connect(function(input)
-                    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-                        sv_dragging = true
-                        local pos = input.Position
-                        local abs_pos = SVPicker.AbsolutePosition
-                        local abs_size = SVPicker.AbsoluteSize
-                        
-                        s = math.clamp((pos.X - abs_pos.X) / abs_size.X, 0, 1)
-                        v = 1 - math.clamp((pos.Y - abs_pos.Y) / abs_size.Y, 0, 1)
-                        
-                        update_cursors()
-                        update_color()
-                    end
-                end)
-                
-                SVPicker.InputEnded:Connect(function(input)
-                    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-                        sv_dragging = false
-                    end
-                end)
-                
-                SVPicker.InputChanged:Connect(function(input)
-                    if sv_dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-                        local pos = input.Position
-                        local abs_pos = SVPicker.AbsolutePosition
-                        local abs_size = SVPicker.AbsoluteSize
-                        
-                        s = math.clamp((pos.X - abs_pos.X) / abs_size.X, 0, 1)
-                        v = 1 - math.clamp((pos.Y - abs_pos.Y) / abs_size.Y, 0, 1)
-                        
-                        update_cursors()
-                        update_color()
-                    end
-                end)
-                
-                -- Hue slider dragging
-                local hue_dragging = false
-                HueSlider.InputBegan:Connect(function(input)
-                    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-                        hue_dragging = true
-                        local pos = input.Position
-                        local abs_pos = HueSlider.AbsolutePosition
-                        local abs_size = HueSlider.AbsoluteSize
-                        
-                        h = math.clamp((pos.X - abs_pos.X) / abs_size.X, 0, 1)
-                        
-                        update_sv_background()
-                        update_cursors()
-                        update_color()
-                    end
-                end)
-                
-                HueSlider.InputEnded:Connect(function(input)
-                    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-                        hue_dragging = false
-                    end
-                end)
-                
-                HueSlider.InputChanged:Connect(function(input)
-                    if hue_dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-                        local pos = input.Position
-                        local abs_pos = HueSlider.AbsolutePosition
-                        local abs_size = HueSlider.AbsoluteSize
-                        
-                        h = math.clamp((pos.X - abs_pos.X) / abs_size.X, 0, 1)
-                        
-                        update_sv_background()
-                        update_cursors()
-                        update_color()
-                    end
-                end)
-                
-                -- Toggle picker window
-                ColorButton.MouseButton1Click:Connect(function()
-                    PickerWindow.Visible = not PickerWindow.Visible
-                end)
-                
-                -- Initialize
-                update_sv_background()
-                update_cursors()
-                
-                -- Return methods
-                return {
-                    set_color = function(self, color)
-                        h, s, v = rgb_to_hsv(color)
-                        update_sv_background()
-                        update_cursors()
-                        update_color()
-                    end
-                }
             end                    
 
             return ModuleManager
