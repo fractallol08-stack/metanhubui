@@ -234,6 +234,42 @@ function Library:CreateUI()
     TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
     TitleLabel.Parent = TitleBar
     
+    -- macOS-style Close Button (красный кружок)
+    local CloseButton = Instance.new("TextButton")
+    CloseButton.Name = "CloseButton"
+    CloseButton.Size = UDim2.new(0, 12, 0, 12)
+    CloseButton.Position = UDim2.new(1, -20, 0, 26)
+    CloseButton.AnchorPoint = Vector2.new(0.5, 0.5)
+    CloseButton.BackgroundColor3 = Color3.fromRGB(255, 95, 86)  -- macOS red
+    CloseButton.BorderSizePixel = 0
+    CloseButton.Text = ""
+    CloseButton.AutoButtonColor = false
+    CloseButton.Parent = TitleBar
+    
+    local CloseCorner = Instance.new("UICorner")
+    CloseCorner.CornerRadius = UDim.new(1, 0)
+    CloseCorner.Parent = CloseButton
+    
+    -- Hover эффект для кнопки закрытия
+    CloseButton.MouseEnter:Connect(function()
+        TweenService:Create(CloseButton, TweenInfo.new(0.2), {
+            BackgroundColor3 = Color3.fromRGB(255, 115, 106)
+        }):Play()
+    end)
+    
+    CloseButton.MouseLeave:Connect(function()
+        TweenService:Create(CloseButton, TweenInfo.new(0.2), {
+            BackgroundColor3 = Color3.fromRGB(255, 95, 86)
+        }):Play()
+    end)
+    
+    CloseButton.MouseButton1Click:Connect(function()
+        self.MainFrame.Visible = false
+        if self.SettingsPanel then
+            self.SettingsPanel.Visible = false
+        end
+    end)
+    
     -- Градиент для заголовка
     local TitleGradient = Instance.new("UIGradient")
     TitleGradient.Color = ColorSequence.new{
@@ -409,8 +445,8 @@ function Library:CreateTab(name, icon)
     -- Контейнер для модулей (сетка 2 колонки)
     Tab.Container = Instance.new("ScrollingFrame")
     Tab.Container.Name = name .. "Container"
-    Tab.Container.Size = UDim2.new(0, 492, 0, 479)
-    Tab.Container.Position = UDim2.new(0, 0, 0, 0)
+    Tab.Container.Size = UDim2.new(0, 492, 0, 439)  -- Уменьшено на 40px для поиска
+    Tab.Container.Position = UDim2.new(0, 0, 0, 40)  -- Сдвинуто вниз на 40px
     Tab.Container.BackgroundTransparency = 1
     Tab.Container.BorderSizePixel = 0
     Tab.Container.ScrollBarThickness = 0
@@ -421,9 +457,82 @@ function Library:CreateTab(name, icon)
     Tab.Container.Selectable = false
     Tab.Container.Parent = self.ContentContainer
     
+    -- Поле поиска модулей
+    local SearchContainer = Instance.new("Frame")
+    SearchContainer.Name = "SearchContainer"
+    SearchContainer.Size = UDim2.new(0, 492, 0, 30)
+    SearchContainer.Position = UDim2.new(0, 0, 0, 5)
+    SearchContainer.BackgroundTransparency = 1
+    SearchContainer.BorderSizePixel = 0
+    SearchContainer.Visible = false
+    SearchContainer.Parent = self.ContentContainer
+    
+    local SearchBox = Instance.new("Frame")
+    SearchBox.Name = "SearchBox"
+    SearchBox.Size = UDim2.new(1, -10, 1, 0)
+    SearchBox.Position = UDim2.new(0, 0, 0, 0)
+    SearchBox.BackgroundColor3 = Color3.fromRGB(152, 181, 255)
+    SearchBox.BackgroundTransparency = 0.9
+    SearchBox.BorderSizePixel = 0
+    SearchBox.Parent = SearchContainer
+    
+    local SearchCorner = Instance.new("UICorner")
+    SearchCorner.CornerRadius = UDim.new(0, 4)
+    SearchCorner.Parent = SearchBox
+    
+    -- Иконка лупы
+    local SearchIcon = Instance.new("ImageLabel")
+    SearchIcon.Name = "SearchIcon"
+    SearchIcon.Size = UDim2.new(0, 16, 0, 16)
+    SearchIcon.Position = UDim2.new(0, 10, 0.5, 0)
+    SearchIcon.AnchorPoint = Vector2.new(0, 0.5)
+    SearchIcon.BackgroundTransparency = 1
+    SearchIcon.Image = "rbxassetid://7072707198"  -- Magnifying glass icon
+    SearchIcon.ImageColor3 = Color3.fromRGB(255, 255, 255)
+    SearchIcon.ImageTransparency = 0.5
+    SearchIcon.Parent = SearchBox
+    
+    -- Текстовое поле
+    local SearchInput = Instance.new("TextBox")
+    SearchInput.Name = "SearchInput"
+    SearchInput.Size = UDim2.new(1, -40, 1, 0)
+    SearchInput.Position = UDim2.new(0, 35, 0, 0)
+    SearchInput.BackgroundTransparency = 1
+    SearchInput.Text = ""
+    SearchInput.PlaceholderText = "Search modules..."
+    SearchInput.TextColor3 = Color3.fromRGB(255, 255, 255)
+    SearchInput.PlaceholderColor3 = Color3.fromRGB(255, 255, 255)
+    SearchInput.TextTransparency = 0.2
+    SearchInput.PlaceholderTransparency = 0.6
+    SearchInput.TextSize = 11
+    SearchInput.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+    SearchInput.TextXAlignment = Enum.TextXAlignment.Left
+    SearchInput.ClearTextOnFocus = false
+    SearchInput.Parent = SearchBox
+    
+    -- Функция фильтрации модулей
+    local function FilterModules(query)
+        query = query:lower()
+        for _, module in ipairs(Tab.Modules) do
+            if query == "" then
+                module.Frame.Visible = true
+            else
+                local moduleName = module.Name:lower()
+                module.Frame.Visible = moduleName:find(query, 1, true) ~= nil
+            end
+        end
+    end
+    
+    -- Обработчик изменения текста
+    SearchInput:GetPropertyChangedSignal("Text"):Connect(function()
+        FilterModules(SearchInput.Text)
+    end)
+    
+    Tab.SearchContainer = SearchContainer
+    
     -- UIGridLayout для 2 колонок
     local ContainerLayout = Instance.new("UIGridLayout")
-    ContainerLayout.CellSize = UDim2.new(0, 241, 0, 93)
+    ContainerLayout.CellSize = UDim2.new(0, 241, 0, 85)
     ContainerLayout.CellPadding = UDim2.new(0, 9, 0, 9)  -- Отступы между модулями
     ContainerLayout.SortOrder = Enum.SortOrder.LayoutOrder
     ContainerLayout.HorizontalAlignment = Enum.HorizontalAlignment.Left
@@ -479,6 +588,9 @@ function Library:SelectTab(tab)
     for _, t in ipairs(self.Tabs) do
         t.Active = false
         t.Container.Visible = false
+        if t.SearchContainer then
+            t.SearchContainer.Visible = false
+        end
         
         -- Возвращаем неактивный стиль
         TweenService:Create(t.Button, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
@@ -512,6 +624,9 @@ function Library:SelectTab(tab)
     -- Активируем выбранный таб
     tab.Active = true
     tab.Container.Visible = true
+    if tab.SearchContainer then
+        tab.SearchContainer.Visible = true
+    end
     
     TweenService:Create(tab.Button, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
         BackgroundTransparency = 0.5
@@ -571,10 +686,10 @@ function Library:CreateModule(tab, config)
     Module.Components = {}
     Module.Expanded = false
     
-    -- Контейнер модуля (карточка) - размер точно как в LibraryMarch
+    -- Контейнер модуля (карточка) - размер 85px (оптимизированный)
     Module.Frame = Instance.new("Frame")
     Module.Frame.Name = Module.Name
-    Module.Frame.Size = UDim2.new(0, 241, 0, 93)
+    Module.Frame.Size = UDim2.new(0, 241, 0, 85)
     Module.Frame.BackgroundColor3 = Color3.fromRGB(22, 28, 38)
     Module.Frame.BorderSizePixel = 0
     Module.Frame.Parent = tab.Container
@@ -593,7 +708,7 @@ function Library:CreateModule(tab, config)
     -- Заголовок модуля (Header)
     local Header = Instance.new("TextButton")
     Header.Name = "Header"
-    Header.Size = UDim2.new(1, 0, 0, 93)
+    Header.Size = UDim2.new(1, 0, 0, 85)
     Header.BackgroundTransparency = 1
     Header.Text = ""
     Header.AutoButtonColor = false
@@ -646,7 +761,7 @@ function Library:CreateModule(tab, config)
     local Toggle = Instance.new("Frame")
     Toggle.Name = "Toggle"
     Toggle.Size = UDim2.new(0, 25, 0, 12)
-    Toggle.Position = UDim2.new(0.82, 0, 0.757, 0)
+    Toggle.Position = UDim2.new(0.82, 0, 0.8, 0)  -- Adjusted for 85px height
     Toggle.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
     Toggle.BackgroundTransparency = 0.7
     Toggle.BorderSizePixel = 0
@@ -674,7 +789,7 @@ function Library:CreateModule(tab, config)
     local Keybind = Instance.new("Frame")
     Keybind.Name = "Keybind"
     Keybind.Size = UDim2.new(0, 33, 0, 15)
-    Keybind.Position = UDim2.new(0.15, 0, 0.735, 0)
+    Keybind.Position = UDim2.new(0.15, 0, 0.78, 0)  -- Adjusted for 85px height
     Keybind.BackgroundColor3 = Color3.fromRGB(152, 181, 255)
     Keybind.BackgroundTransparency = 0.7
     Keybind.BorderSizePixel = 0
@@ -696,38 +811,122 @@ function Library:CreateModule(tab, config)
     KeybindLabel.TextXAlignment = Enum.TextXAlignment.Left
     KeybindLabel.Parent = Keybind
     
-    -- ЗЕЛЁНАЯ ЛИНИЯ: Divider под заголовком модуля (новый!)
-    local DividerUnderTitle = Instance.new("Frame")
-    DividerUnderTitle.Name = "DividerUnderTitle"
-    DividerUnderTitle.Size = UDim2.new(0, 241, 0, 1)
-    DividerUnderTitle.Position = UDim2.new(0.5, 0, 0.45, 0)  -- Между описанием и нижним разделителем
-    DividerUnderTitle.AnchorPoint = Vector2.new(0.5, 0)
-    DividerUnderTitle.BackgroundColor3 = Color3.fromRGB(52, 66, 89)
-    DividerUnderTitle.BackgroundTransparency = 0.5
-    DividerUnderTitle.BorderSizePixel = 0
-    DividerUnderTitle.Parent = Header
+    -- Keybind система
+    Module.Keybind = nil
+    Module.KeybindConnection = nil
+    local listeningForKey = false
     
-    -- Divider 1 (между header и options)
-    local Divider1 = Instance.new("Frame")
-    Divider1.Name = "Divider"
-    Divider1.Size = UDim2.new(0, 241, 0, 1)
-    Divider1.Position = UDim2.new(0.5, 0, 0.62, 0)
-    Divider1.AnchorPoint = Vector2.new(0.5, 0)
-    Divider1.BackgroundColor3 = Color3.fromRGB(52, 66, 89)
-    Divider1.BackgroundTransparency = 0.5
-    Divider1.BorderSizePixel = 0
-    Divider1.Parent = Header
+    -- Функция авто-ресайза кейбинда
+    local function AutoResizeKeybind(text)
+        local textSize = game:GetService("TextService"):GetTextSize(
+            text,
+            10,
+            Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.SemiBold, Enum.FontStyle.Normal),
+            Vector2.new(1000, 13)
+        )
+        local newWidth = math.clamp(textSize.X + 8, 33, 60)
+        Keybind.Size = UDim2.new(0, newWidth, 0, 15)
+        KeybindLabel.Size = UDim2.new(0, newWidth - 8, 0, 13)
+    end
     
-    -- Divider 2 (внизу header)
-    local Divider2 = Instance.new("Frame")
-    Divider2.Name = "Divider"
-    Divider2.Size = UDim2.new(0, 241, 0, 1)
-    Divider2.Position = UDim2.new(0.5, 0, 1, 0)
-    Divider2.AnchorPoint = Vector2.new(0.5, 0)
-    Divider2.BackgroundColor3 = Color3.fromRGB(52, 66, 89)
-    Divider2.BackgroundTransparency = 0.5
-    Divider2.BorderSizePixel = 0
-    Divider2.Parent = Header
+    -- Функция установки кейбинда
+    function Module:SetKeybind(keyCode)
+        if self.KeybindConnection then
+            self.KeybindConnection:Disconnect()
+            self.KeybindConnection = nil
+        end
+        
+        self.Keybind = keyCode
+        
+        if keyCode then
+            local keyName = keyCode.Name
+            KeybindLabel.Text = keyName
+            AutoResizeKeybind(keyName)
+            
+            -- Сохраняем в конфиг
+            if not Library.Config.Flags._keybinds then
+                Library.Config.Flags._keybinds = {}
+            end
+            Library.Config.Flags._keybinds[self.Name] = keyName
+            Library.Config:Save(Library.ConfigName)
+            
+            -- Глобальный обработчик для переключения модуля
+            self.KeybindConnection = UserInputService.InputBegan:Connect(function(input, gameProcessed)
+                if gameProcessed then return end
+                if input.KeyCode == keyCode then
+                    Module.Expanded = not Module.Expanded
+                    
+                    -- Анимация toggle
+                    TweenService:Create(Circle, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+                        Position = Module.Expanded and UDim2.new(1, -12, 0.5, 0) or UDim2.new(0, 0, 0.5, 0),
+                        BackgroundColor3 = Module.Expanded and Color3.fromRGB(152, 181, 255) or Color3.fromRGB(66, 80, 115)
+                    }):Play()
+                    
+                    TweenService:Create(Toggle, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+                        BackgroundColor3 = Module.Expanded and Color3.fromRGB(152, 181, 255) or Color3.fromRGB(0, 0, 0),
+                        BackgroundTransparency = Module.Expanded and 0.7 or 0.7
+                    }):Play()
+                end
+            end)
+        else
+            KeybindLabel.Text = "None"
+            AutoResizeKeybind("None")
+            
+            -- Удаляем из конфига
+            if Library.Config.Flags._keybinds then
+                Library.Config.Flags._keybinds[self.Name] = nil
+                Library.Config:Save(Library.ConfigName)
+            end
+        end
+    end
+    
+    -- RMB для установки кейбинда
+    Keybind.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton2 then
+            if not listeningForKey then
+                listeningForKey = true
+                KeybindLabel.Text = "..."
+                AutoResizeKeybind("...")
+                
+                local connection
+                connection = UserInputService.InputBegan:Connect(function(keyInput, gameProcessed)
+                    if gameProcessed then return end
+                    
+                    -- Backspace для очистки
+                    if keyInput.KeyCode == Enum.KeyCode.Backspace then
+                        Module:SetKeybind(nil)
+                        listeningForKey = false
+                        connection:Disconnect()
+                    -- Любая другая клавиша
+                    elseif keyInput.KeyCode ~= Enum.KeyCode.Unknown then
+                        Module:SetKeybind(keyInput.KeyCode)
+                        listeningForKey = false
+                        connection:Disconnect()
+                    end
+                end)
+            end
+        end
+    end)
+    
+    -- Загружаем сохраненный кейбинд
+    if Library.Config.Flags._keybinds and Library.Config.Flags._keybinds[Module.Name] then
+        local savedKeyName = Library.Config.Flags._keybinds[Module.Name]
+        local keyCode = Enum.KeyCode[savedKeyName]
+        if keyCode then
+            Module:SetKeybind(keyCode)
+        end
+    end
+    
+    -- Единственный Divider под заголовком (Y: 0.55)
+    local Divider = Instance.new("Frame")
+    Divider.Name = "Divider"
+    Divider.Size = UDim2.new(0, 241, 0, 1)
+    Divider.Position = UDim2.new(0.5, 0, 0.55, 0)
+    Divider.AnchorPoint = Vector2.new(0.5, 0)
+    Divider.BackgroundColor3 = Color3.fromRGB(52, 66, 89)
+    Divider.BackgroundTransparency = 0.5
+    Divider.BorderSizePixel = 0
+    Divider.Parent = Header
     
     -- Обработчик клика - открывает панель настроек
     Header.MouseButton1Click:Connect(function()
@@ -1254,7 +1453,7 @@ function Library:AddToggle(module, config)
     return Toggle
 end
 
--- Компонент: Dropdown
+-- Компонент: Dropdown (точь-в-точь как в LibraryMarch)
 function Library:AddDropdown(module, config)
     config = config or {}
     local name = config.Name or "Dropdown"
@@ -1268,140 +1467,199 @@ function Library:AddDropdown(module, config)
     local Dropdown = {}
     Dropdown.Value = value
     Dropdown.Open = false
+    Dropdown.Size = 0
     
-    -- Контейнер (точно как в LibraryMarch)
-    Dropdown.Element = Instance.new("TextButton")
+    -- Контейнер 207x39 (точно как в LibraryMarch)
+    Dropdown.Element = Instance.new("Frame")
     Dropdown.Element.Name = name
-    Dropdown.Element.Size = UDim2.new(0, 207, 0, 39)  -- Точный размер из LibraryMarch
+    Dropdown.Element.Size = UDim2.new(0, 207, 0, 39)
     Dropdown.Element.BackgroundTransparency = 1
     Dropdown.Element.BorderSizePixel = 0
-    Dropdown.Element.Text = ""
-    Dropdown.Element.AutoButtonColor = false
     
-    -- Название (точно как в LibraryMarch)
-    local TextLabel = Instance.new("TextLabel")
-    TextLabel.Size = UDim2.new(0, 153, 0, 13)
-    TextLabel.Position = UDim2.new(0, 0, 0, 0)
-    TextLabel.BackgroundTransparency = 1
-    TextLabel.Text = name
-    TextLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-    TextLabel.TextTransparency = 0.2
-    TextLabel.TextSize = 11
-    TextLabel.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
-    TextLabel.TextXAlignment = Enum.TextXAlignment.Left
-    TextLabel.Parent = Dropdown.Element
+    -- Название
+    local Label = Instance.new("TextLabel")
+    Label.Size = UDim2.new(0, 153, 0, 13)
+    Label.Position = UDim2.new(0, 0, 0, 0)
+    Label.BackgroundTransparency = 1
+    Label.Text = name
+    Label.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Label.TextTransparency = 0.2
+    Label.TextSize = 11
+    Label.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
+    Label.TextXAlignment = Enum.TextXAlignment.Left
+    Label.Parent = Dropdown.Element
     
-    -- Кнопка выбора (точно как в LibraryMarch)
-    local SelectButton = Instance.new("Frame")
-    SelectButton.Name = "SelectButton"
-    SelectButton.Size = UDim2.new(0, 207, 0, 20)  -- Точный размер из LibraryMarch
-    SelectButton.Position = UDim2.new(0, 0, 0, 19)  -- Точная позиция из LibraryMarch
-    SelectButton.BackgroundColor3 = Color3.fromRGB(152, 181, 255)
-    SelectButton.BackgroundTransparency = 0.9
-    SelectButton.BorderSizePixel = 0
-    SelectButton.Parent = Dropdown.Element
+    -- Box 207x22 (точно как в LibraryMarch)
+    local Box = Instance.new("Frame")
+    Box.Name = "Box"
+    Box.Size = UDim2.new(0, 207, 0, 22)
+    Box.Position = UDim2.new(0, 0, 0, 17)
+    Box.BackgroundTransparency = 1
+    Box.BorderSizePixel = 0
+    Box.Parent = Dropdown.Element
     
-    local SelectCorner = Instance.new("UICorner")
-    SelectCorner.CornerRadius = UDim.new(0, 4)
-    SelectCorner.Parent = SelectButton
+    local BoxLayout = Instance.new("UIListLayout")
+    BoxLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    BoxLayout.Parent = Box
     
-    -- Текст выбранного значения
-    local ValueLabel = Instance.new("TextLabel")
-    ValueLabel.Size = UDim2.new(1, -20, 1, 0)
-    ValueLabel.Position = UDim2.new(0, 5, 0, 0)
-    ValueLabel.BackgroundTransparency = 1
-    ValueLabel.Text = value
-    ValueLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-    ValueLabel.TextTransparency = 0.2
-    ValueLabel.TextSize = 10
-    ValueLabel.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.Regular, Enum.FontStyle.Normal)
-    ValueLabel.TextXAlignment = Enum.TextXAlignment.Left
-    ValueLabel.Parent = SelectButton
+    -- Header (кнопка выбора)
+    local Header = Instance.new("TextButton")
+    Header.Name = "Header"
+    Header.Size = UDim2.new(0, 207, 0, 22)
+    Header.BackgroundColor3 = Color3.fromRGB(152, 181, 255)
+    Header.BackgroundTransparency = 0.9
+    Header.BorderSizePixel = 0
+    Header.Text = ""
+    Header.AutoButtonColor = false
+    Header.Parent = Box
     
-    -- Стрелка
-    local Arrow = Instance.new("TextLabel")
-    Arrow.Size = UDim2.new(0, 15, 1, 0)
-    Arrow.Position = UDim2.new(1, -15, 0, 0)
+    local HeaderCorner = Instance.new("UICorner")
+    HeaderCorner.CornerRadius = UDim.new(0, 4)
+    HeaderCorner.Parent = Header
+    
+    -- CurrentOption (текст выбранного значения с градиентом)
+    local CurrentOption = Instance.new("TextLabel")
+    CurrentOption.Name = "CurrentOption"
+    CurrentOption.Size = UDim2.new(0, 161, 0, 13)
+    CurrentOption.AnchorPoint = Vector2.new(0, 0.5)
+    CurrentOption.Position = UDim2.new(0.05, 0, 0.5, 0)
+    CurrentOption.BackgroundTransparency = 1
+    CurrentOption.Text = value
+    CurrentOption.TextColor3 = Color3.fromRGB(255, 255, 255)
+    CurrentOption.TextTransparency = 0.2
+    CurrentOption.TextSize = 10
+    CurrentOption.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
+    CurrentOption.TextXAlignment = Enum.TextXAlignment.Left
+    CurrentOption.Parent = Header
+    
+    local CurrentGradient = Instance.new("UIGradient")
+    CurrentGradient.Transparency = NumberSequence.new{
+        NumberSequenceKeypoint.new(0, 0),
+        NumberSequenceKeypoint.new(0.704, 0),
+        NumberSequenceKeypoint.new(0.872, 0.3625),
+        NumberSequenceKeypoint.new(1, 1)
+    }
+    CurrentGradient.Parent = CurrentOption
+    
+    -- Arrow (стрелка)
+    local Arrow = Instance.new("ImageLabel")
+    Arrow.Name = "Arrow"
+    Arrow.Size = UDim2.new(0, 8, 0, 8)
+    Arrow.AnchorPoint = Vector2.new(0, 0.5)
+    Arrow.Position = UDim2.new(0.91, 0, 0.5, 0)
     Arrow.BackgroundTransparency = 1
-    Arrow.Text = "▼"
-    Arrow.TextColor3 = Color3.fromRGB(255, 255, 255)
-    Arrow.TextTransparency = 0.5
-    Arrow.TextSize = 8
-    Arrow.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.Regular, Enum.FontStyle.Normal)
-    Arrow.Parent = SelectButton
+    Arrow.Image = "rbxassetid://84232453189324"
+    Arrow.Parent = Header
     
-    -- Список опций (создается при открытии)
-    local OptionsList = nil
+    -- Options (список опций)
+    local Options = Instance.new("ScrollingFrame")
+    Options.Name = "Options"
+    Options.Size = UDim2.new(0, 207, 0, 0)
+    Options.Position = UDim2.new(0, 0, 1, 0)
+    Options.BackgroundTransparency = 1
+    Options.BorderSizePixel = 0
+    Options.ScrollBarThickness = 0
+    Options.ScrollBarImageTransparency = 1
+    Options.AutomaticCanvasSize = Enum.AutomaticSize.Y
+    Options.CanvasSize = UDim2.new(0, 0, 0, 0)
+    Options.Active = true
+    Options.Parent = Box
+    
+    local OptionsLayout = Instance.new("UIListLayout")
+    OptionsLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    OptionsLayout.Parent = Options
+    
+    local OptionsPadding = Instance.new("UIPadding")
+    OptionsPadding.PaddingTop = UDim.new(0, -1)
+    OptionsPadding.PaddingLeft = UDim.new(0, 10)
+    OptionsPadding.Parent = Options
+    
+    -- Создаем опции
+    if #options > 0 then
+        Dropdown.Size = math.min(#options * 16 + 3, 100)
+        
+        for _, option in ipairs(options) do
+            local Option = Instance.new("TextButton")
+            Option.Name = "Option"
+            Option.Size = UDim2.new(0, 186, 0, 16)
+            Option.AnchorPoint = Vector2.new(0, 0.5)
+            Option.BackgroundTransparency = 1
+            Option.Text = option
+            Option.TextColor3 = Color3.fromRGB(255, 255, 255)
+            Option.TextTransparency = option == value and 0.2 or 0.6
+            Option.TextSize = 10
+            Option.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
+            Option.TextXAlignment = Enum.TextXAlignment.Left
+            Option.AutoButtonColor = false
+            Option.Active = false
+            Option.Selectable = false
+            Option.Parent = Options
+            
+            local OptionGradient = Instance.new("UIGradient")
+            OptionGradient.Transparency = NumberSequence.new{
+                NumberSequenceKeypoint.new(0, 0),
+                NumberSequenceKeypoint.new(0.704, 0),
+                NumberSequenceKeypoint.new(0.872, 0.3625),
+                NumberSequenceKeypoint.new(1, 1)
+            }
+            OptionGradient.Parent = Option
+            
+            Option.MouseButton1Click:Connect(function()
+                Dropdown:SetValue(option)
+                Dropdown:Toggle()
+            end)
+        end
+    end
     
     -- Функция переключения
     function Dropdown:Toggle()
         self.Open = not self.Open
         
         if self.Open then
-            -- Создаем список опций
-            if not OptionsList then
-                OptionsList = Instance.new("ScrollingFrame")
-                OptionsList.Name = "OptionsList"
-                OptionsList.Size = UDim2.new(0, 207, 0, math.min(#options * 20, 100))
-                OptionsList.Position = UDim2.new(0, 0, 0, 40)
-                OptionsList.BackgroundColor3 = Color3.fromRGB(22, 28, 38)
-                OptionsList.BorderSizePixel = 0
-                OptionsList.ScrollBarThickness = 4
-                OptionsList.CanvasSize = UDim2.new(0, 0, 0, #options * 20)
-                OptionsList.ZIndex = 100
-                OptionsList.Parent = Dropdown.Element
-                
-                local OptionsCorner = Instance.new("UICorner")
-                OptionsCorner.CornerRadius = UDim.new(0, 4)
-                OptionsCorner.Parent = OptionsList
-                
-                local OptionsLayout = Instance.new("UIListLayout")
-                OptionsLayout.SortOrder = Enum.SortOrder.LayoutOrder
-                OptionsLayout.Parent = OptionsList
-                
-                -- Создаем опции
-                for _, option in ipairs(options) do
-                    local OptionButton = Instance.new("TextButton")
-                    OptionButton.Name = option
-                    OptionButton.Size = UDim2.new(1, 0, 0, 20)
-                    OptionButton.BackgroundColor3 = Color3.fromRGB(22, 28, 38)
-                    OptionButton.BorderSizePixel = 0
-                    OptionButton.Text = option
-                    OptionButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-                    OptionButton.TextTransparency = 0.3
-                    OptionButton.TextSize = 10
-                    OptionButton.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.Regular, Enum.FontStyle.Normal)
-                    OptionButton.AutoButtonColor = false
-                    OptionButton.Parent = OptionsList
-                    
-                    OptionButton.MouseEnter:Connect(function()
-                        OptionButton.BackgroundColor3 = Color3.fromRGB(32, 38, 51)
-                    end)
-                    
-                    OptionButton.MouseLeave:Connect(function()
-                        OptionButton.BackgroundColor3 = Color3.fromRGB(22, 28, 38)
-                    end)
-                    
-                    OptionButton.MouseButton1Click:Connect(function()
-                        Dropdown:SetValue(option)
-                        Dropdown:Toggle()
-                    end)
-                end
-            end
+            TweenService:Create(Dropdown.Element, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+                Size = UDim2.new(0, 207, 0, 39 + self.Size)
+            }):Play()
             
-            OptionsList.Visible = true
-            TweenService:Create(Arrow, TweenInfo.new(0.2), {Rotation = 180}):Play()
+            TweenService:Create(Box, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+                Size = UDim2.new(0, 207, 0, 22 + self.Size)
+            }):Play()
+            
+            TweenService:Create(Options, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+                Size = UDim2.new(0, 207, 0, self.Size)
+            }):Play()
+            
+            TweenService:Create(Arrow, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+                Rotation = 180
+            }):Play()
         else
-            if OptionsList then
-                OptionsList.Visible = false
-            end
-            TweenService:Create(Arrow, TweenInfo.new(0.2), {Rotation = 0}):Play()
+            TweenService:Create(Dropdown.Element, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+                Size = UDim2.new(0, 207, 0, 39)
+            }):Play()
+            
+            TweenService:Create(Box, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+                Size = UDim2.new(0, 207, 0, 22)
+            }):Play()
+            
+            TweenService:Create(Options, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+                Size = UDim2.new(0, 207, 0, 0)
+            }):Play()
+            
+            TweenService:Create(Arrow, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+                Rotation = 0
+            }):Play()
         end
     end
     
     function Dropdown:SetValue(newValue)
         self.Value = newValue
-        ValueLabel.Text = newValue
+        CurrentOption.Text = newValue
+        
+        -- Обновляем прозрачность опций
+        for _, option in ipairs(Options:GetChildren()) do
+            if option.Name == "Option" then
+                option.TextTransparency = option.Text == newValue and 0.2 or 0.6
+            end
+        end
         
         Library.Config:SetFlag(flag, newValue)
         Library.Config:Save(Library.ConfigName)
@@ -1409,7 +1667,7 @@ function Library:AddDropdown(module, config)
         callback(newValue)
     end
     
-    Dropdown.Element.MouseButton1Click:Connect(function()
+    Header.MouseButton1Click:Connect(function()
         Dropdown:Toggle()
     end)
     
@@ -2019,6 +2277,67 @@ function Library:AddLabel(module, config)
     end
     
     table.insert(module.Components, Label)
+    return Label
+end
+
+-- Компонент: Mini-Module (визуальный разделитель)
+function Library:AddMiniModule(module, config)
+    config = config or {}
+    local name = config.Name or "Section"
+    
+    local MiniModule = {}
+    
+    -- Контейнер 207x30
+    MiniModule.Element = Instance.new("Frame")
+    MiniModule.Element.Name = "MiniModule"
+    MiniModule.Element.Size = UDim2.new(0, 207, 0, 30)
+    MiniModule.Element.BackgroundColor3 = Color3.fromRGB(18, 23, 32)  -- Темнее основного фона
+    MiniModule.Element.BackgroundTransparency = 0.3
+    MiniModule.Element.BorderSizePixel = 0
+    
+    local Corner = Instance.new("UICorner")
+    Corner.CornerRadius = UDim.new(0, 4)
+    Corner.Parent = MiniModule.Element
+    
+    local Stroke = Instance.new("UIStroke")
+    Stroke.Color = Color3.fromRGB(52, 66, 89)
+    Stroke.Thickness = 1
+    Stroke.Transparency = 0.7
+    Stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    Stroke.Parent = MiniModule.Element
+    
+    -- Название по центру
+    local Title = Instance.new("TextLabel")
+    Title.Size = UDim2.new(1, -20, 1, 0)
+    Title.Position = UDim2.new(0.5, 0, 0.5, 0)
+    Title.AnchorPoint = Vector2.new(0.5, 0.5)
+    Title.BackgroundTransparency = 1
+    Title.Text = name
+    Title.TextColor3 = Color3.fromRGB(152, 181, 255)
+    Title.TextTransparency = 0.4
+    Title.TextSize = 11
+    Title.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
+    Title.TextXAlignment = Enum.TextXAlignment.Center
+    Title.Parent = MiniModule.Element
+    
+    table.insert(module.Components, MiniModule)
+    return MiniModule
+end
+
+-- Компонент: Divider (разделитель)
+function Library:AddDivider(module)
+    local Divider = {}
+    
+    Divider.Element = Instance.new("Frame")
+    Divider.Element.Name = "Divider"
+    Divider.Element.Size = UDim2.new(0, 207, 0, 1)
+    Divider.Element.BackgroundColor3 = Color3.fromRGB(52, 66, 89)
+    Divider.Element.BackgroundTransparency = 0.5
+    Divider.Element.BorderSizePixel = 0
+    
+    table.insert(module.Components, Divider)
+    return Divider
+end
     return Label
 end
 
