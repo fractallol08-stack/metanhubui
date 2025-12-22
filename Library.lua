@@ -449,7 +449,7 @@ function Library:CreateUI()
     local CloseButton = Instance.new("TextButton")
     CloseButton.Name = "CloseButton"
     CloseButton.Size = UDim2.new(0, 12, 0, 12)
-    CloseButton.Position = UDim2.new(1, -20, 0, 23)
+    CloseButton.Position = UDim2.new(1, -20, 0, 18)  -- Поднято выше (было 23)
     CloseButton.AnchorPoint = Vector2.new(0.5, 0.5)
     CloseButton.BackgroundColor3 = self._themeAccent
     CloseButton.BorderSizePixel = 0
@@ -462,6 +462,14 @@ function Library:CreateUI()
     local CloseCorner = Instance.new("UICorner")
     CloseCorner.CornerRadius = UDim.new(1, 0)
     CloseCorner.Parent = CloseButton
+    
+    -- Обводка для кнопки закрытия
+    local CloseStroke = Instance.new("UIStroke")
+    CloseStroke.Color = Color3.fromRGB(100, 120, 150)
+    CloseStroke.Thickness = 1
+    CloseStroke.Transparency = 0.3
+    CloseStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    CloseStroke.Parent = CloseButton
     
     -- Hover эффект для кнопки закрытия
     CloseButton.MouseEnter:Connect(function()
@@ -729,46 +737,6 @@ function Library:CreateUI()
                 self:SetTransparency(v / 100)
             end
         })
-
-        UiModule:AddSection({Name = "Click GUI"})
-        UiModule:AddTextbox({
-            Name = "Name",
-            Default = self.Title,
-            Flag = "clickgui_name",
-            Callback = function(v)
-                self.Title = tostring(v)
-                if self._titleLabel then
-                    self._titleLabel.Text = self.Title
-                end
-            end
-        })
-        UiModule:AddKeybind({
-            Name = "Keybind",
-            Default = self.ToggleKey,
-            Flag = "clickgui_key",
-            Callback = function(key)
-                if typeof(key) == "EnumItem" then
-                    self.ToggleKey = key
-                end
-            end
-        })
-
-        UiModule:AddSection({Name = "Theme"})
-        UiModule:AddDropdown({
-            Name = "Theme",
-            Options = {"Basic", "Blood", "Cosmic", "Solar", "Black", "Water"},
-            Default = self.ThemeName,
-            Flag = "ui_theme",
-            Callback = function(v)
-                self:ApplyTheme(tostring(v))
-            end
-        })
-
-        UiModule:AddSection({Name = "Info"})
-        UiModule:AddLabel({Text = "Dev: Raw4.exe"})
-        UiModule:AddLabel({Text = "Design: Raw4.exe"})
-        UiModule:AddLabel({Text = "Build: Metan Hub"})
-        UiModule:AddLabel({Text = "Owner: Raw4.exe"})
     end
 end
 
@@ -2215,9 +2183,9 @@ function Library:AddToggle(module, config)
         Toggle:SetValue(not Toggle.Value)
     end)
 
-    Toggle.Element.InputBegan:Connect(function(input, gameProcessed)
+    KeybindBox.InputBegan:Connect(function(input, gameProcessed)
         if gameProcessed then return end
-        if input.UserInputType ~= Enum.UserInputType.MouseButton2 then return end
+        if input.UserInputType ~= Enum.UserInputType.MouseButton1 then return end
         if Toggle.Listening then return end
 
         Toggle.Listening = true
@@ -3031,10 +2999,10 @@ function Library:AddKeybind(module, config)
         callback(newKey)
     end
     
-    -- Обработка клика для установки клавиши (RMB как в LibraryMarch)
-    Keybind.Element.InputBegan:Connect(function(input, gameProcessed)
+    -- Обработка клика для установки клавиши (LMB)
+    KeybindBox.InputBegan:Connect(function(input, gameProcessed)
         if gameProcessed then return end
-        if input.UserInputType ~= Enum.UserInputType.MouseButton2 then return end  -- RMB
+        if input.UserInputType ~= Enum.UserInputType.MouseButton1 then return end  -- LMB
         if Keybind.Listening then return end
         
         Keybind.Listening = true
@@ -3182,7 +3150,7 @@ function Library:AddDivider(module)
     
     Divider.Element = Instance.new("Frame")
     Divider.Element.Name = "Divider"
-    Divider.Element.Size = UDim2.new(0, 207, 0, 1)
+    Divider.Element.Size = UDim2.new(0, 260, 0, 1)  -- Полная ширина панели настроек
     Divider.Element.BackgroundColor3 = Color3.fromRGB(52, 66, 89)
     Divider.Element.BackgroundTransparency = 0.5
     Divider.Element.BorderSizePixel = 0
