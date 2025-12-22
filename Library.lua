@@ -1842,6 +1842,8 @@ function Library:AddSlider(module, config)
     local increment = config.Increment or 1
     local flag = config.Flag or name
     local callback = config.Callback or function() end
+
+    local LibraryInstance = self
     
     local value = self.Config:GetFlag(flag, default)
     
@@ -1956,9 +1958,11 @@ function Library:AddSlider(module, config)
         TweenService:Create(Fill, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
             Size = UDim2.new(0, sliderSize, 0, 4)
         }):Play()
-        
-        Library.Config:SetFlag(flag, newValue)
-        Library.Config:Save(Library.ConfigName)
+
+        if LibraryInstance and LibraryInstance.Config then
+            LibraryInstance.Config:SetFlag(flag, newValue)
+            LibraryInstance.Config:Save(LibraryInstance.ConfigName)
+        end
         
         callback(newValue)
     end
@@ -2403,6 +2407,8 @@ function Library:AddTextbox(module, config)
     local placeholder = config.Placeholder or "Enter text..."
     local flag = config.Flag or name
     local callback = config.Callback or function() end
+
+    local LibraryInstance = self
     
     local value = self.Config:GetFlag(flag, default)
     
@@ -2442,7 +2448,6 @@ function Library:AddTextbox(module, config)
     Input.TextColor3 = Color3.fromRGB(255, 255, 255)
     Input.PlaceholderColor3 = Color3.fromRGB(255, 255, 255)
     Input.TextTransparency = 0.2
-    Input.PlaceholderTransparency = 0.5
     Input.TextSize = 10
     Input.FontFace = Font.new('rbxasset://fonts/families/SourceSansPro.json', Enum.FontWeight.Regular, Enum.FontStyle.Normal)
     Input.ClearTextOnFocus = false
@@ -2457,8 +2462,10 @@ function Library:AddTextbox(module, config)
         self.Value = newValue
         Input.Text = newValue
         
-        Library.Config:SetFlag(flag, newValue)
-        Library.Config:Save(Library.ConfigName)
+        if LibraryInstance and LibraryInstance.Config then
+            LibraryInstance.Config:SetFlag(flag, newValue)
+            LibraryInstance.Config:Save(LibraryInstance.ConfigName)
+        end
         
         callback(newValue)
     end
