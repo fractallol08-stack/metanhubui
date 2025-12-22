@@ -1962,19 +1962,6 @@ function Library:AddSlider(module, config)
         
         callback(newValue)
     end
-
-    function Toggle:SetKeybind(newKey)
-        Toggle.Keybind = newKey
-        if Toggle.Keybind then
-            KeybindLabel.Text = Toggle.Keybind.Name
-            Library.Config:SetFlag(keyFlag, Toggle.Keybind.Name)
-            Library.Config:Save(Library.ConfigName)
-        else
-            KeybindLabel.Text = "None"
-            Library.Config:SetFlag(keyFlag, "")
-            Library.Config:Save(Library.ConfigName)
-        end
-    end
     
     -- Обработка перетаскивания
     local dragging = false
