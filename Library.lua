@@ -437,7 +437,7 @@ function Library:CreateUI()
     local CloseButton = Instance.new("TextButton")
     CloseButton.Name = "CloseButton"
     CloseButton.Size = UDim2.new(0, 12, 0, 12)
-    CloseButton.Position = UDim2.new(1, -20, 0, 26)
+    CloseButton.Position = UDim2.new(1, -20, 0, 23)
     CloseButton.AnchorPoint = Vector2.new(0.5, 0.5)
     CloseButton.BackgroundColor3 = Color3.fromRGB(255, 95, 86)  -- macOS red
     CloseButton.BorderSizePixel = 0
@@ -2827,23 +2827,23 @@ end
 function Library:AddKeybind(module, config)
     config = config or {}
     local name = config.Name or "Keybind"
-    local default = config.Default or Enum.KeyCode.E
+    local default = config.Default
     local flag = config.Flag or name
     local callback = config.Callback or function() end
-    local mode = config.Mode or "Toggle" -- Toggle или Hold
     
     local savedKey = self.Config:GetFlag(flag)
-    local value = default
-    
-    if savedKey and Enum.KeyCode[savedKey] then
+    local value = nil
+    if type(savedKey) == "string" and Enum.KeyCode[savedKey] then
         value = Enum.KeyCode[savedKey]
+    elseif typeof(default) == "EnumItem" then
+        value = default
+    elseif type(default) == "string" and Enum.KeyCode[default] then
+        value = Enum.KeyCode[default]
     end
     
     local Keybind = {}
     Keybind.Value = value
     Keybind.Listening = false
-    Keybind.Mode = mode
-    Keybind.Active = false
     
     -- Контейнер (точно как в LibraryMarch - размер checkbox)
     Keybind.Element = Instance.new("TextButton")
@@ -2892,41 +2892,23 @@ function Library:AddKeybind(module, config)
     KeybindLabel.TextScaled = false
     KeybindLabel.TextSize = 10
     KeybindLabel.Font = Enum.Font.SourceSans
-    KeybindLabel.Text = value.Name or "..."
+    KeybindLabel.Text = (value and value.Name) or "None"
     KeybindLabel.Parent = KeybindBox
     
     -- Функция обновления
     function Keybind:SetValue(newKey)
         self.Value = newKey
-        KeybindLabel.Text = newKey.Name
-        
-        Library.Config:SetFlag(flag, newKey.Name)
+        KeybindLabel.Text = (newKey and newKey.Name) or "None"
+
+        if newKey then
+            Library.Config:SetFlag(flag, newKey.Name)
+        else
+            Library.Config:SetFlag(flag, "")
+        end
         Library.Config:Save(Library.ConfigName)
-        
+
         callback(newKey)
     end
-    
-    -- Глобальный обработчик нажатий клавиш
-    UserInputService.InputBegan:Connect(function(input, gameProcessed)
-        if gameProcessed or Keybind.Listening then return end
-        
-        if input.KeyCode == Keybind.Value then
-            if Keybind.Mode == "Toggle" then
-                Keybind.Active = not Keybind.Active
-                callback(Keybind.Active)
-            else
-                Keybind.Active = true
-                callback(true)
-            end
-        end
-    end)
-    
-    UserInputService.InputEnded:Connect(function(input, gameProcessed)
-        if Keybind.Mode == "Hold" and input.KeyCode == Keybind.Value then
-            Keybind.Active = false
-            callback(false)
-        end
-    end)
     
     -- Обработка клика для установки клавиши (RMB как в LibraryMarch)
     Keybind.Element.InputBegan:Connect(function(input, gameProcessed)
@@ -2939,13 +2921,12 @@ function Library:AddKeybind(module, config)
         
         local connection
         connection = UserInputService.InputBegan:Connect(function(keyInput, processed)
+            if processed then return end
             if keyInput.UserInputType ~= Enum.UserInputType.Keyboard then return end
             if keyInput.KeyCode == Enum.KeyCode.Unknown then return end
             
             if keyInput.KeyCode == Enum.KeyCode.Backspace then
-                -- Очистить keybind
-                Keybind:SetValue(Enum.KeyCode.Unknown)
-                KeybindLabel.Text = "..."
+                Keybind:SetValue(nil)
                 connection:Disconnect()
                 Keybind.Listening = false
                 return
