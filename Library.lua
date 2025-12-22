@@ -44,7 +44,6 @@ function ColorUtils.HSVtoRGB(h, s, v)
     elseif i == 4 then r, g, b = t, p, v
     elseif i == 5 then r, g, b = v, p, q
     end
-
     return Color3.fromRGB(r * 255, g * 255, b * 255)
 end
 
@@ -223,18 +222,24 @@ function Library:SetTransparency(alpha)
     end
 end
 
-function Library:SetScale(scale)
-    self.UiScale = math.clamp(scale, 0.6, 1.6)
-
-    if self.Collapsed then
-        if self.MainFrame then
-            self.MainFrame.Size = self:GetCollapsedSize()
-        end
-    else
-        if self.MainFrame then
-            self.MainFrame.Size = self:GetMainSize()
-        end
+function Library:_tweenColor(obj, prop, color)
+    if not obj then return end
+    local ok = pcall(function()
+        TweenService:Create(obj, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+            [prop] = color
+        }):Play()
+    end)
+    if not ok then
+        pcall(function()
+            obj[prop] = color
+        end)
     end
+end
+
+function Library:_registerThemeBinding(obj, mapping)
+    if not obj then return end
+    self._themeBindings = self._themeBindings or {}
+    table.insert(self._themeBindings, {Obj = obj, Map = mapping})
 end
 
 function Library:ApplyTheme(themeName)
@@ -277,37 +282,44 @@ function Library:ApplyTheme(themeName)
     self._themeStroke = t.Stroke
     self._themeBg = t.Bg
 
-    if self.MainFrame then
-        self.MainFrame.BackgroundColor3 = self._themeBg
-    end
-    if self.Watermark then
-        self.Watermark.BackgroundColor3 = self._themeBg
-    end
-    if self.SettingsPanel then
-        self.SettingsPanel.BackgroundColor3 = self._themeBg
+    self:_tweenColor(self.MainFrame, "BackgroundColor3", self._themeBg)
+    self:_tweenColor(self.Watermark, "BackgroundColor3", self._themeBg)
+    self:_tweenColor(self.SettingsPanel, "BackgroundColor3", self._themeBg)
+
+    self:_tweenColor(self._mainStroke, "Color", self._themeStroke)
+    self:_tweenColor(self._watermarkStroke, "Color", self._themeStroke)
+    self:_tweenColor(self._settingsPanelStroke, "Color", self._themeStroke)
+
+    self:_tweenColor(self._titleIcon, "ImageColor3", self._themeAccent)
+    self:_tweenColor(self._watermarkRestoreIcon, "ImageColor3", self._themeAccent)
+    self:_tweenColor(self._settingsPanelIcon, "ImageColor3", self._themeAccent)
+    self:_tweenColor(self._settingsPanelTitle, "TextColor3", self._themeAccent)
+
+    self:_tweenColor(self.TabPin, "BackgroundColor3", self._themeAccent)
+    self:_tweenColor(self._tabsDivider, "BackgroundColor3", self._themeStroke)
+    self:_tweenColor(self._systemDivider, "BackgroundColor3", self._themeStroke)
+    self:_tweenColor(self._tabsSystemDivider, "BackgroundColor3", self._themeStroke)
+
+    if self._closeButton then
+        self:_tweenColor(self._closeButton, "BackgroundColor3", self._themeAccent)
     end
 
-    if self._mainStroke then
-        self._mainStroke.Color = self._themeStroke
-    end
-    if self._watermarkStroke then
-        self._watermarkStroke.Color = self._themeStroke
-    end
-    if self._settingsPanelStroke then
-        self._settingsPanelStroke.Color = self._themeStroke
-    end
-
-    if self._titleIcon then
-        self._titleIcon.ImageColor3 = self._themeAccent
-    end
-    if self._watermarkRestoreIcon then
-        self._watermarkRestoreIcon.ImageColor3 = self._themeAccent
-    end
-    if self._settingsPanelIcon then
-        self._settingsPanelIcon.ImageColor3 = self._themeAccent
-    end
-    if self._settingsPanelTitle then
-        self._settingsPanelTitle.TextColor3 = self._themeAccent
+    if self._themeBindings then
+        for _, binding in ipairs(self._themeBindings) do
+            local obj = binding.Obj
+            local map = binding.Map
+            if obj and obj.Parent then
+                for prop, key in pairs(map) do
+                    if key == "Accent" then
+                        self:_tweenColor(obj, prop, self._themeAccent)
+                    elseif key == "Stroke" then
+                        self:_tweenColor(obj, prop, self._themeStroke)
+                    elseif key == "Bg" then
+                        self:_tweenColor(obj, prop, self._themeBg)
+                    end
+                end
+            end
+        end
     end
 end
 
@@ -439,11 +451,13 @@ function Library:CreateUI()
     CloseButton.Size = UDim2.new(0, 12, 0, 12)
     CloseButton.Position = UDim2.new(1, -20, 0, 23)
     CloseButton.AnchorPoint = Vector2.new(0.5, 0.5)
-    CloseButton.BackgroundColor3 = Color3.fromRGB(255, 95, 86)  -- macOS red
+    CloseButton.BackgroundColor3 = self._themeAccent
     CloseButton.BorderSizePixel = 0
     CloseButton.Text = ""
     CloseButton.AutoButtonColor = false
     CloseButton.Parent = TitleBar
+    self._closeButton = CloseButton
+    self:_registerThemeBinding(CloseButton, {BackgroundColor3 = "Accent"})
     
     local CloseCorner = Instance.new("UICorner")
     CloseCorner.CornerRadius = UDim.new(1, 0)
@@ -452,13 +466,13 @@ function Library:CreateUI()
     -- Hover эффект для кнопки закрытия
     CloseButton.MouseEnter:Connect(function()
         TweenService:Create(CloseButton, TweenInfo.new(0.2), {
-            BackgroundColor3 = Color3.fromRGB(255, 115, 106)
+            BackgroundColor3 = self._themeAccent:Lerp(Color3.fromRGB(255, 255, 255), 0.15)
         }):Play()
     end)
     
     CloseButton.MouseLeave:Connect(function()
         TweenService:Create(CloseButton, TweenInfo.new(0.2), {
-            BackgroundColor3 = Color3.fromRGB(255, 95, 86)
+            BackgroundColor3 = self._themeAccent
         }):Play()
     end)
     
@@ -577,27 +591,29 @@ function Library:CreateUI()
     SystemDivider.Name = "SystemDivider"
     SystemDivider.Size = UDim2.new(1, 0, 0, 1)
     SystemDivider.Position = UDim2.new(0, 0, 0, -4)
-    SystemDivider.BackgroundColor3 = Color3.fromRGB(52, 66, 89)
+    SystemDivider.BackgroundColor3 = self._themeStroke
     SystemDivider.BackgroundTransparency = 0.5
     SystemDivider.BorderSizePixel = 0
     SystemDivider.Parent = self.SystemTabContainer
+    self._tabsSystemDivider = SystemDivider
     
     -- Разделитель между табами и контентом
     local Divider = Instance.new("Frame")
     Divider.Name = "Divider"
     Divider.Size = UDim2.new(0, 1, 0, 479)
     Divider.Position = UDim2.new(0.235, 0, 0.042, 0)  -- Начинается ниже заголовка
-    Divider.BackgroundColor3 = Color3.fromRGB(52, 66, 89)
+    Divider.BackgroundColor3 = self._themeStroke
     Divider.BackgroundTransparency = 0.5
     Divider.BorderSizePixel = 0
     Divider.Parent = self.MainFrame
+    self._tabsDivider = Divider
     
     -- Pin (индикатор активного таба)
     self.TabPin = Instance.new("Frame")
     self.TabPin.Name = "Pin"
     self.TabPin.Size = UDim2.new(0, 2, 0, 16)
     self.TabPin.Position = UDim2.new(0.026, 0, 0.136, 0)
-    self.TabPin.BackgroundColor3 = Color3.fromRGB(152, 181, 255)
+    self.TabPin.BackgroundColor3 = self._themeAccent
     self.TabPin.BorderSizePixel = 0
     self.TabPin.Parent = self.MainFrame
     
@@ -661,8 +677,7 @@ function Library:CreateUI()
     end
 
     do
-        local savedScale = tonumber(self.Config:GetFlag("ui_scale", 100)) or 100
-        self.UiScale = math.clamp(savedScale / 100, 0.6, 1.6)
+        self.UiScale = 1
 
         local savedTransparency = tonumber(self.Config:GetFlag("ui_transparency", 5)) or 5
         self:SetTransparency(math.clamp(savedTransparency / 100, 0, 1))
@@ -681,6 +696,17 @@ function Library:CreateUI()
         if self._titleLabel then
             self._titleLabel.Text = self.Title
         end
+
+        do
+            local sx = tonumber(self.Config:GetFlag("ui_settings_pos_x"))
+            local sy = tonumber(self.Config:GetFlag("ui_settings_pos_y"))
+            if sx and sy then
+                self.SettingsPanelPosition = UDim2.new(0, sx, 0, sy)
+            end
+        end
+
+        self._restoreSettingsOpen = (self.Config:GetFlag("ui_settings_open") == true)
+        self._restoreSettingsModule = tostring(self.Config:GetFlag("ui_settings_module", ""))
     end
 
     self.SystemTab = self:CreateTab("UI Settings", "rbxassetid://10734950309", {System = true})
@@ -701,18 +727,6 @@ function Library:CreateUI()
             Flag = "ui_transparency",
             Callback = function(v)
                 self:SetTransparency(v / 100)
-            end
-        })
-
-        UiModule:AddSlider({
-            Name = "Size",
-            Min = 60,
-            Max = 140,
-            Default = 100,
-            Increment = 1,
-            Flag = "ui_scale",
-            Callback = function(v)
-                self:SetScale(v / 100)
             end
         })
 
@@ -1131,7 +1145,7 @@ function Library:SelectTab(tab)
     if label then
         TweenService:Create(label, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
             TextTransparency = 0.2,
-            TextColor3 = Color3.fromRGB(152, 181, 255)
+            TextColor3 = self._themeAccent
         }):Play()
         
         local gradient = label:FindFirstChildOfClass("UIGradient")
@@ -1146,7 +1160,7 @@ function Library:SelectTab(tab)
     if icon then
         TweenService:Create(icon, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
             ImageTransparency = 0.2,
-            ImageColor3 = Color3.fromRGB(152, 181, 255)
+            ImageColor3 = self._themeAccent
         }):Play()
     end
     
@@ -1278,6 +1292,7 @@ function Library:CreateModule(tab, config)
     CircleCorner.Parent = Circle
 
     if moduleKeybindEnabled then
+        local LibraryInstance = self
         -- Keybind
         local Keybind = Instance.new("Frame")
         Keybind.Name = "Keybind"
@@ -1337,11 +1352,15 @@ function Library:CreateModule(tab, config)
                 AutoResizeKeybind(keyName)
                 
                 -- Сохраняем в конфиг
-                if not Library.Config.Flags._keybinds then
-                    Library.Config.Flags._keybinds = {}
+                if LibraryInstance and LibraryInstance.Config then
+                    local binds = LibraryInstance.Config:GetFlag("_keybinds")
+                    if type(binds) ~= "table" then
+                        binds = {}
+                    end
+                    binds[moduleKeybindFlag] = keyName
+                    LibraryInstance.Config:SetFlag("_keybinds", binds)
+                    LibraryInstance.Config:Save(LibraryInstance.ConfigName)
                 end
-                Library.Config.Flags._keybinds[moduleKeybindFlag] = keyName
-                Library.Config:Save(Library.ConfigName)
                 
                 -- Глобальный обработчик для переключения модуля
                 self.KeybindConnection = UserInputService.InputBegan:Connect(function(input, gameProcessed)
@@ -1366,9 +1385,13 @@ function Library:CreateModule(tab, config)
                 AutoResizeKeybind("None")
                 
                 -- Удаляем из конфига
-                if Library.Config.Flags._keybinds then
-                    Library.Config.Flags._keybinds[moduleKeybindFlag] = nil
-                    Library.Config:Save(Library.ConfigName)
+                if LibraryInstance and LibraryInstance.Config then
+                    local binds = LibraryInstance.Config:GetFlag("_keybinds")
+                    if type(binds) == "table" then
+                        binds[moduleKeybindFlag] = nil
+                        LibraryInstance.Config:SetFlag("_keybinds", binds)
+                        LibraryInstance.Config:Save(LibraryInstance.ConfigName)
+                    end
                 end
             end
         end
@@ -1402,8 +1425,9 @@ function Library:CreateModule(tab, config)
         end)
         
         -- Загружаем сохраненный кейбинд или стартовый из конфига
-        if Library.Config.Flags._keybinds and Library.Config.Flags._keybinds[moduleKeybindFlag] then
-            local savedKeyName = Library.Config.Flags._keybinds[moduleKeybindFlag]
+        local binds = (LibraryInstance and LibraryInstance.Config) and LibraryInstance.Config:GetFlag("_keybinds") or nil
+        if type(binds) == "table" and binds[moduleKeybindFlag] then
+            local savedKeyName = binds[moduleKeybindFlag]
             local keyCode = Enum.KeyCode[savedKeyName]
             if keyCode then
                 Module:SetKeybind(keyCode)
@@ -1461,6 +1485,16 @@ function Library:CreateModule(tab, config)
     end)
     
     table.insert(tab.Modules, Module)
+
+    if self._restoreSettingsOpen and self._restoreSettingsModule and self._restoreSettingsModule ~= "" then
+        if Module.Name == self._restoreSettingsModule then
+            task.defer(function()
+                pcall(function()
+                    self:ShowSettingsPanel(Module)
+                end)
+            end)
+        end
+    end
     
     return setmetatable(Module, {__index = function(t, k)
         -- Создаем методы для добавления компонентов
@@ -1796,6 +1830,14 @@ function Library:ShowSettingsPanel(module)
     self._settingsTween:Play()
     
     print("Панель показана на позиции:", self.SettingsPanel.Position)
+
+    pcall(function()
+        if self.Config then
+            self.Config:SetFlag("ui_settings_open", true)
+            self.Config:SetFlag("ui_settings_module", tostring(module and module.Name or ""))
+            self.Config:Save(self.ConfigName)
+        end
+    end)
     
     self.CurrentModule = module
 end
@@ -1807,6 +1849,15 @@ function Library:HideSettingsPanel()
     
     -- Сохраняем текущую позицию перед скрытием
     self.SettingsPanelPosition = self.SettingsPanel.Position
+
+    pcall(function()
+        if self.Config then
+            self.Config:SetFlag("ui_settings_open", false)
+            self.Config:SetFlag("ui_settings_pos_x", self.SettingsPanelPosition.X.Offset)
+            self.Config:SetFlag("ui_settings_pos_y", self.SettingsPanelPosition.Y.Offset)
+            self.Config:Save(self.ConfigName)
+        end
+    end)
     
     if self._settingsTween then
         pcall(function()
@@ -2010,6 +2061,8 @@ function Library:AddToggle(module, config)
     local flag = config.Flag or name
     local keyFlag = config.KeybindFlag or (tostring(flag) .. "_key")
     local callback = config.Callback or function() end
+
+    local LibraryInstance = self
     
     local value = self.Config:GetFlag(flag, default)
     
@@ -2067,8 +2120,8 @@ function Library:AddToggle(module, config)
     local KeybindBox = Instance.new("Frame")
     KeybindBox.Name = "KeybindBox"
     KeybindBox.Size = UDim2.fromOffset(14, 14)
-    KeybindBox.Position = UDim2.new(1, -35, 0.5, 0)
-    KeybindBox.AnchorPoint = Vector2.new(0, 0.5)
+    KeybindBox.Position = UDim2.new(1, -25, 0.5, 0)
+    KeybindBox.AnchorPoint = Vector2.new(1, 0.5)
     KeybindBox.BackgroundColor3 = Color3.fromRGB(152, 181, 255)
     KeybindBox.BorderSizePixel = 0
     KeybindBox.Parent = Toggle.Element
@@ -2087,6 +2140,26 @@ function Library:AddToggle(module, config)
     KeybindLabel.Font = Enum.Font.SourceSans
     KeybindLabel.Text = Toggle.Keybind and Toggle.Keybind.Name or "None"
     KeybindLabel.Parent = KeybindBox
+
+    local function autoSizeKeybindBox(text)
+        local ok, TextService = pcall(function()
+            return game:GetService("TextService")
+        end)
+        if not ok or not TextService then
+            return
+        end
+
+        local size = TextService:GetTextSize(
+            tostring(text or ""),
+            KeybindLabel.TextSize,
+            KeybindLabel.Font,
+            Vector2.new(1000, 14)
+        )
+        local w = math.clamp(size.X + 10, 14, 70)
+        KeybindBox.Size = UDim2.fromOffset(w, 14)
+    end
+
+    autoSizeKeybindBox(KeybindLabel.Text)
     
     local BoxCorner = Instance.new("UICorner")
     BoxCorner.CornerRadius = UDim.new(0, 4)
@@ -2118,11 +2191,24 @@ function Library:AddToggle(module, config)
         TweenService:Create(Fill, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
             Size = newValue and UDim2.fromOffset(9, 9) or UDim2.fromOffset(0, 0)
         }):Play()
-        
-        Library.Config:SetFlag(flag, newValue)
-        Library.Config:Save(Library.ConfigName)
+
+        if LibraryInstance and LibraryInstance.Config then
+            LibraryInstance.Config:SetFlag(flag, newValue)
+            LibraryInstance.Config:Save(LibraryInstance.ConfigName)
+        end
         
         callback(newValue)
+    end
+
+    function Toggle:SetKeybind(keyCode)
+        self.Keybind = keyCode
+        KeybindLabel.Text = keyCode and keyCode.Name or "None"
+        autoSizeKeybindBox(KeybindLabel.Text)
+
+        if LibraryInstance and LibraryInstance.Config then
+            LibraryInstance.Config:SetFlag(keyFlag, keyCode and keyCode.Name or "")
+            LibraryInstance.Config:Save(LibraryInstance.ConfigName)
+        end
     end
     
     Toggle.Element.MouseButton1Click:Connect(function()
@@ -2706,12 +2792,14 @@ function Library:AddColorPicker(module, config)
         ColorPreview.BackgroundColor3 = newColor
         SVPicker.BackgroundColor3 = ColorUtils.HSVtoRGB(ColorPicker.Hue, 1, 1)
         
-        Library.Config:SetFlag(flag, {
+        if self.Config then
+            self.Config:SetFlag(flag, {
             R = math.floor(newColor.R * 255),
             G = math.floor(newColor.G * 255),
             B = math.floor(newColor.B * 255)
-        })
-        Library.Config:Save(Library.ConfigName)
+            })
+            self.Config:Save(self.ConfigName)
+        end
         
         callback(newColor)
     end
@@ -2837,6 +2925,8 @@ function Library:AddKeybind(module, config)
     local default = config.Default
     local flag = config.Flag or name
     local callback = config.Callback or function() end
+
+    local LibraryInstance = self
     
     local savedKey = self.Config:GetFlag(flag)
     local value = nil
@@ -2901,18 +2991,42 @@ function Library:AddKeybind(module, config)
     KeybindLabel.Font = Enum.Font.SourceSans
     KeybindLabel.Text = (value and value.Name) or "None"
     KeybindLabel.Parent = KeybindBox
+
+    local function autoSizeBox(text)
+        local ok, TextService = pcall(function()
+            return game:GetService("TextService")
+        end)
+        if not ok or not TextService then
+            return
+        end
+
+        local size = TextService:GetTextSize(
+            tostring(text or ""),
+            KeybindLabel.TextSize,
+            KeybindLabel.Font,
+            Vector2.new(1000, 14)
+        )
+        local w = math.clamp(size.X + 10, 14, 70)
+        KeybindBox.Size = UDim2.fromOffset(w, 14)
+    end
+
+    autoSizeBox(KeybindLabel.Text)
     
     -- Функция обновления
     function Keybind:SetValue(newKey)
         self.Value = newKey
         KeybindLabel.Text = (newKey and newKey.Name) or "None"
 
-        if newKey then
-            Library.Config:SetFlag(flag, newKey.Name)
-        else
-            Library.Config:SetFlag(flag, "")
+        autoSizeBox(KeybindLabel.Text)
+
+        if LibraryInstance and LibraryInstance.Config then
+            if newKey then
+                LibraryInstance.Config:SetFlag(flag, newKey.Name)
+            else
+                LibraryInstance.Config:SetFlag(flag, "")
+            end
+            LibraryInstance.Config:Save(LibraryInstance.ConfigName)
         end
-        Library.Config:Save(Library.ConfigName)
 
         callback(newKey)
     end
