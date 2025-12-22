@@ -652,8 +652,8 @@ function Library:CreateUI()
         local frames = 0
 
         self._watermarkConn = RunService.RenderStepped:Connect(function(dt)
-            frames += 1
-            lastFpsUpdate += dt
+            frames = frames + 1
+            lastFpsUpdate = lastFpsUpdate + dt
             if lastFpsUpdate < 1 then
                 return
             end
