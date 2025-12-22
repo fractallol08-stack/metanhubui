@@ -3191,5 +3191,5 @@ function Library:AddDivider(module)
     return Divider
 end
 
--- Финальная функция - возвращаем библиотек
+-- Финальная функция - возвращаем библиотеку
 return Library
