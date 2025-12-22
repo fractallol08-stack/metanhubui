@@ -543,6 +543,8 @@ function Library:CreateUI()
     WatermarkText.TextTransparency = 0.15
     WatermarkText.Text = "Metan Hub | Ping: -- | FPS: --"
     WatermarkText.Parent = self.Watermark
+
+    self:SetupWatermarkDragging()
     
     -- Контейнер для табов (слева)
     self.TabContainer = Instance.new("ScrollingFrame")
@@ -818,8 +820,42 @@ function Library:SetupDragging()
     end)
 
     UserInputService.InputChanged:Connect(function(input)
-        if input == dragInput and dragging then
+        if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
             update(input)
+        end
+    end)
+end
+
+function Library:SetupWatermarkDragging()
+    if not self.Watermark then return end
+
+    local dragging = false
+    local dragStart
+    local startPos
+
+    self.Watermark.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = true
+            dragStart = input.Position
+            startPos = self.Watermark.Position
+
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                end
+            end)
+        end
+    end)
+
+    UserInputService.InputChanged:Connect(function(input)
+        if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+            local delta = input.Position - dragStart
+            self.Watermark.Position = UDim2.new(
+                startPos.X.Scale,
+                startPos.X.Offset + delta.X,
+                startPos.Y.Scale,
+                startPos.Y.Offset + delta.Y
+            )
         end
     end)
 end
