@@ -996,9 +996,8 @@ function Library:CreateTab(name, icon, opts)
     SearchInput.Text = ""
     SearchInput.PlaceholderText = "Search modules..."
     SearchInput.TextColor3 = Color3.fromRGB(255, 255, 255)
-    SearchInput.PlaceholderColor3 = Color3.fromRGB(255, 255, 255)
+    SearchInput.PlaceholderColor3 = Color3.fromRGB(170, 170, 170)
     SearchInput.TextTransparency = 0.2
-    SearchInput.PlaceholderTransparency = 0.6
     SearchInput.TextSize = 11
     SearchInput.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.Regular, Enum.FontStyle.Normal)
     SearchInput.TextXAlignment = Enum.TextXAlignment.Left
