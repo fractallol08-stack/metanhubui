@@ -2330,12 +2330,12 @@ function Library:AddDropdown(module, config)
     Arrow.Image = "rbxassetid://84232453189324"
     Arrow.Parent = Header
     
-    -- Поле поиска (появляется при открытии)
+    -- Поле поиска (появляется при открытии) - стилизовано как контейнер опций
     local SearchBox = Instance.new("Frame")
     SearchBox.Name = "SearchBox"
-    SearchBox.Size = UDim2.new(0, 207, 0, 20)
-    SearchBox.BackgroundColor3 = Color3.fromRGB(152, 181, 255)
-    SearchBox.BackgroundTransparency = 0.9
+    SearchBox.Size = UDim2.new(0, 207, 0, 22)
+    SearchBox.BackgroundColor3 = Color3.fromRGB(22, 28, 38)  -- Как у контейнера опций
+    SearchBox.BackgroundTransparency = 0.3  -- Как у контейнера опций
     SearchBox.BorderSizePixel = 0
     SearchBox.LayoutOrder = 2
     SearchBox.Visible = false
@@ -2345,9 +2345,16 @@ function Library:AddDropdown(module, config)
     SearchCorner.CornerRadius = UDim.new(0, 4)
     SearchCorner.Parent = SearchBox
     
+    local SearchStroke = Instance.new("UIStroke")
+    SearchStroke.Color = Color3.fromRGB(52, 66, 89)
+    SearchStroke.Thickness = 1
+    SearchStroke.Transparency = 0.5
+    SearchStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    SearchStroke.Parent = SearchBox
+    
     local SearchInput = Instance.new("TextBox")
-    SearchInput.Size = UDim2.new(1, -10, 1, 0)
-    SearchInput.Position = UDim2.new(0, 5, 0, 0)
+    SearchInput.Size = UDim2.new(1, -20, 1, -4)
+    SearchInput.Position = UDim2.new(0, 10, 0, 2)
     SearchInput.BackgroundTransparency = 1
     SearchInput.Text = ""
     SearchInput.PlaceholderText = "Search..."
@@ -2493,8 +2500,8 @@ function Library:AddDropdown(module, config)
         if self.Open then
             -- Мгновенное открытие
             SearchBox.Visible = true
-            Dropdown.Element.Size = UDim2.new(0, 207, 0, 39 + 20 + self.Size + 5)  -- +20 для поиска, +5 отступ
-            Box.Size = UDim2.new(0, 207, 0, 22 + 20 + self.Size + 5)
+            Dropdown.Element.Size = UDim2.new(0, 207, 0, 39 + 22 + self.Size + 7)  -- +22 для поиска, +7 отступы
+            Box.Size = UDim2.new(0, 207, 0, 22 + 22 + self.Size + 7)
             OptionsContainer.Size = UDim2.new(0, 207, 0, self.Size)
             Arrow.Rotation = 180
             task.wait()
@@ -2790,7 +2797,7 @@ function Library:AddColorPicker(module, config)
     local SVCursor = Instance.new("Frame")
     SVCursor.Name = "SVCursor"
     SVCursor.Size = UDim2.new(0, 12, 0, 12)
-    SVCursor.Position = UDim2.new(s, -6, v, -6)  -- ИСПРАВЛЕНО: убрал инверсию
+    SVCursor.Position = UDim2.new(s, -6, 1 - v, -6)  -- ИСПРАВЛЕНО: инвертируем v для правильной позиции
     SVCursor.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
     SVCursor.BorderSizePixel = 0
     SVCursor.ZIndex = 1003
@@ -2897,7 +2904,7 @@ function Library:AddColorPicker(module, config)
         pos = Vector2.new(math.clamp(pos.X, 0, 1), math.clamp(pos.Y, 0, 1))
         
         ColorPicker.Saturation = pos.X
-        ColorPicker.Brightness = pos.Y  -- ИСПРАВЛЕНО: убрал инверсию, градиент уже инвертирован
+        ColorPicker.Brightness = 1 - pos.Y  -- ИСПРАВЛЕНО: инвертируем Y, т.к. черный градиент сверху
         
         SVCursor.Position = UDim2.new(pos.X, -6, pos.Y, -6)
         updateColor()
@@ -3111,13 +3118,15 @@ function Library:AddKeybind(module, config)
     TitleLabel.Parent = Keybind.Element
     
     -- Keybind Box (точно как в LibraryMarch)
-    local KeybindBox = Instance.new("Frame")
+    local KeybindBox = Instance.new("TextButton")  -- Изменено на TextButton для кликабельности
     KeybindBox.Name = "KeybindBox"
     KeybindBox.Size = UDim2.fromOffset(14, 14)  -- Точный размер из LibraryMarch
     KeybindBox.Position = UDim2.new(1, -35, 0.5, 0)
     KeybindBox.AnchorPoint = Vector2.new(0, 0.5)
     KeybindBox.BackgroundColor3 = Color3.fromRGB(152, 181, 255)
     KeybindBox.BorderSizePixel = 0
+    KeybindBox.Text = ""  -- Пустой текст для TextButton
+    KeybindBox.AutoButtonColor = false  -- Отключаем автоматическое изменение цвета
     KeybindBox.Parent = Keybind.Element
     
     local KeybindCorner = Instance.new("UICorner")
@@ -3176,13 +3185,12 @@ function Library:AddKeybind(module, config)
     end
     
     -- Обработка клика для установки клавиши (LMB)
-    KeybindBox.InputBegan:Connect(function(input, gameProcessed)
-        if gameProcessed then return end
-        if input.UserInputType ~= Enum.UserInputType.MouseButton1 then return end  -- LMB
+    KeybindBox.MouseButton1Click:Connect(function()
         if Keybind.Listening then return end
         
         Keybind.Listening = true
         KeybindLabel.Text = "..."
+        autoSizeBox("...")
         
         local connection
         connection = UserInputService.InputBegan:Connect(function(keyInput, processed)
