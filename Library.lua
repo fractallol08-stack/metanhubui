@@ -1623,52 +1623,27 @@ function Library:ShowSettingsPanel(module)
         self.SettingsGroup.ZIndex = 11
         self.SettingsGroup.Parent = self.SettingsPanel
 
-        -- Фоновая панель для элементов (красивый дизайн)
+        -- Фоновая панель для элементов (как у модулей)
         local SettingsBackground = Instance.new("Frame")
         SettingsBackground.Name = "SettingsBackground"
         SettingsBackground.Size = UDim2.new(0, 260, 0, 445)
         SettingsBackground.Position = UDim2.new(0, 10, 0, 45)
-        SettingsBackground.BackgroundColor3 = Color3.fromRGB(18, 22, 30)  -- Темнее
-        SettingsBackground.BackgroundTransparency = 0.3  -- Менее прозрачный
+        SettingsBackground.BackgroundColor3 = Color3.fromRGB(22, 28, 38)  -- Как у модулей
+        SettingsBackground.BackgroundTransparency = 0.5  -- Как у модулей
         SettingsBackground.BorderSizePixel = 0
         SettingsBackground.ZIndex = 10
         SettingsBackground.Parent = self.SettingsGroup
         
         local SettingsBgCorner = Instance.new("UICorner")
-        SettingsBgCorner.CornerRadius = UDim.new(0, 8)  -- Больше скругление
+        SettingsBgCorner.CornerRadius = UDim.new(0, 5)  -- Как у модулей
         SettingsBgCorner.Parent = SettingsBackground
         
-        -- Двойная обводка для глубины
         local SettingsBgStroke = Instance.new("UIStroke")
-        SettingsBgStroke.Color = Color3.fromRGB(152, 181, 255)  -- Accent цвет
+        SettingsBgStroke.Color = Color3.fromRGB(52, 66, 89)  -- Как у модулей
         SettingsBgStroke.Thickness = 1
-        SettingsBgStroke.Transparency = 0.85  -- Тонкая accent обводка
+        SettingsBgStroke.Transparency = 0.5  -- Как у модулей
         SettingsBgStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
         SettingsBgStroke.Parent = SettingsBackground
-        
-        -- Градиент для фона
-        local SettingsBgGradient = Instance.new("UIGradient")
-        SettingsBgGradient.Color = ColorSequence.new{
-            ColorSequenceKeypoint.new(0, Color3.fromRGB(25, 30, 40)),
-            ColorSequenceKeypoint.new(1, Color3.fromRGB(15, 18, 25))
-        }
-        SettingsBgGradient.Rotation = 45
-        SettingsBgGradient.Parent = SettingsBackground
-        
-        -- Внутренняя тень (эффект глубины)
-        local InnerShadow = Instance.new("Frame")
-        InnerShadow.Name = "InnerShadow"
-        InnerShadow.Size = UDim2.new(1, -4, 1, -4)
-        InnerShadow.Position = UDim2.new(0, 2, 0, 2)
-        InnerShadow.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-        InnerShadow.BackgroundTransparency = 0.7
-        InnerShadow.BorderSizePixel = 0
-        InnerShadow.ZIndex = 10
-        InnerShadow.Parent = SettingsBackground
-        
-        local InnerShadowCorner = Instance.new("UICorner")
-        InnerShadowCorner.CornerRadius = UDim.new(0, 7)
-        InnerShadowCorner.Parent = InnerShadow
         
         -- Контейнер для компонентов
         self.SettingsContent = Instance.new("ScrollingFrame")
