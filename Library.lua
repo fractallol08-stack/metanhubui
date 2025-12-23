@@ -1167,14 +1167,14 @@ function Library:CreateModule(tab, config)
     Header.AutoButtonColor = false
     Header.Parent = Module.Frame
     
-    -- Иконка шестеренки для открытия настроек
+    -- Иконка слева внизу (оставляем старую)
     local Icon = Instance.new("ImageLabel")
     Icon.Name = "Icon"
     Icon.Size = UDim2.new(0, 15, 0, 15)
     Icon.Position = UDim2.new(0.071, 0, 0.82, 0)
     Icon.AnchorPoint = Vector2.new(0, 0.5)
     Icon.BackgroundTransparency = 1
-    Icon.Image = "rbxassetid://10734950309"  -- Иконка шестеренки
+    Icon.Image = "rbxassetid://79095934438045"  -- Старая иконка
     Icon.ImageColor3 = Color3.fromRGB(152, 181, 255)
     Icon.ImageTransparency = 0.7
     Icon.ScaleType = Enum.ScaleType.Fit
@@ -1210,33 +1210,18 @@ function Library:CreateModule(tab, config)
     Description.TextXAlignment = Enum.TextXAlignment.Left
     Description.Parent = Header
     
-    -- Toggle переключатель
-    local Toggle = Instance.new("Frame")
-    Toggle.Name = "Toggle"
-    Toggle.Size = UDim2.new(0, 25, 0, 12)
-    Toggle.Position = UDim2.new(0.82, 0, 0.757, 0)  -- Точная позиция как в LibraryMarch (для 93px)
-    Toggle.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-    Toggle.BackgroundTransparency = 0.7
-    Toggle.BorderSizePixel = 0
-    Toggle.Parent = Header
-    
-    local ToggleCorner = Instance.new("UICorner")
-    ToggleCorner.CornerRadius = UDim.new(1, 0)
-    ToggleCorner.Parent = Toggle
-    
-    local Circle = Instance.new("Frame")
-    Circle.Name = "Circle"
-    Circle.Size = UDim2.new(0, 12, 0, 12)
-    Circle.Position = UDim2.new(0, 0, 0.5, 0)
-    Circle.AnchorPoint = Vector2.new(0, 0.5)
-    Circle.BackgroundColor3 = Color3.fromRGB(66, 80, 115)
-    Circle.BackgroundTransparency = 0.2
-    Circle.BorderSizePixel = 0
-    Circle.Parent = Toggle
-    
-    local CircleCorner = Instance.new("UICorner")
-    CircleCorner.CornerRadius = UDim.new(1, 0)
-    CircleCorner.Parent = Circle
+    -- Шестеренка вместо Toggle (справа внизу)
+    local SettingsIcon = Instance.new("ImageLabel")
+    SettingsIcon.Name = "SettingsIcon"
+    SettingsIcon.Size = UDim2.new(0, 15, 0, 15)
+    SettingsIcon.Position = UDim2.new(0.88, 0, 0.82, 0)  -- Справа внизу
+    SettingsIcon.AnchorPoint = Vector2.new(0.5, 0.5)
+    SettingsIcon.BackgroundTransparency = 1
+    SettingsIcon.Image = "rbxassetid://10734950309"  -- Иконка шестеренки
+    SettingsIcon.ImageColor3 = Color3.fromRGB(152, 181, 255)
+    SettingsIcon.ImageTransparency = 0.7
+    SettingsIcon.ScaleType = Enum.ScaleType.Fit
+    SettingsIcon.Parent = Header
 
     if moduleKeybindEnabled then
         local LibraryInstance = self
@@ -1279,7 +1264,7 @@ function Library:CreateModule(tab, config)
                 Enum.Font.GothamSemibold,
                 Vector2.new(1000, 13)
             )
-            local newWidth = math.clamp(textSize.X + 8, 33, 70)
+            local newWidth = math.clamp(textSize.X + 8, 25, 70)  -- Минимум 25px вместо 33px
             Keybind.Size = UDim2.new(0, newWidth, 0, 15)
             KeybindLabel.Size = UDim2.new(1, 0, 1, 0)
         end
@@ -1637,27 +1622,52 @@ function Library:ShowSettingsPanel(module)
         self.SettingsGroup.ZIndex = 11
         self.SettingsGroup.Parent = self.SettingsPanel
 
-        -- Фоновая панель для элементов (как модуль)
+        -- Фоновая панель для элементов (красивый дизайн)
         local SettingsBackground = Instance.new("Frame")
         SettingsBackground.Name = "SettingsBackground"
         SettingsBackground.Size = UDim2.new(0, 260, 0, 445)
         SettingsBackground.Position = UDim2.new(0, 10, 0, 45)
-        SettingsBackground.BackgroundColor3 = Color3.fromRGB(22, 28, 38)
-        SettingsBackground.BackgroundTransparency = 0.5
+        SettingsBackground.BackgroundColor3 = Color3.fromRGB(18, 22, 30)  -- Темнее
+        SettingsBackground.BackgroundTransparency = 0.3  -- Менее прозрачный
         SettingsBackground.BorderSizePixel = 0
         SettingsBackground.ZIndex = 10
         SettingsBackground.Parent = self.SettingsGroup
         
         local SettingsBgCorner = Instance.new("UICorner")
-        SettingsBgCorner.CornerRadius = UDim.new(0, 5)
+        SettingsBgCorner.CornerRadius = UDim.new(0, 8)  -- Больше скругление
         SettingsBgCorner.Parent = SettingsBackground
         
+        -- Двойная обводка для глубины
         local SettingsBgStroke = Instance.new("UIStroke")
-        SettingsBgStroke.Color = Color3.fromRGB(52, 66, 89)
+        SettingsBgStroke.Color = Color3.fromRGB(152, 181, 255)  -- Accent цвет
         SettingsBgStroke.Thickness = 1
-        SettingsBgStroke.Transparency = 0.5
+        SettingsBgStroke.Transparency = 0.85  -- Тонкая accent обводка
         SettingsBgStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
         SettingsBgStroke.Parent = SettingsBackground
+        
+        -- Градиент для фона
+        local SettingsBgGradient = Instance.new("UIGradient")
+        SettingsBgGradient.Color = ColorSequence.new{
+            ColorSequenceKeypoint.new(0, Color3.fromRGB(25, 30, 40)),
+            ColorSequenceKeypoint.new(1, Color3.fromRGB(15, 18, 25))
+        }
+        SettingsBgGradient.Rotation = 45
+        SettingsBgGradient.Parent = SettingsBackground
+        
+        -- Внутренняя тень (эффект глубины)
+        local InnerShadow = Instance.new("Frame")
+        InnerShadow.Name = "InnerShadow"
+        InnerShadow.Size = UDim2.new(1, -4, 1, -4)
+        InnerShadow.Position = UDim2.new(0, 2, 0, 2)
+        InnerShadow.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+        InnerShadow.BackgroundTransparency = 0.7
+        InnerShadow.BorderSizePixel = 0
+        InnerShadow.ZIndex = 10
+        InnerShadow.Parent = SettingsBackground
+        
+        local InnerShadowCorner = Instance.new("UICorner")
+        InnerShadowCorner.CornerRadius = UDim.new(0, 7)
+        InnerShadowCorner.Parent = InnerShadow
         
         -- Контейнер для компонентов
         self.SettingsContent = Instance.new("ScrollingFrame")
