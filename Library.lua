@@ -144,7 +144,7 @@ function Library.new(config)
     local self = setmetatable({}, Library)
     
     config = config or {}
-    self.Title = config.Title or "March UI"
+    self.Title = config.Title or "Metan"  -- ИСПРАВЛЕНИЕ: Название по умолчанию
     self.ConfigName = config.ConfigName or game.GameId
     
     self.Config = ConfigManager.new()
@@ -339,44 +339,24 @@ function Library:ToggleCollapse(forceState)
     self.Collapsed = target
 
     if self.Collapsed then
+        -- ИСПРАВЛЕНИЕ: Мгновенное скрытие всех элементов
+        self.MainFrame.Visible = false
         if self.SettingsPanel then
             self.SettingsPanel.Visible = false
         end
-
         if self.Watermark then
             self.Watermark.Visible = true
         end
-
-        -- ИСПРАВЛЕНИЕ: Анимация сжатия со всех сторон (AnchorPoint в центре)
-        self.MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
-        self.MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)  -- По центру экрана
-        
-        local goal = {
-            Size = self:GetCollapsedSize()
-        }
-        self._collapseTween = TweenService:Create(self.MainFrame, TweenInfo.new(0.45, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), goal)
-        self._collapseTween:Play()
-        self._collapseTween.Completed:Once(function()
-            if self.Collapsed then
-                self.MainFrame.Visible = false
-            end
-        end)
     else
+        -- ИСПРАВЛЕНИЕ: Мгновенное показ всех элементов
         self.MainFrame.Visible = true
         if self.Watermark then
             self.Watermark.Visible = false
         end
-
-        -- ИСПРАВЛЕНИЕ: Анимация расширения со всех сторон
-        self.MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
-        self.MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)  -- По центру экрана
-        self.MainFrame.Size = self:GetCollapsedSize()
-        
-        local goal = {
-            Size = self:GetMainSize()
-        }
-        self._collapseTween = TweenService:Create(self.MainFrame, TweenInfo.new(0.45, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), goal)
-        self._collapseTween:Play()
+        -- Восстанавливаем панель настроек если модуль был открыт
+        if self.CurrentModule and self.SettingsPanel then
+            self.SettingsPanel.Visible = true
+        end
     end
 end
 
@@ -439,11 +419,11 @@ function Library:CreateUI()
     TitleIcon.Parent = TitleBar
     self._titleIcon = TitleIcon
     
-    -- ИСПРАВЛЕНИЕ: Название GUI по центру между иконкой и разделителем
+    -- ИСПРАВЛЕНИЕ: Название GUI чуть выше и по центру
     local TitleLabel = Instance.new("TextLabel")
     TitleLabel.Name = "ClientName"
-    TitleLabel.Size = UDim2.new(0, 129, 0, 13)  -- Ширина до разделителя (164px)
-    TitleLabel.Position = UDim2.new(0, 0, 0, 26)
+    TitleLabel.Size = UDim2.new(0, 129, 0, 13)
+    TitleLabel.Position = UDim2.new(0, 0, 0, 22)  -- Чуть выше (было 26)
     TitleLabel.AnchorPoint = Vector2.new(0, 0.5)
     TitleLabel.BackgroundTransparency = 1
     TitleLabel.Text = self.Title
@@ -451,7 +431,7 @@ function Library:CreateUI()
     TitleLabel.TextTransparency = 0.2
     TitleLabel.TextSize = 13
     TitleLabel.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
-    TitleLabel.TextXAlignment = Enum.TextXAlignment.Center  -- По центру
+    TitleLabel.TextXAlignment = Enum.TextXAlignment.Center
     TitleLabel.Parent = TitleBar
     self._titleLabel = TitleLabel
     
@@ -510,20 +490,21 @@ function Library:CreateUI()
     }
     TitleGradient.Parent = TitleLabel
 
-    -- ИСПРАВЛЕНИЕ: Разделитель под названием GUI на всю ширину
+    -- ИСПРАВЛЕНИЕ: Разделитель под названием GUI правильная ширина
     local TitleDivider = Instance.new("Frame")
     TitleDivider.Name = "TitleDivider"
-    TitleDivider.Size = UDim2.new(0, 164, 0, 1)  -- Полная ширина левой панели
+    TitleDivider.Size = UDim2.new(0, 129, 0, 1)  -- Ширина как у TabContainer
     TitleDivider.Position = UDim2.new(0, 0, 0, 40)
     TitleDivider.BackgroundColor3 = Color3.fromRGB(52, 66, 89)
     TitleDivider.BackgroundTransparency = 0.5
     TitleDivider.BorderSizePixel = 0
     TitleDivider.Parent = self.MainFrame
 
+    -- ИСПРАВЛЕНИЕ: Watermark по центру экрана
     self.Watermark = Instance.new("Frame")
     self.Watermark.Name = "Watermark"
     self.Watermark.Size = UDim2.new(0, 360, 0, 30)
-    self.Watermark.Position = UDim2.new(0, 10, 0, 10)
+    self.Watermark.Position = UDim2.new(0.5, -180, 0, 10)  -- По центру экрана (0.5 - половина ширины)
     self.Watermark.BackgroundColor3 = self._themeBg
     self.Watermark.BackgroundTransparency = 0.05
     self.Watermark.BorderSizePixel = 0
@@ -607,10 +588,10 @@ function Library:CreateUI()
     self.SystemTabContainer.BorderSizePixel = 0
     self.SystemTabContainer.Parent = self.MainFrame
 
-    -- ИСПРАВЛЕНИЕ: Разделитель над UI SETTINGS на всю ширину (как под названием GUI)
+    -- ИСПРАВЛЕНИЕ: Разделитель над UI SETTINGS правильная позиция
     local SystemDivider = Instance.new("Frame")
     SystemDivider.Name = "SystemDivider"
-    SystemDivider.Size = UDim2.new(0, 164, 0, 1)  -- Полная ширина как TitleDivider
+    SystemDivider.Size = UDim2.new(0, 129, 0, 1)  -- Ширина как у TabContainer
     SystemDivider.Position = UDim2.new(0, 0, 0, -4)
     SystemDivider.BackgroundColor3 = self._themeStroke
     SystemDivider.BackgroundTransparency = 0.5
@@ -862,15 +843,18 @@ function Library:SetupToggle()
         
         if input.KeyCode == self.ToggleKey then
             local wasVisible = self.MainFrame.Visible
+            
+            -- ИСПРАВЛЕНИЕ: Мгновенное переключение без анимаций
             self.MainFrame.Visible = not wasVisible
             
-            -- ИСПРАВЛЕНИЕ: Сохраняем состояние панели настроек при переключении
-            if self.SettingsPanel and self.CurrentModule then
-                if self.MainFrame.Visible then
-                    -- Восстанавливаем панель если она была открыта
+            if not wasVisible then
+                -- Открываем GUI - восстанавливаем панель настроек если модуль был открыт
+                if self.CurrentModule and self.SettingsPanel then
                     self.SettingsPanel.Visible = true
-                else
-                    -- Скрываем панель вместе с главным окном
+                end
+            else
+                -- Закрываем GUI - скрываем панель настроек
+                if self.SettingsPanel then
                     self.SettingsPanel.Visible = false
                 end
             end
@@ -1050,20 +1034,16 @@ function Library:CreateTab(name, icon, opts)
         self:SelectTab(Tab)
     end)
     
-    -- Hover эффект - только для неактивных табов
+    -- ИСПРАВЛЕНИЕ: Убраны hover анимации для табов
     Tab.Button.MouseEnter:Connect(function()
         if not Tab.Active then
-            TweenService:Create(Tab.Button, TweenInfo.new(0.2), {
-                BackgroundTransparency = 0.7
-            }):Play()
+            Tab.Button.BackgroundTransparency = 0.7
         end
     end)
     
     Tab.Button.MouseLeave:Connect(function()
         if not Tab.Active then
-            TweenService:Create(Tab.Button, TweenInfo.new(0.2), {
-                BackgroundTransparency = 1
-            }):Play()
+            Tab.Button.BackgroundTransparency = 1
         end
     end)
     
@@ -1085,7 +1065,7 @@ function Library:CreateTab(name, icon, opts)
 end
 
 function Library:SelectTab(tab)
-    -- Деактивируем все табы
+    -- ИСПРАВЛЕНИЕ: Убраны все анимации, мгновенное переключение
     for _, t in ipairs(self.Tabs) do
         t.Active = false
         t.Container.Visible = false
@@ -1093,78 +1073,61 @@ function Library:SelectTab(tab)
             t.SearchContainer.Visible = false
         end
         
-        -- Возвращаем неактивный стиль
-        TweenService:Create(t.Button, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-            BackgroundTransparency = 1
-        }):Play()
+        -- Мгновенно возвращаем неактивный стиль
+        t.Button.BackgroundTransparency = 1
         
         local label = t.Button:FindFirstChildOfClass("TextLabel")
         if label then
-            TweenService:Create(label, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-                TextTransparency = 0.7,
-                TextColor3 = Color3.fromRGB(255, 255, 255)
-            }):Play()
+            label.TextTransparency = 0.7
+            label.TextColor3 = Color3.fromRGB(255, 255, 255)
             
             local gradient = label:FindFirstChildOfClass("UIGradient")
             if gradient then
-                TweenService:Create(gradient, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-                    Offset = Vector2.new(0, 0)
-                }):Play()
+                gradient.Offset = Vector2.new(0, 0)
             end
         end
         
         local icon = t.Button:FindFirstChildOfClass("ImageLabel")
         if icon then
-            TweenService:Create(icon, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-                ImageTransparency = 0.8,
-                ImageColor3 = Color3.fromRGB(255, 255, 255)
-            }):Play()
+            icon.ImageTransparency = 0.8
+            icon.ImageColor3 = Color3.fromRGB(255, 255, 255)
         end
     end
     
-    -- Активируем выбранный таб
+    -- Мгновенно активируем выбранный таб
     tab.Active = true
     tab.Container.Visible = true
     if tab.SearchContainer then
         tab.SearchContainer.Visible = true
     end
     
-    TweenService:Create(tab.Button, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-        BackgroundTransparency = 0.5
-    }):Play()
+    tab.Button.BackgroundTransparency = 0.5
     
     local label = tab.Button:FindFirstChildOfClass("TextLabel")
     if label then
-        TweenService:Create(label, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-            TextTransparency = 0.2,
-            TextColor3 = self._themeAccent
-        }):Play()
+        label.TextTransparency = 0.2
+        label.TextColor3 = self._themeAccent
         
         local gradient = label:FindFirstChildOfClass("UIGradient")
         if gradient then
-            TweenService:Create(gradient, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-                Offset = Vector2.new(1, 0)
-            }):Play()
+            gradient.Offset = Vector2.new(1, 0)
         end
     end
     
     local icon = tab.Button:FindFirstChildOfClass("ImageLabel")
     if icon then
-        TweenService:Create(icon, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-            ImageTransparency = 0.2,
-            ImageColor3 = self._themeAccent
-        }):Play()
+        icon.ImageTransparency = 0.2
+        icon.ImageColor3 = self._themeAccent
     end
     
+    -- Мгновенно перемещаем Pin
     if self.TabPin and tab.Button then
         local mainAbs = self.MainFrame.AbsolutePosition
         local btnAbs = tab.Button.AbsolutePosition
         local btnSize = tab.Button.AbsoluteSize
         local targetY = (btnAbs.Y - mainAbs.Y) + math.floor((btnSize.Y - self.TabPin.AbsoluteSize.Y) / 2)
-
-        TweenService:Create(self.TabPin, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-            Position = UDim2.new(self.TabPin.Position.X.Scale, self.TabPin.Position.X.Offset, 0, targetY)
-        }):Play()
+        
+        self.TabPin.Position = UDim2.new(self.TabPin.Position.X.Scale, self.TabPin.Position.X.Offset, 0, targetY)
     end
     
     self.CurrentTab = tab
@@ -1197,11 +1160,12 @@ function Library:CreateModule(tab, config)
     FrameCorner.CornerRadius = UDim.new(0, 5)
     FrameCorner.Parent = Module.Frame
     
+    -- ИСПРАВЛЕНИЕ: Обводка модуля без обрезания
     local FrameStroke = Instance.new("UIStroke")
     FrameStroke.Color = Color3.fromRGB(52, 66, 89)
     FrameStroke.Thickness = 1
     FrameStroke.Transparency = 0.5
-    FrameStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    FrameStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Contextual  -- Не обрезается
     FrameStroke.Parent = Module.Frame
     
     -- Заголовок модуля (Header)
@@ -1359,10 +1323,17 @@ function Library:CreateModule(tab, config)
                 self.KeybindConnection = UserInputService.InputBegan:Connect(function(input, gameProcessed)
                     if gameProcessed then return end
                     if input.KeyCode == keyCode then
+                        print("=== КЕЙБИНД МОДУЛЯ НАЖАТ ===")
+                        print("Клавиша:", keyCode.Name)
+                        print("Модуль:", Module.Name)
+                        print("Текущий модуль:", LibraryInstance.CurrentModule and LibraryInstance.CurrentModule.Name or "nil")
+                        
                         -- Открываем/закрываем панель настроек модуля
                         if LibraryInstance.CurrentModule == Module and LibraryInstance.SettingsPanel and LibraryInstance.SettingsPanel.Visible then
+                            print("Закрываем панель")
                             LibraryInstance:HideSettingsPanel()
                         else
+                            print("Открываем панель")
                             LibraryInstance:ShowSettingsPanel(Module)
                         end
                     end
@@ -1458,17 +1429,13 @@ function Library:CreateModule(tab, config)
         end
     end)
     
-    -- Hover эффект
+    -- ИСПРАВЛЕНИЕ: Убраны hover анимации
     Header.MouseEnter:Connect(function()
-        TweenService:Create(Module.Frame, TweenInfo.new(0.2), {
-            BackgroundColor3 = Color3.fromRGB(32, 38, 51)
-        }):Play()
+        Module.Frame.BackgroundColor3 = Color3.fromRGB(32, 38, 51)
     end)
     
     Header.MouseLeave:Connect(function()
-        TweenService:Create(Module.Frame, TweenInfo.new(0.2), {
-            BackgroundColor3 = Color3.fromRGB(22, 28, 38)
-        }):Play()
+        Module.Frame.BackgroundColor3 = Color3.fromRGB(22, 28, 38)
     end)
     
     table.insert(tab.Modules, Module)
@@ -1497,6 +1464,8 @@ function Library:CreateModule(tab, config)
             return function(_, ...) return self:AddColorPicker(Module, ...) end
         elseif k == "AddKeybind" then
             return function(_, ...) return self:AddKeybind(Module, ...) end
+        elseif k == "AddButton" then
+            return function(_, ...) return self:AddButton(Module, ...) end
         elseif k == "AddLabel" then
             return function(_, ...) return self:AddLabel(Module, ...) end
         elseif k == "AddSection" then
@@ -1533,25 +1502,25 @@ function Library:ShowSettingsPanel(module)
     PanelStroke.Parent = self.SettingsPanel
     self._settingsPanelStroke = PanelStroke
         
-        -- Иконка панели
+        -- ИСПРАВЛЕНИЕ: Иконка шестеренки для панели настроек
         local PanelIcon = Instance.new("ImageLabel")
         PanelIcon.Name = "Icon"
         PanelIcon.Size = UDim2.new(0, 18, 0, 18)
-        PanelIcon.Position = UDim2.new(0, 18, 0, 26)
+        PanelIcon.Position = UDim2.new(0, 18, 0, 22)  -- Чуть выше (было 26)
         PanelIcon.AnchorPoint = Vector2.new(0, 0.5)
         PanelIcon.BackgroundTransparency = 1
-        PanelIcon.Image = "rbxassetid://107819132007001"
+        PanelIcon.Image = "rbxassetid://10734950309"  -- Иконка шестеренки
         PanelIcon.ImageColor3 = self._themeAccent
         PanelIcon.ScaleType = Enum.ScaleType.Fit
         PanelIcon.ZIndex = 11
         PanelIcon.Parent = self.SettingsPanel
         self._settingsPanelIcon = PanelIcon
         
-        -- ИСПРАВЛЕНИЕ: Заголовок панели по центру между иконкой и кнопкой закрытия
+        -- ИСПРАВЛЕНИЕ: Заголовок панели чуть выше и по центру
         local PanelTitle = Instance.new("TextLabel")
         PanelTitle.Name = "PanelTitle"
-        PanelTitle.Size = UDim2.new(0, 280, 0, 13)  -- Полная ширина панели
-        PanelTitle.Position = UDim2.new(0, 0, 0, 26)
+        PanelTitle.Size = UDim2.new(0, 280, 0, 13)
+        PanelTitle.Position = UDim2.new(0, 0, 0, 22)  -- Чуть выше (было 26)
         PanelTitle.AnchorPoint = Vector2.new(0, 0.5)
         PanelTitle.BackgroundTransparency = 1
         PanelTitle.Text = "Settings"
@@ -1559,7 +1528,7 @@ function Library:ShowSettingsPanel(module)
         PanelTitle.TextTransparency = 0.2
         PanelTitle.TextSize = 13
         PanelTitle.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
-        PanelTitle.TextXAlignment = Enum.TextXAlignment.Center  -- По центру
+        PanelTitle.TextXAlignment = Enum.TextXAlignment.Center
         PanelTitle.ZIndex = 11
         PanelTitle.Parent = self.SettingsPanel
         self._settingsPanelTitle = PanelTitle
@@ -1606,13 +1575,13 @@ function Library:ShowSettingsPanel(module)
             end
         end)
         
-        -- ИСПРАВЛЕНИЕ #4: Кнопка закрытия панели настроек (синий кружок как в главной GUI)
+        -- ИСПРАВЛЕНИЕ: Кнопка закрытия панели чуть выше
         local CloseButton = Instance.new("TextButton")
         CloseButton.Name = "CloseButton"
-        CloseButton.Size = UDim2.new(0, 12, 0, 12)  -- Размер как в главной GUI
-        CloseButton.Position = UDim2.new(1, -20, 0, 26)  -- На одной высоте с заголовком
+        CloseButton.Size = UDim2.new(0, 12, 0, 12)
+        CloseButton.Position = UDim2.new(1, -20, 0, 22)  -- Чуть выше (было 26)
         CloseButton.AnchorPoint = Vector2.new(0.5, 0.5)
-        CloseButton.BackgroundColor3 = self._themeAccent  -- Синий цвет
+        CloseButton.BackgroundColor3 = self._themeAccent
         CloseButton.BorderSizePixel = 0
         CloseButton.Text = ""
         CloseButton.AutoButtonColor = false
@@ -2919,6 +2888,76 @@ function Library:AddColorPicker(module, config)
     return ColorPicker
 end
 
+-- Компонент: Button (кнопка действия)
+function Library:AddButton(module, config)
+    config = config or {}
+    local name = config.Name or "Button"
+    local callback = config.Callback or function() end
+    
+    local Button = {}
+    
+    -- Контейнер (точно как в LibraryMarch)
+    Button.Element = Instance.new("TextButton")
+    Button.Element.Name = name
+    Button.Element.Size = UDim2.new(0, 207, 0, 22)  -- Размер как у других элементов
+    Button.Element.BackgroundColor3 = Color3.fromRGB(152, 181, 255)
+    Button.Element.BackgroundTransparency = 0.85
+    Button.Element.BorderSizePixel = 0
+    Button.Element.Text = ""
+    Button.Element.AutoButtonColor = false
+    
+    local ButtonCorner = Instance.new("UICorner")
+    ButtonCorner.CornerRadius = UDim.new(0, 4)
+    ButtonCorner.Parent = Button.Element
+    
+    -- Название кнопки
+    local ButtonLabel = Instance.new("TextLabel")
+    ButtonLabel.Size = UDim2.new(1, -20, 1, 0)
+    ButtonLabel.Position = UDim2.new(0.5, 0, 0.5, 0)
+    ButtonLabel.AnchorPoint = Vector2.new(0.5, 0.5)
+    ButtonLabel.BackgroundTransparency = 1
+    ButtonLabel.Text = name
+    ButtonLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    ButtonLabel.TextTransparency = 0.2
+    ButtonLabel.TextSize = 11
+    ButtonLabel.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
+    ButtonLabel.TextXAlignment = Enum.TextXAlignment.Center
+    ButtonLabel.Parent = Button.Element
+    
+    -- Обработчик клика
+    Button.Element.MouseButton1Click:Connect(function()
+        -- Визуальная обратная связь
+        TweenService:Create(Button.Element, TweenInfo.new(0.1), {
+            BackgroundTransparency = 0.7
+        }):Play()
+        
+        task.wait(0.1)
+        
+        TweenService:Create(Button.Element, TweenInfo.new(0.1), {
+            BackgroundTransparency = 0.85
+        }):Play()
+        
+        -- Вызываем callback
+        callback()
+    end)
+    
+    -- Hover эффект
+    Button.Element.MouseEnter:Connect(function()
+        TweenService:Create(Button.Element, TweenInfo.new(0.2), {
+            BackgroundTransparency = 0.75
+        }):Play()
+    end)
+    
+    Button.Element.MouseLeave:Connect(function()
+        TweenService:Create(Button.Element, TweenInfo.new(0.2), {
+            BackgroundTransparency = 0.85
+        }):Play()
+    end)
+    
+    table.insert(module.Components, Button)
+    return Button
+end
+
 -- Компонент: Keybind (привязка клавиш)
 function Library:AddKeybind(module, config)
     config = config or {}
@@ -3190,6 +3229,120 @@ function Library:AddDivider(module)
     
     table.insert(module.Components, Divider)
     return Divider
+end
+
+-- Функция отправки уведомлений
+function Library.SendNotification(config)
+    config = config or {}
+    local title = config.title or "Notification"
+    local text = config.text or ""
+    local duration = config.duration or 3
+    
+    -- Создаем контейнер для уведомлений если его нет
+    local NotificationContainer = CoreGui:FindFirstChild("MarchNotifications")
+    if not NotificationContainer then
+        NotificationContainer = Instance.new("ScreenGui")
+        NotificationContainer.Name = "MarchNotifications"
+        NotificationContainer.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+        NotificationContainer.ResetOnSpawn = false
+        NotificationContainer.Parent = CoreGui
+    end
+    
+    -- Создаем уведомление
+    local Notification = Instance.new("Frame")
+    Notification.Name = "Notification"
+    Notification.Size = UDim2.new(0, 300, 0, 80)
+    Notification.Position = UDim2.new(1, -310, 1, 10)  -- Начинаем снизу справа, за экраном
+    Notification.BackgroundColor3 = Color3.fromRGB(12, 13, 15)
+    Notification.BackgroundTransparency = 0.05
+    Notification.BorderSizePixel = 0
+    Notification.Parent = NotificationContainer
+    
+    local NotifCorner = Instance.new("UICorner")
+    NotifCorner.CornerRadius = UDim.new(0, 10)
+    NotifCorner.Parent = Notification
+    
+    local NotifStroke = Instance.new("UIStroke")
+    NotifStroke.Color = Color3.fromRGB(52, 66, 89)
+    NotifStroke.Thickness = 1
+    NotifStroke.Transparency = 0.5
+    NotifStroke.Parent = Notification
+    
+    -- Заголовок
+    local Title = Instance.new("TextLabel")
+    Title.Size = UDim2.new(1, -20, 0, 20)
+    Title.Position = UDim2.new(0, 10, 0, 10)
+    Title.BackgroundTransparency = 1
+    Title.Text = title
+    Title.TextColor3 = Color3.fromRGB(152, 181, 255)
+    Title.TextTransparency = 0.2
+    Title.TextSize = 13
+    Title.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
+    Title.TextXAlignment = Enum.TextXAlignment.Left
+    Title.Parent = Notification
+    
+    -- Текст
+    local Text = Instance.new("TextLabel")
+    Text.Size = UDim2.new(1, -20, 0, 40)
+    Text.Position = UDim2.new(0, 10, 0, 30)
+    Text.BackgroundTransparency = 1
+    Text.Text = text
+    Text.TextColor3 = Color3.fromRGB(200, 200, 200)
+    Text.TextTransparency = 0.3
+    Text.TextSize = 11
+    Text.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+    Text.TextXAlignment = Enum.TextXAlignment.Left
+    Text.TextYAlignment = Enum.TextYAlignment.Top
+    Text.TextWrapped = true
+    Text.Parent = Notification
+    
+    -- Подсчитываем количество уведомлений и сдвигаем их вверх
+    local notifCount = 0
+    for _, child in ipairs(NotificationContainer:GetChildren()) do
+        if child:IsA("Frame") and child ~= Notification then
+            notifCount = notifCount + 1
+            -- Сдвигаем существующие уведомления вверх
+            TweenService:Create(child, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+                Position = UDim2.new(1, -310, 1, -10 - (90 * (notifCount)))
+            }):Play()
+        end
+    end
+    
+    -- Анимация появления
+    local targetY = -10 - (90 * notifCount)
+    TweenService:Create(Notification, TweenInfo.new(0.4, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+        Position = UDim2.new(1, -310, 1, targetY)
+    }):Play()
+    
+    -- Автоматическое удаление
+    task.delay(duration, function()
+        -- Анимация исчезновения
+        TweenService:Create(Notification, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+            Position = UDim2.new(1, -310, 1, 10),
+            BackgroundTransparency = 1
+        }):Play()
+        
+        TweenService:Create(Title, TweenInfo.new(0.3), {TextTransparency = 1}):Play()
+        TweenService:Create(Text, TweenInfo.new(0.3), {TextTransparency = 1}):Play()
+        TweenService:Create(NotifStroke, TweenInfo.new(0.3), {Transparency = 1}):Play()
+        
+        task.wait(0.3)
+        Notification:Destroy()
+        
+        -- Пересчитываем позиции оставшихся уведомлений
+        local remainingNotifs = {}
+        for _, child in ipairs(NotificationContainer:GetChildren()) do
+            if child:IsA("Frame") then
+                table.insert(remainingNotifs, child)
+            end
+        end
+        
+        for i, notif in ipairs(remainingNotifs) do
+            TweenService:Create(notif, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+                Position = UDim2.new(1, -310, 1, -10 - (90 * (i - 1)))
+            }):Play()
+        end
+    end)
 end
 
 -- Финальная функция - возвращаем библиотеку
