@@ -1672,8 +1672,8 @@ function Library:ShowSettingsPanel(module)
         -- Контейнер для компонентов
         self.SettingsContent = Instance.new("ScrollingFrame")
         self.SettingsContent.Name = "SettingsContent"
-        self.SettingsContent.Size = UDim2.new(0, 260, 0, 445)
-        self.SettingsContent.Position = UDim2.new(0, 10, 0, 45)
+        self.SettingsContent.Size = UDim2.new(0, 240, 0, 435)  -- Уменьшено для padding
+        self.SettingsContent.Position = UDim2.new(0, 20, 0, 50)  -- Сдвинуто для padding
         self.SettingsContent.BackgroundTransparency = 1
         self.SettingsContent.BorderSizePixel = 0
         self.SettingsContent.ScrollBarThickness = 0
@@ -1681,6 +1681,7 @@ function Library:ShowSettingsPanel(module)
         self.SettingsContent.CanvasSize = UDim2.new(0, 0, 0, 0)
         self.SettingsContent.AutomaticCanvasSize = Enum.AutomaticSize.Y
         self.SettingsContent.Selectable = false
+        self.SettingsContent.ClipsDescendants = false  -- ВАЖНО: Отключаем обрезку для дропдаунов
         self.SettingsContent.ZIndex = 11
         self.SettingsContent.Parent = self.SettingsGroup
         
@@ -1693,6 +1694,8 @@ function Library:ShowSettingsPanel(module)
         local ContentPadding = Instance.new("UIPadding")
         ContentPadding.PaddingTop = UDim.new(0, 8)
         ContentPadding.PaddingBottom = UDim.new(0, 10)
+        ContentPadding.PaddingLeft = UDim.new(0, 5)  -- Добавлен левый padding
+        ContentPadding.PaddingRight = UDim.new(0, 5)  -- Добавлен правый padding
         ContentPadding.Parent = self.SettingsContent
     end
 
