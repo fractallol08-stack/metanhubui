@@ -413,7 +413,7 @@ function Library:CreateUI()
     TitleIcon.Parent = TitleBar
     self._titleIcon = TitleIcon
     
-    -- ИСПРАВЛЕНИЕ: Название GUI ещё больше и левее от иконки
+    -- ИСПРАВЛЕНИЕ: Название GUI ещё больше и левее от иконки с Bold шрифтом
     local TitleLabel = Instance.new("TextLabel")
     TitleLabel.Name = "ClientName"
     TitleLabel.Size = UDim2.new(0, 120, 0, 18)  -- Увеличен размер
@@ -424,7 +424,7 @@ function Library:CreateUI()
     TitleLabel.TextColor3 = self._themeAccent
     TitleLabel.TextTransparency = 0.2
     TitleLabel.TextSize = 17  -- Увеличен с 15 до 17
-    TitleLabel.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
+    TitleLabel.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.Bold, Enum.FontStyle.Normal)  -- Bold вместо SemiBold
     TitleLabel.TextXAlignment = Enum.TextXAlignment.Left  -- Выравнивание по левому краю
     TitleLabel.Parent = TitleBar
     self._titleLabel = TitleLabel
