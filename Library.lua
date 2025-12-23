@@ -182,6 +182,7 @@ function Library.new(config)
     self.CurrentModule = nil
     self.ActiveColorPicker = nil
     self.SettingsPanelPosition = nil -- Сохраненная позиция панели
+    self.UIVisible = true  -- НОВОЕ: Отслеживание видимости UI для кейбиндов модулей
 
     self.Collapsed = false
     self.Watermark = nil
@@ -416,6 +417,47 @@ function Library:CreateUI()
     MainStroke.Transparency = 0.5
     MainStroke.Parent = self.MainFrame
     self._mainStroke = MainStroke
+    
+    -- НОВОЕ: Анимированный градиентный фон (как в SettingsPanel)
+    local MainGradientOverlay = Instance.new("Frame")
+    MainGradientOverlay.Name = "GradientOverlay"
+    MainGradientOverlay.Size = UDim2.new(1, 0, 1, 0)
+    MainGradientOverlay.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    MainGradientOverlay.BackgroundTransparency = 0.75
+    MainGradientOverlay.BorderSizePixel = 0
+    MainGradientOverlay.ZIndex = 0
+    MainGradientOverlay.Parent = self.MainFrame
+
+    local MainGradientCorner = Instance.new("UICorner")
+    MainGradientCorner.CornerRadius = UDim.new(0, 10)
+    MainGradientCorner.Parent = MainGradientOverlay
+
+    local MainGradient = Instance.new("UIGradient")
+    MainGradient.Color = ColorSequence.new{
+        ColorSequenceKeypoint.new(0, self._themeAccent),
+        ColorSequenceKeypoint.new(0.25, Color3.fromRGB(20, 25, 35)),
+        ColorSequenceKeypoint.new(0.5, self._themeAccent),
+        ColorSequenceKeypoint.new(0.75, Color3.fromRGB(20, 25, 35)),
+        ColorSequenceKeypoint.new(1, self._themeAccent)
+    }
+    MainGradient.Transparency = NumberSequence.new{
+        NumberSequenceKeypoint.new(0, 0.75),
+        NumberSequenceKeypoint.new(0.5, 0.5),
+        NumberSequenceKeypoint.new(1, 0.75)
+    }
+    MainGradient.Rotation = 0
+    MainGradient.Parent = MainGradientOverlay
+
+    -- Анимация вращения градиента
+    task.spawn(function()
+        while self.MainFrame and self.MainFrame.Parent do
+            for i = 0, 360 do
+                if not MainGradient or not MainGradient.Parent then break end
+                MainGradient.Rotation = i
+                task.wait(0.05)
+            end
+        end
+    end)
     
     -- Заголовок
     local TitleBar = Instance.new("Frame")
@@ -862,6 +904,7 @@ function Library:SetupToggle()
             
             -- ИСПРАВЛЕНИЕ: Мгновенное переключение без анимаций
             self.MainFrame.Visible = not wasVisible
+            self.UIVisible = not wasVisible  -- Отслеживаем видимость UI
             
             if not wasVisible then
                 -- Открываем GUI - восстанавливаем панель настроек если модуль был открыт
@@ -1001,7 +1044,7 @@ function Library:CreateTab(name, icon, opts)
     SearchInput.Position = UDim2.new(0, 35, 0, 0)
     SearchInput.BackgroundTransparency = 1
     SearchInput.Text = ""
-    SearchInput.PlaceholderText = "Search modules..."
+    SearchInput.PlaceholderText = "Enter function name . . ."  -- ОБНОВЛЕНО: Новый placeholder
     SearchInput.TextColor3 = Color3.fromRGB(255, 255, 255)
     SearchInput.PlaceholderColor3 = Color3.fromRGB(170, 170, 170)
     SearchInput.TextTransparency = 0.2
@@ -1324,6 +1367,7 @@ function Library:CreateModule(tab, config)
                 -- ИСПРАВЛЕНИЕ: Глобальный обработчик для переключения модуля через кейбинд
                 self.KeybindConnection = UserInputService.InputBegan:Connect(function(input, gameProcessed)
                     if gameProcessed then return end
+                    if not LibraryInstance.UIVisible then return end  -- НЕ срабатывать если UI закрыт
                     if input.KeyCode == keyCode then
                         print("=== КЕЙБИНД МОДУЛЯ НАЖАТ ===")
                         print("Клавиша:", keyCode.Name)
@@ -2228,6 +2272,7 @@ function Library:AddToggle(module, config)
     -- ИСПРАВЛЕНИЕ #1: Кейбинд не должен срабатывать при установке
     UserInputService.InputBegan:Connect(function(input, gameProcessed)
         if gameProcessed then return end
+        if not LibraryInstance.UIVisible then return end  -- НЕ срабатывать если UI закрыт
         if Toggle.Listening then return end  -- НЕ срабатывать при установке кейбинда
         if Toggle.Keybind and input.KeyCode == Toggle.Keybind then
             Toggle:SetValue(not Toggle.Value)
@@ -2717,9 +2762,9 @@ function Library:AddColorPicker(module, config)
     ElementCorner.CornerRadius = UDim.new(0, 4)
     ElementCorner.Parent = ColorPicker.Element
     
-    -- Название
+    -- Название (обновлено для компактной кнопки)
     local NameLabel = Instance.new("TextLabel")
-    NameLabel.Size = UDim2.new(1, -60, 1, 0)
+    NameLabel.Size = UDim2.new(1, -45, 1, 0)  -- Обновлено с -60 до -45 для меньшей кнопки
     NameLabel.Position = UDim2.new(0, 10, 0, 0)
     NameLabel.BackgroundTransparency = 1
     NameLabel.Text = name
@@ -2730,11 +2775,11 @@ function Library:AddColorPicker(module, config)
     NameLabel.TextXAlignment = Enum.TextXAlignment.Left
     NameLabel.Parent = ColorPicker.Element
     
-    -- Кнопка с цветом
+    -- Кнопка с цветом (КОМПАКТНЫЙ ДИЗАЙН)
     local ColorButton = Instance.new("TextButton")
     ColorButton.Name = "ColorButton"
-    ColorButton.Size = UDim2.new(0, 40, 0, 25)
-    ColorButton.Position = UDim2.new(1, -40, 0.5, -12.5)
+    ColorButton.Size = UDim2.new(0, 30, 0, 20)  -- Уменьшено с 40x25 до 30x20
+    ColorButton.Position = UDim2.new(1, -35, 0.5, -10)  -- Обновлена позиция для нового размера
     ColorButton.BackgroundColor3 = value
     ColorButton.BorderSizePixel = 0
     ColorButton.Text = ""
@@ -2785,7 +2830,7 @@ function Library:AddColorPicker(module, config)
     SVPicker.Parent = PickerWindow
     
     local SVCorner = Instance.new("UICorner")
-    SVCorner.CornerRadius = UDim.new(0, 6)
+    SVCorner.CornerRadius = UDim.new(0, 10)  -- Увеличено с 6 до 10
     SVCorner.Parent = SVPicker
     
     -- Слой 1: Белый градиент (слева направо) для Saturation
@@ -2798,7 +2843,7 @@ function Library:AddColorPicker(module, config)
     WhiteOverlay.Parent = SVPicker
     
     local WhiteCorner = Instance.new("UICorner")
-    WhiteCorner.CornerRadius = UDim.new(0, 6)
+    WhiteCorner.CornerRadius = UDim.new(0, 10)  -- Увеличено с 6 до 10
     WhiteCorner.Parent = WhiteOverlay
     
     local WhiteGradient = Instance.new("UIGradient")
@@ -2819,7 +2864,7 @@ function Library:AddColorPicker(module, config)
     BlackOverlay.Parent = SVPicker
     
     local BlackCorner = Instance.new("UICorner")
-    BlackCorner.CornerRadius = UDim.new(0, 6)
+    BlackCorner.CornerRadius = UDim.new(0, 10)  -- Увеличено с 6 до 10
     BlackCorner.Parent = BlackOverlay
     
     local BlackGradient = Instance.new("UIGradient")
@@ -2908,7 +2953,7 @@ function Library:AddColorPicker(module, config)
     ColorPreview.Parent = PickerWindow
     
     local PreviewCorner = Instance.new("UICorner")
-    PreviewCorner.CornerRadius = UDim.new(0, 6)
+    PreviewCorner.CornerRadius = UDim.new(0, 8)  -- Увеличено с 6 до 8
     PreviewCorner.Parent = ColorPreview
     
     -- Функция обновления цвета - НОВАЯ ЛОГИКА
@@ -2963,7 +3008,9 @@ function Library:AddColorPicker(module, config)
     SVPicker.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
             svDragging = true
-            updateSVPicker(input.Position)
+            -- ИСПРАВЛЕНИЕ: Используем GetMouseLocation() вместо input.Position для правильного выравнивания
+            local mousePos = UserInputService:GetMouseLocation()
+            updateSVPicker(mousePos)
         end
     end)
     
@@ -2996,7 +3043,9 @@ function Library:AddColorPicker(module, config)
     HueSlider.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
             hueDragging = true
-            updateHueSlider(input.Position)
+            -- ИСПРАВЛЕНИЕ: Используем GetMouseLocation() вместо input.Position для правильного выравнивания
+            local mousePos = UserInputService:GetMouseLocation()
+            updateHueSlider(mousePos)
         end
     end)
     
@@ -3508,4 +3557,196 @@ function Library.SendNotification(config)
 end
 
 -- Финальная функция - возвращаем библиотеку
+return Library
+
+        local pos = math.clamp(relativePos / HueSlider.AbsoluteSize.Y, 0, 1)
+        
+        ColorPicker.Hue = pos
+        
+        -- Обновляем позицию курсора
+        HueCursor.Position = UDim2.new(0.5, -6, pos, -6)
+        
+        -- Обновляем цвет
+        updateColor()
+    end
+    
+    HueSlider.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            hueDragging = true
+            -- ИСПРАВЛЕНИЕ: Используем GetMouseLocation() вместо input.Position для правильного выравнивания
+            local mousePos = UserInputService:GetMouseLocation()
+            updateHueSlider(mousePos)
+        end
+    end)
+    
+    HueSlider.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            hueDragging = false
+        end
+    end)
+    
+    UserInputService.InputChanged:Connect(function(input)
+        if hueDragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+            local mousePos = UserInputService:GetMouseLocation()
+            updateHueSlider(mousePos)
+        end
+    end)
+    
+    -- Загружаем сохраненный цвет
+    local savedColor = self.Config:GetFlag(flag, default)
+    if savedColor then
+        ColorPicker:SetColor(savedColor)
+    end
+    
+    table.insert(module.Components, ColorPicker)
+    return ColorPicker
+end
+
+-- ============================================
+-- СИСТЕМА УВЕДОМЛЕНИЙ (MarchLibrary Style)
+-- ============================================
+
+-- Создаём контейнер для уведомлений (глобальный)
+local NotificationContainer = nil
+
+function Library.SendNotification(config)
+    config = config or {}
+    local title = config.title or "Notification"
+    local text = config.text or "Notification message"
+    local duration = config.duration or 5
+    local type = config.type or "info"  -- info, success, warning, error
+    
+    -- Создаём контейнер если его нет
+    if not NotificationContainer or not NotificationContainer.Parent then
+        NotificationContainer = Instance.new("Frame")
+        NotificationContainer.Name = "NotificationContainer"
+        NotificationContainer.Size = UDim2.new(0, 300, 0, 0)
+        NotificationContainer.Position = UDim2.new(1, -310, 0, 10)
+        NotificationContainer.BackgroundTransparency = 1
+        NotificationContainer.BorderSizePixel = 0
+        NotificationContainer.ClipsDescendants = false
+        NotificationContainer.AutomaticSize = Enum.AutomaticSize.Y
+        
+        -- Находим или создаём ScreenGui
+        local screenGui = CoreGui:FindFirstChild("MarchUI")
+        if not screenGui then
+            screenGui = Instance.new("ScreenGui")
+            screenGui.Name = "MarchUI"
+            screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+            screenGui.ResetOnSpawn = false
+            screenGui.Parent = CoreGui
+        end
+        NotificationContainer.Parent = screenGui
+        
+        local UIListLayout = Instance.new("UIListLayout")
+        UIListLayout.FillDirection = Enum.FillDirection.Vertical
+        UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+        UIListLayout.Padding = UDim.new(0, 10)
+        UIListLayout.Parent = NotificationContainer
+    end
+    
+    -- Создаём уведомление
+    local Notification = Instance.new("Frame")
+    Notification.Size = UDim2.new(1, 0, 0, 60)
+    Notification.BackgroundTransparency = 1
+    Notification.BorderSizePixel = 0
+    Notification.Name = "Notification"
+    Notification.Parent = NotificationContainer
+    Notification.AutomaticSize = Enum.AutomaticSize.Y
+    
+    local UICorner = Instance.new("UICorner")
+    UICorner.CornerRadius = UDim.new(0, 4)
+    UICorner.Parent = Notification
+    
+    -- Внутренний фрейм (для анимации)
+    local InnerFrame = Instance.new("Frame")
+    InnerFrame.Size = UDim2.new(1, 0, 0, 60)
+    InnerFrame.Position = UDim2.new(1, 0, 0, 0)  -- Начинаем справа за экраном
+    InnerFrame.BackgroundColor3 = Color3.fromRGB(32, 38, 51)
+    InnerFrame.BackgroundTransparency = 0.1
+    InnerFrame.BorderSizePixel = 0
+    InnerFrame.Name = "InnerFrame"
+    InnerFrame.Parent = Notification
+    InnerFrame.AutomaticSize = Enum.AutomaticSize.Y
+    
+    local InnerUICorner = Instance.new("UICorner")
+    InnerUICorner.CornerRadius = UDim.new(0, 4)
+    InnerUICorner.Parent = InnerFrame
+    
+    -- Цветной индикатор типа (слева)
+    local TypeIndicator = Instance.new("Frame")
+    TypeIndicator.Size = UDim2.new(0, 3, 1, 0)
+    TypeIndicator.Position = UDim2.new(0, 0, 0, 0)
+    TypeIndicator.BorderSizePixel = 0
+    TypeIndicator.Parent = InnerFrame
+    
+    local typeColors = {
+        info = Color3.fromRGB(100, 150, 255),
+        success = Color3.fromRGB(100, 255, 150),
+        warning = Color3.fromRGB(255, 200, 100),
+        error = Color3.fromRGB(255, 100, 100)
+    }
+    TypeIndicator.BackgroundColor3 = typeColors[type] or typeColors.info
+    
+    -- Заголовок
+    local Title = Instance.new("TextLabel")
+    Title.Text = title
+    Title.TextColor3 = Color3.fromRGB(210, 210, 210)
+    Title.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
+    Title.TextSize = 14
+    Title.Size = UDim2.new(1, -15, 0, 20)
+    Title.Position = UDim2.new(0, 10, 0, 5)
+    Title.BackgroundTransparency = 1
+    Title.TextXAlignment = Enum.TextXAlignment.Left
+    Title.TextYAlignment = Enum.TextYAlignment.Center
+    Title.TextWrapped = true
+    Title.AutomaticSize = Enum.AutomaticSize.Y
+    Title.Parent = InnerFrame
+    
+    -- Текст
+    local Body = Instance.new("TextLabel")
+    Body.Text = text
+    Body.TextColor3 = Color3.fromRGB(180, 180, 180)
+    Body.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+    Body.TextSize = 12
+    Body.Size = UDim2.new(1, -15, 0, 30)
+    Body.Position = UDim2.new(0, 10, 0, 25)
+    Body.BackgroundTransparency = 1
+    Body.TextXAlignment = Enum.TextXAlignment.Left
+    Body.TextYAlignment = Enum.TextYAlignment.Top
+    Body.TextWrapped = true
+    Body.AutomaticSize = Enum.AutomaticSize.Y
+    Body.Parent = InnerFrame
+    
+    -- Подгоняем размер после загрузки текста
+    task.spawn(function()
+        task.wait(0.1)
+        local totalHeight = Title.TextBounds.Y + Body.TextBounds.Y + 15
+        InnerFrame.Size = UDim2.new(1, 0, 0, totalHeight)
+    end)
+    
+    -- Анимация появления и исчезновения
+    task.spawn(function()
+        -- Въезжаем слева
+        local tweenIn = TweenService:Create(InnerFrame, 
+            TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out),
+            {Position = UDim2.new(0, 0, 0, 0)}
+        )
+        tweenIn:Play()
+        
+        task.wait(duration)
+        
+        -- Уезжаем вправо
+        local tweenOut = TweenService:Create(InnerFrame,
+            TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.In),
+            {Position = UDim2.new(1, 0, 0, 0)}
+        )
+        tweenOut:Play()
+        
+        tweenOut.Completed:Connect(function()
+            Notification:Destroy()
+        end)
+    end)
+end
+
 return Library
