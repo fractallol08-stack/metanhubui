@@ -419,19 +419,19 @@ function Library:CreateUI()
     TitleIcon.Parent = TitleBar
     self._titleIcon = TitleIcon
     
-    -- ИСПРАВЛЕНИЕ: Название GUI чуть выше и по центру
+    -- ИСПРАВЛЕНИЕ: Название GUI больше и левее от иконки
     local TitleLabel = Instance.new("TextLabel")
     TitleLabel.Name = "ClientName"
-    TitleLabel.Size = UDim2.new(0, 129, 0, 13)
-    TitleLabel.Position = UDim2.new(0, 0, 0, 22)  -- Чуть выше (было 26)
+    TitleLabel.Size = UDim2.new(0, 120, 0, 15)  -- Увеличен размер
+    TitleLabel.Position = UDim2.new(0, 42, 0, 22)  -- Левее от иконки (было 0)
     TitleLabel.AnchorPoint = Vector2.new(0, 0.5)
     TitleLabel.BackgroundTransparency = 1
     TitleLabel.Text = self.Title
     TitleLabel.TextColor3 = self._themeAccent
     TitleLabel.TextTransparency = 0.2
-    TitleLabel.TextSize = 13
+    TitleLabel.TextSize = 15  -- Увеличен с 13 до 15
     TitleLabel.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
-    TitleLabel.TextXAlignment = Enum.TextXAlignment.Center
+    TitleLabel.TextXAlignment = Enum.TextXAlignment.Left  -- Выравнивание по левому краю
     TitleLabel.Parent = TitleBar
     self._titleLabel = TitleLabel
     
@@ -588,15 +588,15 @@ function Library:CreateUI()
     self.SystemTabContainer.BorderSizePixel = 0
     self.SystemTabContainer.Parent = self.MainFrame
 
-    -- ИСПРАВЛЕНИЕ: Разделитель над UI SETTINGS на ширину левой панели
+    -- ИСПРАВЛЕНИЕ: Разделитель над UI SETTINGS от самого левого края
     local SystemDivider = Instance.new("Frame")
     SystemDivider.Name = "SystemDivider"
     SystemDivider.Size = UDim2.new(0, 164, 0, 1)  -- От левого края до вертикального разделителя
-    SystemDivider.Position = UDim2.new(0, 0, 0, -4)
+    SystemDivider.Position = UDim2.new(0, 0, 1, -56)  -- Абсолютная позиция от MainFrame
     SystemDivider.BackgroundColor3 = self._themeStroke
     SystemDivider.BackgroundTransparency = 0.5
     SystemDivider.BorderSizePixel = 0
-    SystemDivider.Parent = self.SystemTabContainer
+    SystemDivider.Parent = self.MainFrame  -- Parent = MainFrame, не SystemTabContainer
     self._tabsSystemDivider = SystemDivider
     
     -- ИСПРАВЛЕНИЕ #5: Вертикальный разделитель на всю высоту
