@@ -224,16 +224,10 @@ end
 
 function Library:_tweenColor(obj, prop, color)
     if not obj then return end
-    local ok = pcall(function()
-        TweenService:Create(obj, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-            [prop] = color
-        }):Play()
+    -- ИСПРАВЛЕНИЕ: Убрана анимация, мгновенное изменение цвета
+    pcall(function()
+        obj[prop] = color
     end)
-    if not ok then
-        pcall(function()
-            obj[prop] = color
-        end)
-    end
 end
 
 function Library:_registerThemeBinding(obj, mapping)
@@ -462,17 +456,13 @@ function Library:CreateUI()
     CloseStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
     CloseStroke.Parent = CloseButton
     
-    -- Hover эффект для кнопки закрытия
+    -- ИСПРАВЛЕНИЕ: Убраны hover анимации для кнопки закрытия
     CloseButton.MouseEnter:Connect(function()
-        TweenService:Create(CloseButton, TweenInfo.new(0.2), {
-            BackgroundColor3 = self._themeAccent:Lerp(Color3.fromRGB(255, 255, 255), 0.15)
-        }):Play()
+        CloseButton.BackgroundColor3 = self._themeAccent:Lerp(Color3.fromRGB(255, 255, 255), 0.15)
     end)
     
     CloseButton.MouseLeave:Connect(function()
-        TweenService:Create(CloseButton, TweenInfo.new(0.2), {
-            BackgroundColor3 = self._themeAccent
-        }):Play()
+        CloseButton.BackgroundColor3 = self._themeAccent
     end)
     
     CloseButton.MouseButton1Click:Connect(function()
@@ -1617,16 +1607,13 @@ function Library:ShowSettingsPanel(module)
             self:HideSettingsPanel()
         end)
         
+        -- ИСПРАВЛЕНИЕ: Убраны hover анимации для кнопки закрытия панели
         CloseButton.MouseEnter:Connect(function()
-            TweenService:Create(CloseButton, TweenInfo.new(0.2), {
-                BackgroundColor3 = self._themeAccent:Lerp(Color3.fromRGB(255, 255, 255), 0.15)
-            }):Play()
+            CloseButton.BackgroundColor3 = self._themeAccent:Lerp(Color3.fromRGB(255, 255, 255), 0.15)
         end)
         
         CloseButton.MouseLeave:Connect(function()
-            TweenService:Create(CloseButton, TweenInfo.new(0.2), {
-                BackgroundColor3 = self._themeAccent
-            }):Play()
+            CloseButton.BackgroundColor3 = self._themeAccent
         end)
         
         -- ИСПРАВЛЕНИЕ #4: Разделитель под названием модуля на всю ширину панели настроек
@@ -1711,55 +1698,21 @@ function Library:ShowSettingsPanel(module)
     end
 
     local function playContentIn()
-        if self._settingsContentTween then
-            pcall(function()
-                self._settingsContentTween:Cancel()
-            end)
-            self._settingsContentTween = nil
-        end
-
+        -- ИСПРАВЛЕНИЕ: Убраны анимации, мгновенное появление
         if self.SettingsGroup then
-            self.SettingsGroup.GroupTransparency = 1
-            self.SettingsContent.Position = UDim2.new(0, 10, 0, 51)
-            local tweenA = TweenService:Create(self.SettingsGroup, TweenInfo.new(0.22, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-                GroupTransparency = 0
-            })
-            local tweenB = TweenService:Create(self.SettingsContent, TweenInfo.new(0.22, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-                Position = UDim2.new(0, 10, 0, 45)
-            })
-            self._settingsContentTween = tweenA
-            tweenA:Play()
-            tweenB:Play()
+            self.SettingsGroup.GroupTransparency = 0
+            self.SettingsContent.Position = UDim2.new(0, 10, 0, 45)
         end
     end
 
     local function playContentOut(onDone)
-        if self._settingsContentTween then
-            pcall(function()
-                self._settingsContentTween:Cancel()
-            end)
-            self._settingsContentTween = nil
-        end
-
+        -- ИСПРАВЛЕНИЕ: Убраны анимации, мгновенное скрытие
         if self.SettingsGroup then
-            local tweenA = TweenService:Create(self.SettingsGroup, TweenInfo.new(0.16, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-                GroupTransparency = 1
-            })
-            local tweenB = TweenService:Create(self.SettingsContent, TweenInfo.new(0.16, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-                Position = UDim2.new(0, 10, 0, 51)
-            })
-            self._settingsContentTween = tweenA
-            tweenA:Play()
-            tweenB:Play()
-            tweenA.Completed:Once(function()
-                if onDone then
-                    onDone()
-                end
-            end)
-        else
-            if onDone then
-                onDone()
-            end
+            self.SettingsGroup.GroupTransparency = 1
+            self.SettingsContent.Position = UDim2.new(0, 10, 0, 51)
+        end
+        if onDone then
+            onDone()
         end
     end
 
@@ -1803,13 +1756,9 @@ function Library:ShowSettingsPanel(module)
         self.SettingsPanelPosition = targetPos
     end
 
-    self.SettingsPanel.Position = UDim2.new(targetPos.X.Scale, targetPos.X.Offset + 20, targetPos.Y.Scale, targetPos.Y.Offset)
+    -- ИСПРАВЛЕНИЕ: Убрана анимация, мгновенное появление панели
+    self.SettingsPanel.Position = targetPos
     self.SettingsPanel.Visible = true
-
-    self._settingsTween = TweenService:Create(self.SettingsPanel, TweenInfo.new(0.35, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-        Position = targetPos
-    })
-    self._settingsTween:Play()
     
     print("Панель показана на позиции:", self.SettingsPanel.Position)
 
@@ -1848,19 +1797,8 @@ function Library:HideSettingsPanel()
         self._settingsTween = nil
     end
 
-    local startPos = self.SettingsPanel.Position
-    local endPos = UDim2.new(startPos.X.Scale, startPos.X.Offset + 20, startPos.Y.Scale, startPos.Y.Offset)
-
-    self._settingsTween = TweenService:Create(self.SettingsPanel, TweenInfo.new(0.28, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-        Position = endPos
-    })
-    self._settingsTween:Play()
-    self._settingsTween.Completed:Once(function()
-        if self.SettingsPanel then
-            self.SettingsPanel.Visible = false
-            self.SettingsPanel.Position = startPos
-        end
-    end)
+    -- ИСПРАВЛЕНИЕ: Убрана анимация, мгновенное скрытие панели
+    self.SettingsPanel.Visible = false
 
     self.CurrentModule = nil
 end
@@ -1988,9 +1926,8 @@ function Library:AddSlider(module, config)
 
         local sliderSize = math.clamp(percent, 0, 1) * dragWidth
         
-        TweenService:Create(Fill, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-            Size = UDim2.new(0, sliderSize, 0, 4)
-        }):Play()
+        -- ИСПРАВЛЕНИЕ: Убрана анимация, мгновенное изменение размера
+        Fill.Size = UDim2.new(0, sliderSize, 0, 4)
 
         if LibraryInstance and LibraryInstance.Config then
             LibraryInstance.Config:SetFlag(flag, newValue)
@@ -2166,13 +2103,9 @@ function Library:AddToggle(module, config)
     function Toggle:SetValue(newValue)
         self.Value = newValue
         
-        TweenService:Create(Box, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-            BackgroundTransparency = newValue and 0.7 or 0.9
-        }):Play()
-        
-        TweenService:Create(Fill, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-            Size = newValue and UDim2.fromOffset(9, 9) or UDim2.fromOffset(0, 0)
-        }):Play()
+        -- ИСПРАВЛЕНИЕ: Убраны анимации, мгновенное изменение
+        Box.BackgroundTransparency = newValue and 0.7 or 0.9
+        Fill.Size = newValue and UDim2.fromOffset(9, 9) or UDim2.fromOffset(0, 0)
 
         if LibraryInstance and LibraryInstance.Config then
             LibraryInstance.Config:SetFlag(flag, newValue)
@@ -2410,37 +2343,17 @@ function Library:AddDropdown(module, config)
         self.Open = not self.Open
         
         if self.Open then
-            TweenService:Create(Dropdown.Element, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-                Size = UDim2.new(0, 207, 0, 39 + self.Size)
-            }):Play()
-            
-            TweenService:Create(Box, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-                Size = UDim2.new(0, 207, 0, 22 + self.Size)
-            }):Play()
-            
-            TweenService:Create(Options, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-                Size = UDim2.new(0, 207, 0, self.Size)
-            }):Play()
-            
-            TweenService:Create(Arrow, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-                Rotation = 180
-            }):Play()
+            -- ИСПРАВЛЕНИЕ: Убраны анимации, мгновенное открытие
+            Dropdown.Element.Size = UDim2.new(0, 207, 0, 39 + self.Size)
+            Box.Size = UDim2.new(0, 207, 0, 22 + self.Size)
+            Options.Size = UDim2.new(0, 207, 0, self.Size)
+            Arrow.Rotation = 180
         else
-            TweenService:Create(Dropdown.Element, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-                Size = UDim2.new(0, 207, 0, 39)
-            }):Play()
-            
-            TweenService:Create(Box, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-                Size = UDim2.new(0, 207, 0, 22)
-            }):Play()
-            
-            TweenService:Create(Options, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-                Size = UDim2.new(0, 207, 0, 0)
-            }):Play()
-            
-            TweenService:Create(Arrow, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-                Rotation = 0
-            }):Play()
+            -- ИСПРАВЛЕНИЕ: Убраны анимации, мгновенное закрытие
+            Dropdown.Element.Size = UDim2.new(0, 207, 0, 39)
+            Box.Size = UDim2.new(0, 207, 0, 22)
+            Options.Size = UDim2.new(0, 207, 0, 0)
+            Arrow.Rotation = 0
         end
     end
     
@@ -2940,32 +2853,22 @@ function Library:AddButton(module, config)
     
     -- Обработчик клика
     Button.Element.MouseButton1Click:Connect(function()
-        -- Визуальная обратная связь
-        TweenService:Create(Button.Element, TweenInfo.new(0.1), {
-            BackgroundTransparency = 0.7
-        }):Play()
-        
+        -- ИСПРАВЛЕНИЕ: Убрана анимация, мгновенная визуальная обратная связь
+        Button.Element.BackgroundTransparency = 0.7
         task.wait(0.1)
-        
-        TweenService:Create(Button.Element, TweenInfo.new(0.1), {
-            BackgroundTransparency = 0.85
-        }):Play()
+        Button.Element.BackgroundTransparency = 0.85
         
         -- Вызываем callback
         callback()
     end)
     
-    -- Hover эффект
+    -- ИСПРАВЛЕНИЕ: Убраны hover анимации
     Button.Element.MouseEnter:Connect(function()
-        TweenService:Create(Button.Element, TweenInfo.new(0.2), {
-            BackgroundTransparency = 0.75
-        }):Play()
+        Button.Element.BackgroundTransparency = 0.75
     end)
     
     Button.Element.MouseLeave:Connect(function()
-        TweenService:Create(Button.Element, TweenInfo.new(0.2), {
-            BackgroundTransparency = 0.85
-        }):Play()
+        Button.Element.BackgroundTransparency = 0.85
     end)
     
     table.insert(module.Components, Button)
