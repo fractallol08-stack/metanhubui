@@ -413,17 +413,17 @@ function Library:CreateUI()
     TitleIcon.Parent = TitleBar
     self._titleIcon = TitleIcon
     
-    -- ИСПРАВЛЕНИЕ: Название GUI больше и левее от иконки
+    -- ИСПРАВЛЕНИЕ: Название GUI ещё больше и левее от иконки
     local TitleLabel = Instance.new("TextLabel")
     TitleLabel.Name = "ClientName"
-    TitleLabel.Size = UDim2.new(0, 120, 0, 15)  -- Увеличен размер
-    TitleLabel.Position = UDim2.new(0, 42, 0, 22)  -- Левее от иконки (было 0)
+    TitleLabel.Size = UDim2.new(0, 120, 0, 18)  -- Увеличен размер
+    TitleLabel.Position = UDim2.new(0, 42, 0, 22)  -- Левее от иконки
     TitleLabel.AnchorPoint = Vector2.new(0, 0.5)
     TitleLabel.BackgroundTransparency = 1
     TitleLabel.Text = self.Title
     TitleLabel.TextColor3 = self._themeAccent
     TitleLabel.TextTransparency = 0.2
-    TitleLabel.TextSize = 15  -- Увеличен с 13 до 15
+    TitleLabel.TextSize = 17  -- Увеличен с 15 до 17
     TitleLabel.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
     TitleLabel.TextXAlignment = Enum.TextXAlignment.Left  -- Выравнивание по левому краю
     TitleLabel.Parent = TitleBar
@@ -955,14 +955,14 @@ function Library:CreateTab(name, icon, opts)
     SearchCorner.CornerRadius = UDim.new(0, 4)
     SearchCorner.Parent = SearchBox
     
-    -- Иконка лупы
+    -- ИСПРАВЛЕНИЕ: Иконка лупы для поиска
     local SearchIcon = Instance.new("ImageLabel")
     SearchIcon.Name = "SearchIcon"
     SearchIcon.Size = UDim2.new(0, 16, 0, 16)
     SearchIcon.Position = UDim2.new(0, 10, 0.5, 0)
     SearchIcon.AnchorPoint = Vector2.new(0, 0.5)
     SearchIcon.BackgroundTransparency = 1
-    SearchIcon.Image = "rbxassetid://7072707198"  -- Magnifying glass icon
+    SearchIcon.Image = "rbxassetid://3926305904"  -- Иконка лупы (magnifying glass)
     SearchIcon.ImageColor3 = Color3.fromRGB(255, 255, 255)
     SearchIcon.ImageTransparency = 0.5
     SearchIcon.Parent = SearchBox
