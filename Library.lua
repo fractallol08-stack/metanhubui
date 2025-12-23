@@ -1167,14 +1167,14 @@ function Library:CreateModule(tab, config)
     Header.AutoButtonColor = false
     Header.Parent = Module.Frame
     
-    -- Иконка
+    -- Иконка шестеренки для открытия настроек
     local Icon = Instance.new("ImageLabel")
     Icon.Name = "Icon"
     Icon.Size = UDim2.new(0, 15, 0, 15)
     Icon.Position = UDim2.new(0.071, 0, 0.82, 0)
     Icon.AnchorPoint = Vector2.new(0, 0.5)
     Icon.BackgroundTransparency = 1
-    Icon.Image = "rbxassetid://79095934438045"
+    Icon.Image = "rbxassetid://10734950309"  -- Иконка шестеренки
     Icon.ImageColor3 = Color3.fromRGB(152, 181, 255)
     Icon.ImageTransparency = 0.7
     Icon.ScaleType = Enum.ScaleType.Fit
@@ -1263,7 +1263,7 @@ function Library:CreateModule(tab, config)
         KeybindLabel.TextColor3 = Color3.fromRGB(209, 222, 255)
         KeybindLabel.TextSize = 10
         KeybindLabel.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
-        KeybindLabel.TextXAlignment = Enum.TextXAlignment.Left
+        KeybindLabel.TextXAlignment = Enum.TextXAlignment.Center
         KeybindLabel.Parent = Keybind
         
         -- Keybind система
@@ -1271,17 +1271,17 @@ function Library:CreateModule(tab, config)
         Module.KeybindConnection = nil
         local listeningForKey = false
         
-        -- Функция авто-ресайза кейбинда
+        -- Функция авто-ресайза кейбинда модуля
         local function AutoResizeKeybind(text)
             local textSize = game:GetService("TextService"):GetTextSize(
                 text,
                 10,
-                Enum.Font.SourceSans,
+                Enum.Font.GothamSemibold,
                 Vector2.new(1000, 13)
             )
-            local newWidth = math.clamp(textSize.X + 8, 33, 60)
+            local newWidth = math.clamp(textSize.X + 8, 33, 70)
             Keybind.Size = UDim2.new(0, newWidth, 0, 15)
-            KeybindLabel.Size = UDim2.new(0, newWidth - 8, 0, 13)
+            KeybindLabel.Size = UDim2.new(1, 0, 1, 0)
         end
         
         -- Функция установки кейбинда
@@ -1344,9 +1344,9 @@ function Library:CreateModule(tab, config)
             end
         end
         
-        -- RMB для установки кейбинда
+        -- LMB для установки кейбинда модуля
         Keybind.InputBegan:Connect(function(input)
-            if input.UserInputType == Enum.UserInputType.MouseButton2 then
+            if input.UserInputType == Enum.UserInputType.MouseButton1 then
                 if not listeningForKey then
                     listeningForKey = true
                     KeybindLabel.Text = "..."
@@ -1637,6 +1637,28 @@ function Library:ShowSettingsPanel(module)
         self.SettingsGroup.ZIndex = 11
         self.SettingsGroup.Parent = self.SettingsPanel
 
+        -- Фоновая панель для элементов (как модуль)
+        local SettingsBackground = Instance.new("Frame")
+        SettingsBackground.Name = "SettingsBackground"
+        SettingsBackground.Size = UDim2.new(0, 260, 0, 445)
+        SettingsBackground.Position = UDim2.new(0, 10, 0, 45)
+        SettingsBackground.BackgroundColor3 = Color3.fromRGB(22, 28, 38)
+        SettingsBackground.BackgroundTransparency = 0.5
+        SettingsBackground.BorderSizePixel = 0
+        SettingsBackground.ZIndex = 10
+        SettingsBackground.Parent = self.SettingsGroup
+        
+        local SettingsBgCorner = Instance.new("UICorner")
+        SettingsBgCorner.CornerRadius = UDim.new(0, 5)
+        SettingsBgCorner.Parent = SettingsBackground
+        
+        local SettingsBgStroke = Instance.new("UIStroke")
+        SettingsBgStroke.Color = Color3.fromRGB(52, 66, 89)
+        SettingsBgStroke.Thickness = 1
+        SettingsBgStroke.Transparency = 0.5
+        SettingsBgStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+        SettingsBgStroke.Parent = SettingsBackground
+        
         -- Контейнер для компонентов
         self.SettingsContent = Instance.new("ScrollingFrame")
         self.SettingsContent.Name = "SettingsContent"
@@ -3172,7 +3194,7 @@ function Library.SendNotification(config)
     local Notification = Instance.new("Frame")
     Notification.Name = "Notification"
     Notification.Size = UDim2.new(0, 300, 0, 80)
-    Notification.Position = UDim2.new(1, -310, 1, 10)  -- Начинаем снизу справа, за экраном
+    Notification.Position = UDim2.new(1, -310, 0, -90)  -- Начинаем сверху справа, за экраном
     Notification.BackgroundColor3 = Color3.fromRGB(12, 13, 15)
     Notification.BackgroundTransparency = 0.05
     Notification.BorderSizePixel = 0
@@ -3216,29 +3238,29 @@ function Library.SendNotification(config)
     Text.TextWrapped = true
     Text.Parent = Notification
     
-    -- Подсчитываем количество уведомлений и сдвигаем их вверх
+    -- Подсчитываем количество уведомлений и сдвигаем их вниз
     local notifCount = 0
     for _, child in ipairs(NotificationContainer:GetChildren()) do
         if child:IsA("Frame") and child ~= Notification then
             notifCount = notifCount + 1
-            -- Сдвигаем существующие уведомления вверх
+            -- Сдвигаем существующие уведомления вниз
             TweenService:Create(child, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-                Position = UDim2.new(1, -310, 1, -10 - (90 * (notifCount)))
+                Position = UDim2.new(1, -310, 0, 10 + (90 * (notifCount)))
             }):Play()
         end
     end
     
     -- Анимация появления
-    local targetY = -10 - (90 * notifCount)
+    local targetY = 10 + (90 * notifCount)
     TweenService:Create(Notification, TweenInfo.new(0.4, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-        Position = UDim2.new(1, -310, 1, targetY)
+        Position = UDim2.new(1, -310, 0, targetY)
     }):Play()
     
     -- Автоматическое удаление
     task.delay(duration, function()
         -- Анимация исчезновения
         TweenService:Create(Notification, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-            Position = UDim2.new(1, -310, 1, 10),
+            Position = UDim2.new(1, -310, 0, -90),
             BackgroundTransparency = 1
         }):Play()
         
@@ -3259,7 +3281,7 @@ function Library.SendNotification(config)
         
         for i, notif in ipairs(remainingNotifs) do
             TweenService:Create(notif, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-                Position = UDim2.new(1, -310, 1, -10 - (90 * (i - 1)))
+                Position = UDim2.new(1, -310, 0, 10 + (90 * (i - 1)))
             }):Play()
         end
     end)
