@@ -490,11 +490,11 @@ function Library:CreateUI()
     TitleDivider.BorderSizePixel = 0
     TitleDivider.Parent = self.MainFrame
 
-    -- ИСПРАВЛЕНИЕ: Watermark по центру экрана
+    -- ИСПРАВЛЕНИЕ: Watermark меньше по ширине (было 360)
     self.Watermark = Instance.new("Frame")
     self.Watermark.Name = "Watermark"
-    self.Watermark.Size = UDim2.new(0, 360, 0, 30)
-    self.Watermark.Position = UDim2.new(0.5, -180, 0, 10)  -- По центру экрана (0.5 - половина ширины)
+    self.Watermark.Size = UDim2.new(0, 300, 0, 30)  -- Уменьшено с 360 до 300
+    self.Watermark.Position = UDim2.new(0.5, -150, 0, 10)  -- Обновлена позиция (половина от 300)
     self.Watermark.BackgroundColor3 = self._themeBg
     self.Watermark.BackgroundTransparency = 0.05
     self.Watermark.BorderSizePixel = 0
@@ -955,14 +955,14 @@ function Library:CreateTab(name, icon, opts)
     SearchCorner.CornerRadius = UDim.new(0, 4)
     SearchCorner.Parent = SearchBox
     
-    -- ИСПРАВЛЕНИЕ: Иконка лупы для поиска
+    -- ИСПРАВЛЕНИЕ: Рабочая иконка лупы для поиска
     local SearchIcon = Instance.new("ImageLabel")
     SearchIcon.Name = "SearchIcon"
     SearchIcon.Size = UDim2.new(0, 16, 0, 16)
     SearchIcon.Position = UDim2.new(0, 10, 0.5, 0)
     SearchIcon.AnchorPoint = Vector2.new(0, 0.5)
     SearchIcon.BackgroundTransparency = 1
-    SearchIcon.Image = "rbxassetid://3926305904"  -- Иконка лупы (magnifying glass)
+    SearchIcon.Image = "rbxassetid://7072718840"  -- Рабочая иконка лупы
     SearchIcon.ImageColor3 = Color3.fromRGB(255, 255, 255)
     SearchIcon.ImageTransparency = 0.5
     SearchIcon.Parent = SearchBox
@@ -2126,8 +2126,11 @@ function Library:AddToggle(module, config)
         end
     end
     
-    Toggle.Element.MouseButton1Click:Connect(function()
-        Toggle:SetValue(not Toggle.Value)
+    -- ИСПРАВЛЕНИЕ: Checkbox переключается только при клике на Box, не на весь Element
+    Box.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            Toggle:SetValue(not Toggle.Value)
+        end
     end)
 
     KeybindBox.InputBegan:Connect(function(input, gameProcessed)
