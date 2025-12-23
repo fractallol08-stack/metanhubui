@@ -490,10 +490,10 @@ function Library:CreateUI()
     }
     TitleGradient.Parent = TitleLabel
 
-    -- ИСПРАВЛЕНИЕ: Разделитель под названием GUI правильная ширина
+    -- ИСПРАВЛЕНИЕ: Разделитель под названием GUI на полную ширину
     local TitleDivider = Instance.new("Frame")
     TitleDivider.Name = "TitleDivider"
-    TitleDivider.Size = UDim2.new(0, 129, 0, 1)  -- Ширина как у TabContainer
+    TitleDivider.Size = UDim2.new(1, 0, 0, 1)  -- Полная ширина
     TitleDivider.Position = UDim2.new(0, 0, 0, 40)
     TitleDivider.BackgroundColor3 = Color3.fromRGB(52, 66, 89)
     TitleDivider.BackgroundTransparency = 0.5
@@ -588,10 +588,10 @@ function Library:CreateUI()
     self.SystemTabContainer.BorderSizePixel = 0
     self.SystemTabContainer.Parent = self.MainFrame
 
-    -- ИСПРАВЛЕНИЕ: Разделитель над UI SETTINGS правильная позиция
+    -- ИСПРАВЛЕНИЕ: Разделитель над UI SETTINGS на полную ширину левой панели
     local SystemDivider = Instance.new("Frame")
     SystemDivider.Name = "SystemDivider"
-    SystemDivider.Size = UDim2.new(0, 129, 0, 1)  -- Ширина как у TabContainer
+    SystemDivider.Size = UDim2.new(0, 129, 0, 1)  -- Ширина левой панели (129px)
     SystemDivider.Position = UDim2.new(0, 0, 0, -4)
     SystemDivider.BackgroundColor3 = self._themeStroke
     SystemDivider.BackgroundTransparency = 0.5
