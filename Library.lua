@@ -1648,26 +1648,30 @@ function Library:ShowSettingsPanel(module)
         -- Переливающийся градиент (анимация)
         local SettingsBgGradient = Instance.new("UIGradient")
         SettingsBgGradient.Color = ColorSequence.new{
-            ColorSequenceKeypoint.new(0, Color3.fromRGB(152, 181, 255)),  -- Accent цвет
-            ColorSequenceKeypoint.new(0.5, Color3.fromRGB(22, 28, 38)),   -- Основной цвет
-            ColorSequenceKeypoint.new(1, Color3.fromRGB(152, 181, 255))   -- Accent цвет
+            ColorSequenceKeypoint.new(0, Color3.fromRGB(152, 181, 255)),    -- Accent цвет (яркий)
+            ColorSequenceKeypoint.new(0.3, Color3.fromRGB(100, 140, 220)),  -- Средний синий
+            ColorSequenceKeypoint.new(0.5, Color3.fromRGB(22, 28, 38)),     -- Основной цвет (темный)
+            ColorSequenceKeypoint.new(0.7, Color3.fromRGB(100, 140, 220)),  -- Средний синий
+            ColorSequenceKeypoint.new(1, Color3.fromRGB(152, 181, 255))     -- Accent цвет (яркий)
         }
         SettingsBgGradient.Transparency = NumberSequence.new{
-            NumberSequenceKeypoint.new(0, 0.9),   -- Почти прозрачный
-            NumberSequenceKeypoint.new(0.5, 0.7), -- Средняя прозрачность
-            NumberSequenceKeypoint.new(1, 0.9)    -- Почти прозрачный
+            NumberSequenceKeypoint.new(0, 0.75),   -- Более заметный
+            NumberSequenceKeypoint.new(0.3, 0.6),  -- Ещё заметнее
+            NumberSequenceKeypoint.new(0.5, 0.5),  -- Самый заметный
+            NumberSequenceKeypoint.new(0.7, 0.6),  -- Ещё заметнее
+            NumberSequenceKeypoint.new(1, 0.75)    -- Более заметный
         }
         SettingsBgGradient.Rotation = 45
         SettingsBgGradient.Parent = SettingsBackground
         
-        -- Анимация градиента (переливание)
+        -- Анимация градиента (плавное переливание)
         task.spawn(function()
             local rotation = 45
             while SettingsBgGradient and SettingsBgGradient.Parent do
-                for i = 0, 360, 2 do
+                for i = 0, 360, 1 do  -- Медленнее (по 1 градусу)
                     if not SettingsBgGradient or not SettingsBgGradient.Parent then break end
                     SettingsBgGradient.Rotation = rotation + i
-                    task.wait(0.03)  -- Плавная анимация
+                    task.wait(0.05)  -- Медленнее для плавности
                 end
             end
         end)
