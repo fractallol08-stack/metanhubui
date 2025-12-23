@@ -24,54 +24,80 @@ local HttpService = game:GetService("HttpService")
 local LocalPlayer = Players.LocalPlayer
 local Mouse = LocalPlayer:GetMouse()
 
--- Утилиты для работы с цветом
+-- Утилиты для работы с цветом (ПОЛНОСТЬЮ ПЕРЕПИСАНО)
 local ColorUtils = {}
 
+-- Правильная конвертация HSV в RGB
 function ColorUtils.HSVtoRGB(h, s, v)
-    local r, g, b
-    local i = math.floor(h * 6)
-    local f = h * 6 - i
-    local p = v * (1 - s)
-    local q = v * (1 - f * s)
-    local t = v * (1 - (1 - f) * s)
-    
-    i = i % 6
-    
-    if i == 0 then r, g, b = v, t, p
-    elseif i == 1 then r, g, b = q, v, p
-    elseif i == 2 then r, g, b = p, v, t
-    elseif i == 3 then r, g, b = p, q, v
-    elseif i == 4 then r, g, b = t, p, v
-    elseif i == 5 then r, g, b = v, p, q
+    -- h: 0-1 (hue), s: 0-1 (saturation), v: 0-1 (value/brightness)
+    if s == 0 then
+        -- Ахроматический (серый)
+        return Color3.fromRGB(v * 255, v * 255, v * 255)
     end
-    return Color3.fromRGB(r * 255, g * 255, b * 255)
+    
+    local h6 = h * 6
+    if h6 == 6 then h6 = 0 end
+    
+    local i = math.floor(h6)
+    local f = h6 - i
+    local p = v * (1 - s)
+    local q = v * (1 - s * f)
+    local t = v * (1 - s * (1 - f))
+    
+    local r, g, b
+    if i == 0 then
+        r, g, b = v, t, p
+    elseif i == 1 then
+        r, g, b = q, v, p
+    elseif i == 2 then
+        r, g, b = p, v, t
+    elseif i == 3 then
+        r, g, b = p, q, v
+    elseif i == 4 then
+        r, g, b = t, p, v
+    else
+        r, g, b = v, p, q
+    end
+    
+    return Color3.fromRGB(
+        math.clamp(r * 255, 0, 255),
+        math.clamp(g * 255, 0, 255),
+        math.clamp(b * 255, 0, 255)
+    )
 end
 
+-- Правильная конвертация RGB в HSV
 function ColorUtils.RGBtoHSV(color)
-    local r, g, b = color.R, color.G, color.B
+    local r = color.R
+    local g = color.G
+    local b = color.B
+    
     local max = math.max(r, g, b)
     local min = math.min(r, g, b)
+    local delta = max - min
+    
     local h, s, v
     
+    -- Value
     v = max
-    local d = max - min
     
+    -- Saturation
     if max == 0 then
         s = 0
     else
-        s = d / max
+        s = delta / max
     end
     
-    if max == min then
+    -- Hue
+    if delta == 0 then
         h = 0
     else
         if max == r then
-            h = (g - b) / d
-            if g < b then h = h + 6 end
+            h = ((g - b) / delta) % 6
         elseif max == g then
-            h = (b - r) / d + 2
-        elseif max == b then
-            h = (r - g) / d + 4
+            h = (b - r) / delta + 2
+        else
+            h = (r - g) / delta + 4
         end
         h = h / 6
     end
@@ -2655,7 +2681,7 @@ function Library:AddTextbox(module, config)
     return Textbox
 end
 
--- Компонент: Color Picker
+-- Компонент: Color Picker (ПОЛНОСТЬЮ ПЕРЕПИСАНО С НУЛЯ)
 function Library:AddColorPicker(module, config)
     config = config or {}
     local name = config.Name or "Color"
@@ -2746,12 +2772,13 @@ function Library:AddColorPicker(module, config)
     PickerStroke.Transparency = 0.5
     PickerStroke.Parent = PickerWindow
     
-    -- Палитра SV (Saturation/Value)
+    -- Палитра SV (Saturation/Value) - НОВАЯ РЕАЛИЗАЦИЯ
+    -- Структура: Фон = чистый цвет Hue, Белый градиент слева направо, Черный градиент сверху вниз
     local SVPicker = Instance.new("ImageButton")
     SVPicker.Name = "SVPicker"
     SVPicker.Size = UDim2.new(0, 160, 0, 160)
     SVPicker.Position = UDim2.new(0, 10, 0, 10)
-    SVPicker.BackgroundColor3 = ColorUtils.HSVtoRGB(h, 1, 1)
+    SVPicker.BackgroundColor3 = ColorUtils.HSVtoRGB(h, 1, 1)  -- Чистый цвет текущего Hue
     SVPicker.BorderSizePixel = 0
     SVPicker.AutoButtonColor = false
     SVPicker.ZIndex = 1001
@@ -2761,24 +2788,34 @@ function Library:AddColorPicker(module, config)
     SVCorner.CornerRadius = UDim.new(0, 6)
     SVCorner.Parent = SVPicker
     
-    -- Белый градиент (Saturation)
-    local WhiteGradient = Instance.new("UIGradient")
-    WhiteGradient.Color = ColorSequence.new{
-        ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
-        ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 255, 255))
-    }
-    WhiteGradient.Transparency = NumberSequence.new{
-        NumberSequenceKeypoint.new(0, 0),
-        NumberSequenceKeypoint.new(1, 1)
-    }
-    WhiteGradient.Parent = SVPicker
+    -- Слой 1: Белый градиент (слева направо) для Saturation
+    -- Слева (X=0): белый (S=0), Справа (X=1): прозрачный (S=1)
+    local WhiteOverlay = Instance.new("Frame")
+    WhiteOverlay.Size = UDim2.new(1, 0, 1, 0)
+    WhiteOverlay.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    WhiteOverlay.BorderSizePixel = 0
+    WhiteOverlay.ZIndex = 1002
+    WhiteOverlay.Parent = SVPicker
     
-    -- Черный оверлей (Value)
+    local WhiteCorner = Instance.new("UICorner")
+    WhiteCorner.CornerRadius = UDim.new(0, 6)
+    WhiteCorner.Parent = WhiteOverlay
+    
+    local WhiteGradient = Instance.new("UIGradient")
+    WhiteGradient.Rotation = 0  -- Горизонтальный
+    WhiteGradient.Transparency = NumberSequence.new{
+        NumberSequenceKeypoint.new(0, 0),  -- Слева: непрозрачный белый
+        NumberSequenceKeypoint.new(1, 1)   -- Справа: прозрачный
+    }
+    WhiteGradient.Parent = WhiteOverlay
+    
+    -- Слой 2: Черный градиент (сверху вниз) для Value/Brightness
+    -- Сверху (Y=0): прозрачный (V=1), Снизу (Y=1): черный (V=0)
     local BlackOverlay = Instance.new("Frame")
     BlackOverlay.Size = UDim2.new(1, 0, 1, 0)
     BlackOverlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
     BlackOverlay.BorderSizePixel = 0
-    BlackOverlay.ZIndex = 1002
+    BlackOverlay.ZIndex = 1003
     BlackOverlay.Parent = SVPicker
     
     local BlackCorner = Instance.new("UICorner")
@@ -2786,10 +2823,10 @@ function Library:AddColorPicker(module, config)
     BlackCorner.Parent = BlackOverlay
     
     local BlackGradient = Instance.new("UIGradient")
-    BlackGradient.Rotation = 90
+    BlackGradient.Rotation = 90  -- Вертикальный
     BlackGradient.Transparency = NumberSequence.new{
-        NumberSequenceKeypoint.new(0, 0),  -- Верх: непрозрачный черный (темный)
-        NumberSequenceKeypoint.new(1, 1)   -- Низ: прозрачный (яркий)
+        NumberSequenceKeypoint.new(0, 1),  -- Сверху: прозрачный (яркий)
+        NumberSequenceKeypoint.new(1, 0)   -- Снизу: непрозрачный черный (темный)
     }
     BlackGradient.Parent = BlackOverlay
     
@@ -2797,10 +2834,10 @@ function Library:AddColorPicker(module, config)
     local SVCursor = Instance.new("Frame")
     SVCursor.Name = "SVCursor"
     SVCursor.Size = UDim2.new(0, 12, 0, 12)
-    SVCursor.Position = UDim2.new(s, -6, 1 - v, -6)  -- ИСПРАВЛЕНО: инвертируем v для правильной позиции
+    SVCursor.Position = UDim2.new(s, -6, 1 - v, -6)  -- X=Saturation, Y=1-Value
     SVCursor.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
     SVCursor.BorderSizePixel = 0
-    SVCursor.ZIndex = 1003
+    SVCursor.ZIndex = 1004
     SVCursor.Parent = SVPicker
     
     local CursorCorner = Instance.new("UICorner")
@@ -2874,39 +2911,52 @@ function Library:AddColorPicker(module, config)
     PreviewCorner.CornerRadius = UDim.new(0, 6)
     PreviewCorner.Parent = ColorPreview
     
-    -- Функция обновления цвета
+    -- Функция обновления цвета - НОВАЯ ЛОГИКА
     local function updateColor()
+        -- Конвертируем HSV в RGB с правильными значениями
         local newColor = ColorUtils.HSVtoRGB(ColorPicker.Hue, ColorPicker.Saturation, ColorPicker.Brightness)
         ColorPicker.Value = newColor
         
+        -- Обновляем визуальные элементы
         ColorButton.BackgroundColor3 = newColor
         ColorPreview.BackgroundColor3 = newColor
+        
+        -- Обновляем фон палитры SV (чистый цвет текущего Hue)
         SVPicker.BackgroundColor3 = ColorUtils.HSVtoRGB(ColorPicker.Hue, 1, 1)
         
+        -- Сохраняем в конфиг
         if self.Config then
             self.Config:SetFlag(flag, {
-            R = math.floor(newColor.R * 255),
-            G = math.floor(newColor.G * 255),
-            B = math.floor(newColor.B * 255)
+                R = math.floor(newColor.R * 255),
+                G = math.floor(newColor.G * 255),
+                B = math.floor(newColor.B * 255)
             })
             self.Config:Save(self.ConfigName)
         end
         
+        -- Вызываем callback
         callback(newColor)
     end
     
-    -- Обработка SV Picker
+    -- Обработка SV Picker - НОВАЯ ЛОГИКА
     local svDragging = false
     
     local function updateSVPicker(inputPos)
+        -- Получаем относительную позицию курсора
         local relativePos = inputPos - SVPicker.AbsolutePosition
         local pos = relativePos / SVPicker.AbsoluteSize
         pos = Vector2.new(math.clamp(pos.X, 0, 1), math.clamp(pos.Y, 0, 1))
         
+        -- ПРАВИЛЬНАЯ ЛОГИКА:
+        -- X (0-1): Saturation - слева белый (S=0), справа насыщенный (S=1)
+        -- Y (0-1): Value - сверху яркий (V=1), снизу темный (V=0)
         ColorPicker.Saturation = pos.X
-        ColorPicker.Brightness = 1 - pos.Y  -- ИСПРАВЛЕНО: инвертируем Y, т.к. черный градиент сверху
+        ColorPicker.Brightness = 1 - pos.Y  -- Инвертируем Y
         
+        -- Обновляем позицию курсора
         SVCursor.Position = UDim2.new(pos.X, -6, pos.Y, -6)
+        
+        -- Обновляем цвет
         updateColor()
     end
     
