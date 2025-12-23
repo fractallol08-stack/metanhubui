@@ -409,7 +409,7 @@ function Library:CreateUI()
     local TitleIcon = Instance.new("ImageButton")
     TitleIcon.Name = "Icon"
     TitleIcon.Size = UDim2.new(0, 18, 0, 18)
-    TitleIcon.Position = UDim2.new(0, 18, 0, 26)
+    TitleIcon.Position = UDim2.new(0, 18, 0, 22)  -- На уровне с названием (было 26)
     TitleIcon.AnchorPoint = Vector2.new(0, 0.5)
     TitleIcon.BackgroundTransparency = 1
     TitleIcon.Image = "rbxassetid://107819132007001"
@@ -1160,12 +1160,12 @@ function Library:CreateModule(tab, config)
     FrameCorner.CornerRadius = UDim.new(0, 5)
     FrameCorner.Parent = Module.Frame
     
-    -- ИСПРАВЛЕНИЕ: Обводка модуля без обрезания
+    -- Обводка модуля (не обрезается)
     local FrameStroke = Instance.new("UIStroke")
     FrameStroke.Color = Color3.fromRGB(52, 66, 89)
     FrameStroke.Thickness = 1
     FrameStroke.Transparency = 0.5
-    FrameStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Contextual  -- Не обрезается
+    FrameStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border  -- Border чтобы не обрезалось
     FrameStroke.Parent = Module.Frame
     
     -- Заголовок модуля (Header)
@@ -1286,7 +1286,7 @@ function Library:CreateModule(tab, config)
             local textSize = game:GetService("TextService"):GetTextSize(
                 text,
                 10,
-                Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.SemiBold, Enum.FontStyle.Normal),
+                Enum.Font.SourceSans,
                 Vector2.new(1000, 13)
             )
             local newWidth = math.clamp(textSize.X + 8, 33, 60)
@@ -1417,6 +1417,7 @@ function Library:CreateModule(tab, config)
         print("Модуль:", Module.Name)
         print("Текущий модуль:", self.CurrentModule and self.CurrentModule.Name or "nil")
         print("Компонентов:", #Module.Components)
+        print("SettingsPanel существует:", self.SettingsPanel ~= nil)
         
         -- Если кликнули на тот же модуль - закрываем
         if self.CurrentModule == Module then
@@ -1425,7 +1426,14 @@ function Library:CreateModule(tab, config)
         else
             -- Открываем новый модуль (мгновенно, без debounce)
             print("Открываем новый модуль")
-            self:ShowSettingsPanel(Module)
+            local success, err = pcall(function()
+                self:ShowSettingsPanel(Module)
+            end)
+            if not success then
+                warn("Ошибка открытия панели:", err)
+            else
+                print("Панель открыта успешно")
+            end
         end
     end)
     
@@ -1477,8 +1485,14 @@ function Library:CreateModule(tab, config)
 end
 
 function Library:ShowSettingsPanel(module)
+    print("=== ShowSettingsPanel НАЧАЛО ===")
+    print("Модуль:", module and module.Name or "nil")
+    print("Компонентов:", module and #module.Components or 0)
+    print("SettingsPanel существует:", self.SettingsPanel ~= nil)
+    
     -- Создаем панель если её нет
     if not self.SettingsPanel then
+        print("Создаем новую панель настроек...")
         self.SettingsPanel = Instance.new("Frame")
         self.SettingsPanel.Name = "SettingsPanel"
         self.SettingsPanel.Size = UDim2.new(0, 280, 0, 500)
