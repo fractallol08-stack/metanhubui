@@ -2212,33 +2212,42 @@ function Library:AddToggle(module, config)
     return Toggle
 end
 
--- Компонент: Dropdown (точь-в-точь как в LibraryMarch)
+-- Компонент: Dropdown (с поиском и фоном для опций)
 function Library:AddDropdown(module, config)
     config = config or {}
     local name = config.Name or "Dropdown"
     local options = config.Options or {"Option 1", "Option 2"}
+    local multi = config.Multi or false  -- Мульти-выбор
     if not table.find(options, "None") then
         table.insert(options, 1, "None")
     end
 
     local default = config.Default
     if default == nil then
-        default = "None"
+        default = multi and {} or "None"
     end
     local flag = config.Flag or name
     local callback = config.Callback or function() end
     
     local value = self.Config:GetFlag(flag, default)
-    if value == nil or value == "" then
-        value = "None"
+    if multi then
+        if type(value) ~= "table" then
+            value = {}
+        end
+    else
+        if value == nil or value == "" then
+            value = "None"
+        end
     end
     
     local Dropdown = {}
     Dropdown.Value = value
     Dropdown.Open = false
     Dropdown.Size = 0
+    Dropdown.Multi = multi
+    Dropdown.AllOptions = options
     
-    -- Контейнер 207x39 (точно как в LibraryMarch)
+    -- Контейнер 207x39
     Dropdown.Element = Instance.new("Frame")
     Dropdown.Element.Name = name
     Dropdown.Element.Size = UDim2.new(0, 207, 0, 39)
@@ -2258,7 +2267,7 @@ function Library:AddDropdown(module, config)
     Label.TextXAlignment = Enum.TextXAlignment.Left
     Label.Parent = Dropdown.Element
     
-    -- Box 207x22 (точно как в LibraryMarch)
+    -- Box 207x22
     local Box = Instance.new("Frame")
     Box.Name = "Box"
     Box.Size = UDim2.new(0, 207, 0, 22)
@@ -2280,6 +2289,7 @@ function Library:AddDropdown(module, config)
     Header.BorderSizePixel = 0
     Header.Text = ""
     Header.AutoButtonColor = false
+    Header.LayoutOrder = 1
     Header.Parent = Box
     
     local HeaderCorner = Instance.new("UICorner")
@@ -2293,7 +2303,7 @@ function Library:AddDropdown(module, config)
     CurrentOption.AnchorPoint = Vector2.new(0, 0.5)
     CurrentOption.Position = UDim2.new(0.05, 0, 0.5, 0)
     CurrentOption.BackgroundTransparency = 1
-    CurrentOption.Text = value
+    CurrentOption.Text = multi and "None" or value
     CurrentOption.TextColor3 = Color3.fromRGB(255, 255, 255)
     CurrentOption.TextTransparency = 0.2
     CurrentOption.TextSize = 10
@@ -2320,11 +2330,62 @@ function Library:AddDropdown(module, config)
     Arrow.Image = "rbxassetid://84232453189324"
     Arrow.Parent = Header
     
-    -- Options (список опций)
+    -- Поле поиска (появляется при открытии)
+    local SearchBox = Instance.new("Frame")
+    SearchBox.Name = "SearchBox"
+    SearchBox.Size = UDim2.new(0, 207, 0, 20)
+    SearchBox.BackgroundColor3 = Color3.fromRGB(152, 181, 255)
+    SearchBox.BackgroundTransparency = 0.9
+    SearchBox.BorderSizePixel = 0
+    SearchBox.LayoutOrder = 2
+    SearchBox.Visible = false
+    SearchBox.Parent = Box
+    
+    local SearchCorner = Instance.new("UICorner")
+    SearchCorner.CornerRadius = UDim.new(0, 4)
+    SearchCorner.Parent = SearchBox
+    
+    local SearchInput = Instance.new("TextBox")
+    SearchInput.Size = UDim2.new(1, -10, 1, 0)
+    SearchInput.Position = UDim2.new(0, 5, 0, 0)
+    SearchInput.BackgroundTransparency = 1
+    SearchInput.Text = ""
+    SearchInput.PlaceholderText = "Search..."
+    SearchInput.TextColor3 = Color3.fromRGB(255, 255, 255)
+    SearchInput.PlaceholderColor3 = Color3.fromRGB(255, 255, 255)
+    SearchInput.TextTransparency = 0.2
+    SearchInput.TextSize = 10
+    SearchInput.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
+    SearchInput.TextXAlignment = Enum.TextXAlignment.Left
+    SearchInput.ClearTextOnFocus = false
+    SearchInput.Parent = SearchBox
+    
+    -- Контейнер для опций с фоном
+    local OptionsContainer = Instance.new("Frame")
+    OptionsContainer.Name = "OptionsContainer"
+    OptionsContainer.Size = UDim2.new(0, 207, 0, 0)
+    OptionsContainer.BackgroundColor3 = Color3.fromRGB(22, 28, 38)  -- Фон как у модулей
+    OptionsContainer.BackgroundTransparency = 0.3  -- Немного прозрачный
+    OptionsContainer.BorderSizePixel = 0
+    OptionsContainer.LayoutOrder = 3
+    OptionsContainer.Parent = Box
+    
+    local OptionsContainerCorner = Instance.new("UICorner")
+    OptionsContainerCorner.CornerRadius = UDim.new(0, 4)
+    OptionsContainerCorner.Parent = OptionsContainer
+    
+    local OptionsContainerStroke = Instance.new("UIStroke")
+    OptionsContainerStroke.Color = Color3.fromRGB(52, 66, 89)
+    OptionsContainerStroke.Thickness = 1
+    OptionsContainerStroke.Transparency = 0.5
+    OptionsContainerStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    OptionsContainerStroke.Parent = OptionsContainer
+    
+    -- Options (список опций внутри контейнера)
     local Options = Instance.new("ScrollingFrame")
     Options.Name = "Options"
-    Options.Size = UDim2.new(0, 207, 0, 0)
-    Options.Position = UDim2.new(0, 0, 1, 0)
+    Options.Size = UDim2.new(1, 0, 1, 0)
+    Options.Position = UDim2.new(0, 0, 0, 0)
     Options.BackgroundTransparency = 1
     Options.BorderSizePixel = 0
     Options.ScrollBarThickness = 0
@@ -2332,22 +2393,32 @@ function Library:AddDropdown(module, config)
     Options.AutomaticCanvasSize = Enum.AutomaticSize.Y
     Options.CanvasSize = UDim2.new(0, 0, 0, 0)
     Options.Active = true
-    Options.Parent = Box
+    Options.Parent = OptionsContainer
     
     local OptionsLayout = Instance.new("UIListLayout")
     OptionsLayout.SortOrder = Enum.SortOrder.LayoutOrder
     OptionsLayout.Parent = Options
     
     local OptionsPadding = Instance.new("UIPadding")
-    OptionsPadding.PaddingTop = UDim.new(0, -1)
+    OptionsPadding.PaddingTop = UDim.new(0, 2)
     OptionsPadding.PaddingLeft = UDim.new(0, 10)
+    OptionsPadding.PaddingRight = UDim.new(0, 5)
+    OptionsPadding.PaddingBottom = UDim.new(0, 2)
     OptionsPadding.Parent = Options
     
     -- Создаем опции
+    local optionButtons = {}
     if #options > 0 then
-        Dropdown.Size = math.min(#options * 16 + 3, 100)
+        Dropdown.Size = math.min(#options * 16 + 7, 100)  -- +7 для padding
         
         for _, option in ipairs(options) do
+            local isSelected = false
+            if multi then
+                isSelected = table.find(value, option) ~= nil
+            else
+                isSelected = (option == value)
+            end
+            
             local Option = Instance.new("TextButton")
             Option.Name = "Option"
             Option.Size = UDim2.new(0, 186, 0, 16)
@@ -2355,7 +2426,7 @@ function Library:AddDropdown(module, config)
             Option.BackgroundTransparency = 1
             Option.Text = option
             Option.TextColor3 = Color3.fromRGB(255, 255, 255)
-            Option.TextTransparency = option == value and 0.2 or 0.6
+            Option.TextTransparency = isSelected and 0.2 or 0.6
             Option.TextSize = 10
             Option.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
             Option.TextXAlignment = Enum.TextXAlignment.Left
@@ -2373,41 +2444,115 @@ function Library:AddDropdown(module, config)
             }
             OptionGradient.Parent = Option
             
+            optionButtons[option] = Option
+            
             Option.MouseButton1Click:Connect(function()
-                Dropdown:SetValue(option)
-                Dropdown:Toggle()
+                if multi then
+                    Dropdown:ToggleOption(option)
+                else
+                    Dropdown:SetValue(option)
+                    Dropdown:Toggle()
+                end
             end)
         end
     end
+    
+    -- Функция поиска
+    local function UpdateSearch(query)
+        query = query:lower()
+        local visibleCount = 0
+        
+        for _, option in ipairs(options) do
+            local btn = optionButtons[option]
+            if btn then
+                if query == "" or option:lower():find(query, 1, true) then
+                    btn.Visible = true
+                    visibleCount = visibleCount + 1
+                else
+                    btn.Visible = false
+                end
+            end
+        end
+        
+        -- Обновляем размер контейнера
+        local newSize = math.min(visibleCount * 16 + 7, 100)
+        Dropdown.Size = newSize
+        if Dropdown.Open then
+            OptionsContainer.Size = UDim2.new(0, 207, 0, newSize)
+        end
+    end
+    
+    SearchInput:GetPropertyChangedSignal("Text"):Connect(function()
+        UpdateSearch(SearchInput.Text)
+    end)
     
     -- Функция переключения
     function Dropdown:Toggle()
         self.Open = not self.Open
         
         if self.Open then
-            -- ИСПРАВЛЕНИЕ: Убраны анимации, мгновенное открытие
-            Dropdown.Element.Size = UDim2.new(0, 207, 0, 39 + self.Size)
-            Box.Size = UDim2.new(0, 207, 0, 22 + self.Size)
-            Options.Size = UDim2.new(0, 207, 0, self.Size)
+            -- Мгновенное открытие
+            SearchBox.Visible = true
+            Dropdown.Element.Size = UDim2.new(0, 207, 0, 39 + 20 + self.Size + 5)  -- +20 для поиска, +5 отступ
+            Box.Size = UDim2.new(0, 207, 0, 22 + 20 + self.Size + 5)
+            OptionsContainer.Size = UDim2.new(0, 207, 0, self.Size)
             Arrow.Rotation = 180
+            task.wait()
+            SearchInput:CaptureFocus()
         else
-            -- ИСПРАВЛЕНИЕ: Убраны анимации, мгновенное закрытие
+            -- Мгновенное закрытие
+            SearchBox.Visible = false
+            SearchInput.Text = ""
+            UpdateSearch("")
             Dropdown.Element.Size = UDim2.new(0, 207, 0, 39)
             Box.Size = UDim2.new(0, 207, 0, 22)
-            Options.Size = UDim2.new(0, 207, 0, 0)
+            OptionsContainer.Size = UDim2.new(0, 207, 0, 0)
             Arrow.Rotation = 0
         end
     end
     
+    -- Функция для мульти-выбора
+    function Dropdown:ToggleOption(option)
+        if not self.Multi then return end
+        
+        local idx = table.find(self.Value, option)
+        if idx then
+            table.remove(self.Value, idx)
+        else
+            table.insert(self.Value, option)
+        end
+        
+        -- Обновляем отображение
+        local btn = optionButtons[option]
+        if btn then
+            btn.TextTransparency = table.find(self.Value, option) and 0.2 or 0.6
+        end
+        
+        -- Обновляем текст
+        if #self.Value == 0 then
+            CurrentOption.Text = "None"
+        else
+            CurrentOption.Text = table.concat(self.Value, ", ")
+        end
+        
+        Library.Config:SetFlag(flag, self.Value)
+        Library.Config:Save(Library.ConfigName)
+        
+        callback(self.Value)
+    end
+    
     function Dropdown:SetValue(newValue)
+        if self.Multi then
+            -- Для мульти-выбора используем ToggleOption
+            return
+        end
+        
         self.Value = newValue
         CurrentOption.Text = newValue
         
         -- Обновляем прозрачность опций
-        for _, option in ipairs(Options:GetChildren()) do
-            if option.Name == "Option" then
-                option.TextTransparency = option.Text == newValue and 0.2 or 0.6
-            end
+        for opt, btn in pairs(optionButtons) do
+            btn.TextTransparency = opt == newValue and 0.2 or 0.6
         end
         
         Library.Config:SetFlag(flag, newValue)
