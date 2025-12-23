@@ -445,11 +445,12 @@ function Library:CreateUI()
     TitleLabel.Parent = TitleBar
     self._titleLabel = TitleLabel
     
-    -- macOS-style Close Button (красный кружок)
+    -- ИСПРАВЛЕНИЕ #3: Синяя кнопка закрытия на одной высоте со строкой поиска модулей
+    -- macOS-style Close Button (синий кружок)
     local CloseButton = Instance.new("TextButton")
     CloseButton.Name = "CloseButton"
     CloseButton.Size = UDim2.new(0, 12, 0, 12)
-    CloseButton.Position = UDim2.new(1, -20, 0, 18)  -- Поднято выше (было 23)
+    CloseButton.Position = UDim2.new(1, -20, 0, 20)  -- Y = 20 (центр SearchContainer: 5 + 30/2 = 20)
     CloseButton.AnchorPoint = Vector2.new(0.5, 0.5)
     CloseButton.BackgroundColor3 = self._themeAccent
     CloseButton.BorderSizePixel = 0
@@ -499,10 +500,11 @@ function Library:CreateUI()
     }
     TitleGradient.Parent = TitleLabel
 
+    -- ИСПРАВЛЕНИЕ #5: Разделитель под названием GUI на всю ширину до вертикального разделителя
     local TitleDivider = Instance.new("Frame")
     TitleDivider.Name = "TitleDivider"
-    TitleDivider.Size = UDim2.new(0, 129, 0, 1)
-    TitleDivider.Position = UDim2.new(0, 18, 0, 40)
+    TitleDivider.Size = UDim2.new(0.235, 0, 0, 1)  -- На всю ширину до вертикального разделителя
+    TitleDivider.Position = UDim2.new(0, 0, 0, 40)
     TitleDivider.BackgroundColor3 = Color3.fromRGB(52, 66, 89)
     TitleDivider.BackgroundTransparency = 0.5
     TitleDivider.BorderSizePixel = 0
@@ -595,9 +597,10 @@ function Library:CreateUI()
     self.SystemTabContainer.BorderSizePixel = 0
     self.SystemTabContainer.Parent = self.MainFrame
 
+    -- ИСПРАВЛЕНИЕ #5: Разделитель над UI SETTINGS на всю ширину
     local SystemDivider = Instance.new("Frame")
     SystemDivider.Name = "SystemDivider"
-    SystemDivider.Size = UDim2.new(1, 0, 0, 1)
+    SystemDivider.Size = UDim2.new(0.235, 0, 0, 1)  -- На всю ширину до вертикального разделителя
     SystemDivider.Position = UDim2.new(0, 0, 0, -4)
     SystemDivider.BackgroundColor3 = self._themeStroke
     SystemDivider.BackgroundTransparency = 0.5
@@ -605,11 +608,12 @@ function Library:CreateUI()
     SystemDivider.Parent = self.SystemTabContainer
     self._tabsSystemDivider = SystemDivider
     
+    -- ИСПРАВЛЕНИЕ #5: Вертикальный разделитель на всю высоту
     -- Разделитель между табами и контентом
     local Divider = Instance.new("Frame")
     Divider.Name = "Divider"
-    Divider.Size = UDim2.new(0, 1, 0, 479)
-    Divider.Position = UDim2.new(0.235, 0, 0.042, 0)  -- Начинается ниже заголовка
+    Divider.Size = UDim2.new(0, 1, 1, 0)  -- На всю высоту (от верха до низа)
+    Divider.Position = UDim2.new(0.235, 0, 0, 0)  -- Начинается с самого верха
     Divider.BackgroundColor3 = self._themeStroke
     Divider.BackgroundTransparency = 0.5
     Divider.BorderSizePixel = 0
@@ -1008,8 +1012,8 @@ function Library:CreateTab(name, icon, opts)
     
     -- UIGridLayout для 2 колонок
     local ContainerLayout = Instance.new("UIGridLayout")
-    ContainerLayout.CellSize = UDim2.new(0, 241, 0, 85)
-    ContainerLayout.CellPadding = UDim2.new(0, 9, 0, 9)  -- Отступы между модулями
+    ContainerLayout.CellSize = UDim2.new(0, 241, 0, 93)  -- Точный размер как в LibraryMarch
+    ContainerLayout.CellPadding = UDim2.new(0, 9, 0, 11)  -- Отступы как в LibraryMarch
     ContainerLayout.SortOrder = Enum.SortOrder.LayoutOrder
     ContainerLayout.HorizontalAlignment = Enum.HorizontalAlignment.Left
     ContainerLayout.Parent = Tab.Container
@@ -1160,11 +1164,12 @@ function Library:CreateModule(tab, config)
     local moduleKeybindEnabled = (config.KeybindEnabled == true) or (config.Keybind ~= nil)
     local moduleKeybindFlag = config.KeybindFlag or Module.Name
     
-    -- Контейнер модуля (карточка) - размер 85px (оптимизированный)
+    -- Контейнер модуля (карточка) - размер 93px (точно как в LibraryMarch)
     Module.Frame = Instance.new("Frame")
     Module.Frame.Name = Module.Name
-    Module.Frame.Size = UDim2.new(0, 241, 0, 85)
+    Module.Frame.Size = UDim2.new(0, 241, 0, 93)
     Module.Frame.BackgroundColor3 = Color3.fromRGB(22, 28, 38)
+    Module.Frame.BackgroundTransparency = 0.5  -- Точная прозрачность как в LibraryMarch
     Module.Frame.BorderSizePixel = 0
     Module.Frame.Parent = tab.Container
     
@@ -1182,7 +1187,7 @@ function Library:CreateModule(tab, config)
     -- Заголовок модуля (Header)
     local Header = Instance.new("TextButton")
     Header.Name = "Header"
-    Header.Size = UDim2.new(1, 0, 0, 85)
+    Header.Size = UDim2.new(1, 0, 0, 93)  -- Точный размер как в LibraryMarch
     Header.BackgroundTransparency = 1
     Header.Text = ""
     Header.AutoButtonColor = false
@@ -1235,7 +1240,7 @@ function Library:CreateModule(tab, config)
     local Toggle = Instance.new("Frame")
     Toggle.Name = "Toggle"
     Toggle.Size = UDim2.new(0, 25, 0, 12)
-    Toggle.Position = UDim2.new(0.82, 0, 0.8, 0)  -- Adjusted for 85px height
+    Toggle.Position = UDim2.new(0.82, 0, 0.757, 0)  -- Точная позиция как в LibraryMarch (для 93px)
     Toggle.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
     Toggle.BackgroundTransparency = 0.7
     Toggle.BorderSizePixel = 0
@@ -1265,7 +1270,7 @@ function Library:CreateModule(tab, config)
         local Keybind = Instance.new("Frame")
         Keybind.Name = "Keybind"
         Keybind.Size = UDim2.new(0, 33, 0, 15)
-        Keybind.Position = UDim2.new(0.15, 0, 0.78, 0)  -- Adjusted for 85px height
+        Keybind.Position = UDim2.new(0.15, 0, 0.735, 0)  -- Точная позиция как в LibraryMarch (для 93px)
         Keybind.BackgroundColor3 = Color3.fromRGB(152, 181, 255)
         Keybind.BackgroundTransparency = 0.7
         Keybind.BorderSizePixel = 0
@@ -1410,11 +1415,11 @@ function Library:CreateModule(tab, config)
         Module.KeybindConnection = nil
     end
     
-    -- Единственный Divider под заголовком (Y: 0.55)
+    -- Divider под заголовком (точная позиция как в LibraryMarch)
     local Divider = Instance.new("Frame")
     Divider.Name = "Divider"
     Divider.Size = UDim2.new(0, 241, 0, 1)
-    Divider.Position = UDim2.new(0.5, 0, 0.55, 0)
+    Divider.Position = UDim2.new(0.5, 0, 0.62, 0)  -- Точная позиция как в LibraryMarch (для 93px)
     Divider.AnchorPoint = Vector2.new(0.5, 0)
     Divider.BackgroundColor3 = Color3.fromRGB(52, 66, 89)
     Divider.BackgroundTransparency = 0.5
@@ -1587,44 +1592,56 @@ function Library:ShowSettingsPanel(module)
             end
         end)
         
-        -- Кнопка закрытия
+        -- ИСПРАВЛЕНИЕ #4: Кнопка закрытия панели настроек (синий кружок как в главной GUI)
         local CloseButton = Instance.new("TextButton")
         CloseButton.Name = "CloseButton"
-        CloseButton.Size = UDim2.new(0, 24, 0, 24)
-        CloseButton.Position = UDim2.new(0, 14, 0, 14)
-        CloseButton.BackgroundTransparency = 1
+        CloseButton.Size = UDim2.new(0, 12, 0, 12)  -- Размер как в главной GUI
+        CloseButton.Position = UDim2.new(1, -20, 0, 26)  -- На одной высоте с заголовком
+        CloseButton.AnchorPoint = Vector2.new(0.5, 0.5)
+        CloseButton.BackgroundColor3 = self._themeAccent  -- Синий цвет
         CloseButton.BorderSizePixel = 0
         CloseButton.Text = ""
         CloseButton.AutoButtonColor = false
         CloseButton.ZIndex = 11
         CloseButton.Parent = self.SettingsPanel
         
-        -- Иконка закрытия (крестик)
-        local CloseIcon = Instance.new("ImageLabel")
-        CloseIcon.Size = UDim2.new(1, 0, 1, 0)
-        CloseIcon.BackgroundTransparency = 1
-        CloseIcon.Image = "rbxassetid://10747384394"
-        CloseIcon.ImageColor3 = Color3.fromRGB(255, 255, 255)
-        CloseIcon.ImageTransparency = 0.7
-        CloseIcon.ScaleType = Enum.ScaleType.Fit
-        CloseIcon.ZIndex = 11
-        CloseIcon.Parent = CloseButton
+        local CloseCorner = Instance.new("UICorner")
+        CloseCorner.CornerRadius = UDim.new(1, 0)  -- Круглая кнопка
+        CloseCorner.Parent = CloseButton
+        
+        local CloseStroke = Instance.new("UIStroke")
+        CloseStroke.Color = Color3.fromRGB(100, 120, 150)
+        CloseStroke.Thickness = 1
+        CloseStroke.Transparency = 0.3
+        CloseStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+        CloseStroke.Parent = CloseButton
         
         CloseButton.MouseButton1Click:Connect(function()
             self:HideSettingsPanel()
         end)
         
         CloseButton.MouseEnter:Connect(function()
-            TweenService:Create(CloseIcon, TweenInfo.new(0.2), {
-                ImageTransparency = 0.2
+            TweenService:Create(CloseButton, TweenInfo.new(0.2), {
+                BackgroundColor3 = self._themeAccent:Lerp(Color3.fromRGB(255, 255, 255), 0.15)
             }):Play()
         end)
         
         CloseButton.MouseLeave:Connect(function()
-            TweenService:Create(CloseIcon, TweenInfo.new(0.2), {
-                ImageTransparency = 0.7
+            TweenService:Create(CloseButton, TweenInfo.new(0.2), {
+                BackgroundColor3 = self._themeAccent
             }):Play()
         end)
+        
+        -- ИСПРАВЛЕНИЕ #4: Разделитель под названием модуля на всю ширину панели настроек
+        local PanelDivider = Instance.new("Frame")
+        PanelDivider.Name = "PanelDivider"
+        PanelDivider.Size = UDim2.new(1, 0, 0, 1)  -- На всю ширину панели (280px)
+        PanelDivider.Position = UDim2.new(0, 0, 0, 40)  -- Под заголовком
+        PanelDivider.BackgroundColor3 = self._themeStroke
+        PanelDivider.BackgroundTransparency = 0.5
+        PanelDivider.BorderSizePixel = 0
+        PanelDivider.ZIndex = 11
+        PanelDivider.Parent = self.SettingsPanel
 
         self.SettingsGroup = Instance.new("CanvasGroup")
         self.SettingsGroup.Name = "SettingsGroup"
@@ -2210,8 +2227,10 @@ function Library:AddToggle(module, config)
         end)
     end)
 
+    -- ИСПРАВЛЕНИЕ #1: Кейбинд не должен срабатывать при установке
     UserInputService.InputBegan:Connect(function(input, gameProcessed)
-        if gameProcessed or Toggle.Listening then return end
+        if gameProcessed then return end
+        if Toggle.Listening then return end  -- НЕ срабатывать при установке кейбинда
         if Toggle.Keybind and input.KeyCode == Toggle.Keybind then
             Toggle:SetValue(not Toggle.Value)
         end
