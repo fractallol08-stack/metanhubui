@@ -3556,197 +3556,51 @@ function Library.SendNotification(config)
     end)
 end
 
--- Финальная функция - возвращаем библиотеку
-return Library
+-- ============================================
+-- ЗВУКОВАЯ СИСТЕМА (Task 9)
+-- ============================================
 
-        local pos = math.clamp(relativePos / HueSlider.AbsoluteSize.Y, 0, 1)
-        
-        ColorPicker.Hue = pos
-        
-        -- Обновляем позицию курсора
-        HueCursor.Position = UDim2.new(0.5, -6, pos, -6)
-        
-        -- Обновляем цвет
-        updateColor()
-    end
+local SoundManager = {}
+SoundManager.__index = SoundManager
+
+function SoundManager.new()
+    local self = setmetatable({}, SoundManager)
+    self.Enabled = true
+    self.Volume = 0.5
     
-    HueSlider.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            hueDragging = true
-            -- ИСПРАВЛЕНИЕ: Используем GetMouseLocation() вместо input.Position для правильного выравнивания
-            local mousePos = UserInputService:GetMouseLocation()
-            updateHueSlider(mousePos)
-        end
-    end)
+    -- Sound IDs (Roblox asset IDs)
+    self.Sounds = {
+        Click = "rbxassetid://6895079853",      -- Button click
+        Toggle = "rbxassetid://6895079853",     -- Checkbox toggle
+        Slide = "rbxassetid://7149255551",      -- Slider adjust
+        Open = "rbxassetid://6895079853",       -- Dropdown open
+        Notify = "rbxassetid://6647898215",     -- Notification
+        Hover = "rbxassetid://6895079853"       -- Hover effect
+    }
     
-    HueSlider.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            hueDragging = false
-        end
-    end)
-    
-    UserInputService.InputChanged:Connect(function(input)
-        if hueDragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-            local mousePos = UserInputService:GetMouseLocation()
-            updateHueSlider(mousePos)
-        end
-    end)
-    
-    -- Загружаем сохраненный цвет
-    local savedColor = self.Config:GetFlag(flag, default)
-    if savedColor then
-        ColorPicker:SetColor(savedColor)
-    end
-    
-    table.insert(module.Components, ColorPicker)
-    return ColorPicker
+    return self
 end
 
--- ============================================
--- СИСТЕМА УВЕДОМЛЕНИЙ (MarchLibrary Style)
--- ============================================
-
--- Создаём контейнер для уведомлений (глобальный)
-local NotificationContainer = nil
-
-function Library.SendNotification(config)
-    config = config or {}
-    local title = config.title or "Notification"
-    local text = config.text or "Notification message"
-    local duration = config.duration or 5
-    local type = config.type or "info"  -- info, success, warning, error
+function SoundManager:Play(soundType)
+    if not self.Enabled then return end
     
-    -- Создаём контейнер если его нет
-    if not NotificationContainer or not NotificationContainer.Parent then
-        NotificationContainer = Instance.new("Frame")
-        NotificationContainer.Name = "NotificationContainer"
-        NotificationContainer.Size = UDim2.new(0, 300, 0, 0)
-        NotificationContainer.Position = UDim2.new(1, -310, 0, 10)
-        NotificationContainer.BackgroundTransparency = 1
-        NotificationContainer.BorderSizePixel = 0
-        NotificationContainer.ClipsDescendants = false
-        NotificationContainer.AutomaticSize = Enum.AutomaticSize.Y
+    local soundId = self.Sounds[soundType]
+    if not soundId then return end
+    
+    pcall(function()
+        local sound = Instance.new("Sound")
+        sound.SoundId = soundId
+        sound.Volume = self.Volume
+        sound.Parent = game:GetService("SoundService")
+        sound:Play()
         
-        -- Находим или создаём ScreenGui
-        local screenGui = CoreGui:FindFirstChild("MarchUI")
-        if not screenGui then
-            screenGui = Instance.new("ScreenGui")
-            screenGui.Name = "MarchUI"
-            screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-            screenGui.ResetOnSpawn = false
-            screenGui.Parent = CoreGui
-        end
-        NotificationContainer.Parent = screenGui
-        
-        local UIListLayout = Instance.new("UIListLayout")
-        UIListLayout.FillDirection = Enum.FillDirection.Vertical
-        UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-        UIListLayout.Padding = UDim.new(0, 10)
-        UIListLayout.Parent = NotificationContainer
-    end
-    
-    -- Создаём уведомление
-    local Notification = Instance.new("Frame")
-    Notification.Size = UDim2.new(1, 0, 0, 60)
-    Notification.BackgroundTransparency = 1
-    Notification.BorderSizePixel = 0
-    Notification.Name = "Notification"
-    Notification.Parent = NotificationContainer
-    Notification.AutomaticSize = Enum.AutomaticSize.Y
-    
-    local UICorner = Instance.new("UICorner")
-    UICorner.CornerRadius = UDim.new(0, 4)
-    UICorner.Parent = Notification
-    
-    -- Внутренний фрейм (для анимации)
-    local InnerFrame = Instance.new("Frame")
-    InnerFrame.Size = UDim2.new(1, 0, 0, 60)
-    InnerFrame.Position = UDim2.new(1, 0, 0, 0)  -- Начинаем справа за экраном
-    InnerFrame.BackgroundColor3 = Color3.fromRGB(32, 38, 51)
-    InnerFrame.BackgroundTransparency = 0.1
-    InnerFrame.BorderSizePixel = 0
-    InnerFrame.Name = "InnerFrame"
-    InnerFrame.Parent = Notification
-    InnerFrame.AutomaticSize = Enum.AutomaticSize.Y
-    
-    local InnerUICorner = Instance.new("UICorner")
-    InnerUICorner.CornerRadius = UDim.new(0, 4)
-    InnerUICorner.Parent = InnerFrame
-    
-    -- Цветной индикатор типа (слева)
-    local TypeIndicator = Instance.new("Frame")
-    TypeIndicator.Size = UDim2.new(0, 3, 1, 0)
-    TypeIndicator.Position = UDim2.new(0, 0, 0, 0)
-    TypeIndicator.BorderSizePixel = 0
-    TypeIndicator.Parent = InnerFrame
-    
-    local typeColors = {
-        info = Color3.fromRGB(100, 150, 255),
-        success = Color3.fromRGB(100, 255, 150),
-        warning = Color3.fromRGB(255, 200, 100),
-        error = Color3.fromRGB(255, 100, 100)
-    }
-    TypeIndicator.BackgroundColor3 = typeColors[type] or typeColors.info
-    
-    -- Заголовок
-    local Title = Instance.new("TextLabel")
-    Title.Text = title
-    Title.TextColor3 = Color3.fromRGB(210, 210, 210)
-    Title.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
-    Title.TextSize = 14
-    Title.Size = UDim2.new(1, -15, 0, 20)
-    Title.Position = UDim2.new(0, 10, 0, 5)
-    Title.BackgroundTransparency = 1
-    Title.TextXAlignment = Enum.TextXAlignment.Left
-    Title.TextYAlignment = Enum.TextYAlignment.Center
-    Title.TextWrapped = true
-    Title.AutomaticSize = Enum.AutomaticSize.Y
-    Title.Parent = InnerFrame
-    
-    -- Текст
-    local Body = Instance.new("TextLabel")
-    Body.Text = text
-    Body.TextColor3 = Color3.fromRGB(180, 180, 180)
-    Body.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.Regular, Enum.FontStyle.Normal)
-    Body.TextSize = 12
-    Body.Size = UDim2.new(1, -15, 0, 30)
-    Body.Position = UDim2.new(0, 10, 0, 25)
-    Body.BackgroundTransparency = 1
-    Body.TextXAlignment = Enum.TextXAlignment.Left
-    Body.TextYAlignment = Enum.TextYAlignment.Top
-    Body.TextWrapped = true
-    Body.AutomaticSize = Enum.AutomaticSize.Y
-    Body.Parent = InnerFrame
-    
-    -- Подгоняем размер после загрузки текста
-    task.spawn(function()
-        task.wait(0.1)
-        local totalHeight = Title.TextBounds.Y + Body.TextBounds.Y + 15
-        InnerFrame.Size = UDim2.new(1, 0, 0, totalHeight)
-    end)
-    
-    -- Анимация появления и исчезновения
-    task.spawn(function()
-        -- Въезжаем слева
-        local tweenIn = TweenService:Create(InnerFrame, 
-            TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out),
-            {Position = UDim2.new(0, 0, 0, 0)}
-        )
-        tweenIn:Play()
-        
-        task.wait(duration)
-        
-        -- Уезжаем вправо
-        local tweenOut = TweenService:Create(InnerFrame,
-            TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.In),
-            {Position = UDim2.new(1, 0, 0, 0)}
-        )
-        tweenOut:Play()
-        
-        tweenOut.Completed:Connect(function()
-            Notification:Destroy()
+        sound.Ended:Connect(function()
+            sound:Destroy()
         end)
     end)
 end
- 
+
+-- Добавляем SoundManager в Library
+Library.SoundManager = SoundManager.new()
+
 return Library
