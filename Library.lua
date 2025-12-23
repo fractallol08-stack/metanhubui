@@ -347,6 +347,10 @@ function Library:ToggleCollapse(forceState)
             self.Watermark.Visible = true
         end
 
+        -- ИСПРАВЛЕНИЕ: Анимация сжатия со всех сторон (AnchorPoint в центре)
+        self.MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+        self.MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)  -- По центру экрана
+        
         local goal = {
             Size = self:GetCollapsedSize()
         }
@@ -363,7 +367,11 @@ function Library:ToggleCollapse(forceState)
             self.Watermark.Visible = false
         end
 
+        -- ИСПРАВЛЕНИЕ: Анимация расширения со всех сторон
+        self.MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+        self.MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)  -- По центру экрана
         self.MainFrame.Size = self:GetCollapsedSize()
+        
         local goal = {
             Size = self:GetMainSize()
         }
@@ -386,13 +394,14 @@ function Library:CreateUI()
     self.ScreenGui.ResetOnSpawn = false
     self.ScreenGui.Parent = CoreGui
     
-    -- Главный контейнер
+    -- ИСПРАВЛЕНИЕ: Главный контейнер с AnchorPoint в центре для анимации сжатия
     self.MainFrame = Instance.new("Frame")
     self.MainFrame.Name = "MainFrame"
     self.MainFrame.Size = self:GetMainSize()
-    self.MainFrame.Position = UDim2.new(0.5, -350, 0.5, -250)
-    self.MainFrame.BackgroundColor3 = self._themeBg  -- March UI стиль
-    self.MainFrame.BackgroundTransparency = 0.05  -- March UI прозрачность
+    self.MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)  -- По центру экрана
+    self.MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)  -- Центр для анимации сжатия
+    self.MainFrame.BackgroundColor3 = self._themeBg
+    self.MainFrame.BackgroundTransparency = 0.05
     self.MainFrame.BorderSizePixel = 0
     self.MainFrame.ClipsDescendants = false
     self.MainFrame.Parent = self.ScreenGui
@@ -430,10 +439,11 @@ function Library:CreateUI()
     TitleIcon.Parent = TitleBar
     self._titleIcon = TitleIcon
     
+    -- ИСПРАВЛЕНИЕ: Название GUI по центру между иконкой и разделителем
     local TitleLabel = Instance.new("TextLabel")
     TitleLabel.Name = "ClientName"
-    TitleLabel.Size = UDim2.new(0, 200, 0, 13)
-    TitleLabel.Position = UDim2.new(0, 42, 0, 26)
+    TitleLabel.Size = UDim2.new(0, 129, 0, 13)  -- Ширина до разделителя (164px)
+    TitleLabel.Position = UDim2.new(0, 0, 0, 26)
     TitleLabel.AnchorPoint = Vector2.new(0, 0.5)
     TitleLabel.BackgroundTransparency = 1
     TitleLabel.Text = self.Title
@@ -441,7 +451,7 @@ function Library:CreateUI()
     TitleLabel.TextTransparency = 0.2
     TitleLabel.TextSize = 13
     TitleLabel.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
-    TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
+    TitleLabel.TextXAlignment = Enum.TextXAlignment.Center  -- По центру
     TitleLabel.Parent = TitleBar
     self._titleLabel = TitleLabel
     
@@ -500,10 +510,10 @@ function Library:CreateUI()
     }
     TitleGradient.Parent = TitleLabel
 
-    -- ИСПРАВЛЕНИЕ #5: Разделитель под названием GUI на всю ширину до вертикального разделителя
+    -- ИСПРАВЛЕНИЕ: Разделитель под названием GUI на всю ширину
     local TitleDivider = Instance.new("Frame")
     TitleDivider.Name = "TitleDivider"
-    TitleDivider.Size = UDim2.new(0.235, 0, 0, 1)  -- На всю ширину до вертикального разделителя
+    TitleDivider.Size = UDim2.new(0, 164, 0, 1)  -- Полная ширина левой панели
     TitleDivider.Position = UDim2.new(0, 0, 0, 40)
     TitleDivider.BackgroundColor3 = Color3.fromRGB(52, 66, 89)
     TitleDivider.BackgroundTransparency = 0.5
@@ -597,10 +607,10 @@ function Library:CreateUI()
     self.SystemTabContainer.BorderSizePixel = 0
     self.SystemTabContainer.Parent = self.MainFrame
 
-    -- ИСПРАВЛЕНИЕ #5: Разделитель над UI SETTINGS на всю ширину
+    -- ИСПРАВЛЕНИЕ: Разделитель над UI SETTINGS на всю ширину (как под названием GUI)
     local SystemDivider = Instance.new("Frame")
     SystemDivider.Name = "SystemDivider"
-    SystemDivider.Size = UDim2.new(0.235, 0, 0, 1)  -- На всю ширину до вертикального разделителя
+    SystemDivider.Size = UDim2.new(0, 164, 0, 1)  -- Полная ширина как TitleDivider
     SystemDivider.Position = UDim2.new(0, 0, 0, -4)
     SystemDivider.BackgroundColor3 = self._themeStroke
     SystemDivider.BackgroundTransparency = 0.5
@@ -851,9 +861,18 @@ function Library:SetupToggle()
         if gameProcessed then return end
         
         if input.KeyCode == self.ToggleKey then
-            self.MainFrame.Visible = not self.MainFrame.Visible
-            if self.SettingsPanel then
-                self.SettingsPanel.Visible = self.MainFrame.Visible and self.SettingsPanel.Visible
+            local wasVisible = self.MainFrame.Visible
+            self.MainFrame.Visible = not wasVisible
+            
+            -- ИСПРАВЛЕНИЕ: Сохраняем состояние панели настроек при переключении
+            if self.SettingsPanel and self.CurrentModule then
+                if self.MainFrame.Visible then
+                    -- Восстанавливаем панель если она была открыта
+                    self.SettingsPanel.Visible = true
+                else
+                    -- Скрываем панель вместе с главным окном
+                    self.SettingsPanel.Visible = false
+                end
             end
         end
     end)
@@ -948,12 +967,13 @@ function Library:CreateTab(name, icon, opts)
     SearchContainer.Visible = false
     SearchContainer.Parent = self.ContentContainer
     
+    -- ИСПРАВЛЕНИЕ: Поле поиска более прозрачное
     local SearchBox = Instance.new("Frame")
     SearchBox.Name = "SearchBox"
     SearchBox.Size = UDim2.new(1, -10, 1, 0)
     SearchBox.Position = UDim2.new(0, 0, 0, 0)
     SearchBox.BackgroundColor3 = Color3.fromRGB(152, 181, 255)
-    SearchBox.BackgroundTransparency = 0.9
+    SearchBox.BackgroundTransparency = 0.95  -- Более прозрачное (было 0.9)
     SearchBox.BorderSizePixel = 0
     SearchBox.Parent = SearchContainer
     
@@ -1335,22 +1355,16 @@ function Library:CreateModule(tab, config)
                     LibraryInstance.Config:Save(LibraryInstance.ConfigName)
                 end
                 
-                -- Глобальный обработчик для переключения модуля
+                -- ИСПРАВЛЕНИЕ: Глобальный обработчик для переключения модуля через кейбинд
                 self.KeybindConnection = UserInputService.InputBegan:Connect(function(input, gameProcessed)
                     if gameProcessed then return end
                     if input.KeyCode == keyCode then
-                        Module.Expanded = not Module.Expanded
-                        
-                        -- Анимация toggle
-                        TweenService:Create(Circle, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-                            Position = Module.Expanded and UDim2.new(1, -12, 0.5, 0) or UDim2.new(0, 0, 0.5, 0),
-                            BackgroundColor3 = Module.Expanded and Color3.fromRGB(152, 181, 255) or Color3.fromRGB(66, 80, 115)
-                        }):Play()
-                        
-                        TweenService:Create(Toggle, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-                            BackgroundColor3 = Module.Expanded and Color3.fromRGB(152, 181, 255) or Color3.fromRGB(0, 0, 0),
-                            BackgroundTransparency = Module.Expanded and 0.7 or 0.7
-                        }):Play()
+                        -- Открываем/закрываем панель настроек модуля
+                        if LibraryInstance.CurrentModule == Module and LibraryInstance.SettingsPanel and LibraryInstance.SettingsPanel.Visible then
+                            LibraryInstance:HideSettingsPanel()
+                        else
+                            LibraryInstance:ShowSettingsPanel(Module)
+                        end
                     end
                 end)
             else
@@ -1533,11 +1547,11 @@ function Library:ShowSettingsPanel(module)
         PanelIcon.Parent = self.SettingsPanel
         self._settingsPanelIcon = PanelIcon
         
-        -- Заголовок панели (для перетаскивания)
+        -- ИСПРАВЛЕНИЕ: Заголовок панели по центру между иконкой и кнопкой закрытия
         local PanelTitle = Instance.new("TextLabel")
         PanelTitle.Name = "PanelTitle"
-        PanelTitle.Size = UDim2.new(0, 200, 0, 13)
-        PanelTitle.Position = UDim2.new(0, 42, 0, 26)
+        PanelTitle.Size = UDim2.new(0, 280, 0, 13)  -- Полная ширина панели
+        PanelTitle.Position = UDim2.new(0, 0, 0, 26)
         PanelTitle.AnchorPoint = Vector2.new(0, 0.5)
         PanelTitle.BackgroundTransparency = 1
         PanelTitle.Text = "Settings"
@@ -1545,7 +1559,7 @@ function Library:ShowSettingsPanel(module)
         PanelTitle.TextTransparency = 0.2
         PanelTitle.TextSize = 13
         PanelTitle.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
-        PanelTitle.TextXAlignment = Enum.TextXAlignment.Left
+        PanelTitle.TextXAlignment = Enum.TextXAlignment.Center  -- По центру
         PanelTitle.ZIndex = 11
         PanelTitle.Parent = self.SettingsPanel
         self._settingsPanelTitle = PanelTitle
