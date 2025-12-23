@@ -1645,6 +1645,33 @@ function Library:ShowSettingsPanel(module)
         SettingsBgStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
         SettingsBgStroke.Parent = SettingsBackground
         
+        -- Переливающийся градиент (анимация)
+        local SettingsBgGradient = Instance.new("UIGradient")
+        SettingsBgGradient.Color = ColorSequence.new{
+            ColorSequenceKeypoint.new(0, Color3.fromRGB(152, 181, 255)),  -- Accent цвет
+            ColorSequenceKeypoint.new(0.5, Color3.fromRGB(22, 28, 38)),   -- Основной цвет
+            ColorSequenceKeypoint.new(1, Color3.fromRGB(152, 181, 255))   -- Accent цвет
+        }
+        SettingsBgGradient.Transparency = NumberSequence.new{
+            NumberSequenceKeypoint.new(0, 0.9),   -- Почти прозрачный
+            NumberSequenceKeypoint.new(0.5, 0.7), -- Средняя прозрачность
+            NumberSequenceKeypoint.new(1, 0.9)    -- Почти прозрачный
+        }
+        SettingsBgGradient.Rotation = 45
+        SettingsBgGradient.Parent = SettingsBackground
+        
+        -- Анимация градиента (переливание)
+        task.spawn(function()
+            local rotation = 45
+            while SettingsBgGradient and SettingsBgGradient.Parent do
+                for i = 0, 360, 2 do
+                    if not SettingsBgGradient or not SettingsBgGradient.Parent then break end
+                    SettingsBgGradient.Rotation = rotation + i
+                    task.wait(0.03)  -- Плавная анимация
+                end
+            end
+        end)
+        
         -- Контейнер для компонентов
         self.SettingsContent = Instance.new("ScrollingFrame")
         self.SettingsContent.Name = "SettingsContent"
