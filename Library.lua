@@ -13,9 +13,6 @@
 -- Глобальные переменные
 getgenv().MarchUI = getgenv().MarchUI or {}
 
--- Загрузка звуковой системы
-local SoundSystem = loadstring(game:HttpGet("https://raw.githubusercontent.com/fractallol08-stack/metanhubui/refs/heads/main/SoundSystem.lua"))()
-
 -- Сервисы
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
@@ -406,44 +403,6 @@ function Library:CreateUI()
     self.MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)  -- Центр для анимации сжатия
     self.MainFrame.BackgroundColor3 = self._themeBg
     self.MainFrame.BackgroundTransparency = 0.05
-    
-    -- Добавляем фоновую анимацию
-    local BackgroundAnimation = Instance.new("Frame")
-    BackgroundAnimation.Name = "BackgroundAnimation"
-    BackgroundAnimation.Size = UDim2.new(1, 0, 1, 0)
-    BackgroundAnimation.Position = UDim2.new(0, 0, 0, 0)
-    BackgroundAnimation.BackgroundColor3 = Color3.fromRGB(30, 35, 45)
-    BackgroundAnimation.BackgroundTransparency = 0.8
-    BackgroundAnimation.BorderSizePixel = 0
-    BackgroundAnimation.ZIndex = 0
-    BackgroundAnimation.Parent = self.MainFrame
-    
-    local AnimationCorner = Instance.new("UICorner")
-    AnimationCorner.CornerRadius = UDim.new(0, 10)
-    AnimationCorner.Parent = BackgroundAnimation
-    
-    -- Анимация градиента для фона
-    local Gradient = Instance.new("UIGradient")
-    Gradient.Color = ColorSequence.new{
-        ColorSequenceKeypoint.new(0, Color3.fromRGB(20, 25, 35)),
-        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(30, 35, 45)),
-        ColorSequenceKeypoint.new(1, Color3.fromRGB(25, 30, 40))
-    }
-    Gradient.Transparency = NumberSequence.new{
-        NumberSequenceKeypoint.new(0, 0.3),
-        NumberSequenceKeypoint.new(0.5, 0.2),
-        NumberSequenceKeypoint.new(1, 0.3)
-    }
-    Gradient.Rotation = 45
-    Gradient.Parent = BackgroundAnimation
-    
-    -- Анимация движения градиента
-    local rotationTween = TweenService:Create(Gradient, TweenInfo.new(10, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut, -1, true), {
-        Rotation = 405
-    })
-    rotationTween:Play()
-    
-    self.BackgroundAnimation = BackgroundAnimation
     self.MainFrame.BorderSizePixel = 0
     self.MainFrame.ClipsDescendants = false
     self.MainFrame.Parent = self.ScreenGui
@@ -567,7 +526,6 @@ function Library:CreateUI()
     
     -- ИСПРАВЛЕНИЕ: Убраны hover анимации для кнопки закрытия
     CloseButton.MouseEnter:Connect(function()
-        SoundSystem.PlaySound("hover")
         CloseButton.BackgroundColor3 = self._themeAccent:Lerp(Color3.fromRGB(255, 255, 255), 0.15)
     end)
     
@@ -576,7 +534,6 @@ function Library:CreateUI()
     end)
     
     CloseButton.MouseButton1Click:Connect(function()
-        SoundSystem.PlaySound("click")
         self.MainFrame.Visible = false
         if self.SettingsPanel then
             self.SettingsPanel.Visible = false
@@ -1087,7 +1044,7 @@ function Library:CreateTab(name, icon, opts)
     SearchInput.Position = UDim2.new(0, 35, 0, 0)
     SearchInput.BackgroundTransparency = 1
     SearchInput.Text = ""
-    SearchInput.PlaceholderText = "You can find module by name here . . ."  -- ОБНОВЛЕНО: Новый placeholder на английском
+    SearchInput.PlaceholderText = "Enter function name . . ."  -- ОБНОВЛЕНО: Новый placeholder
     SearchInput.TextColor3 = Color3.fromRGB(255, 255, 255)
     SearchInput.PlaceholderColor3 = Color3.fromRGB(170, 170, 170)
     SearchInput.TextTransparency = 0.2
@@ -1134,13 +1091,11 @@ function Library:CreateTab(name, icon, opts)
     
     -- Обработчик клика
     Tab.Button.MouseButton1Click:Connect(function()
-        SoundSystem.PlaySound("click")
         self:SelectTab(Tab)
     end)
     
     -- ИСПРАВЛЕНИЕ: Убраны hover анимации для табов
     Tab.Button.MouseEnter:Connect(function()
-        SoundSystem.PlaySound("hover")
         if not Tab.Active then
             Tab.Button.BackgroundTransparency = 0.7
         end
@@ -1482,9 +1437,9 @@ function Library:CreateModule(tab, config)
                 Module:SetKeybind(keyCode)
             end
         elseif typeof(config.Keybind) == "EnumItem" then
-            Module:SetKeybind(nil)  -- Обнуляем кейбинд
+            Module:SetKeybind(config.Keybind)
         elseif type(config.Keybind) == "string" and Enum.KeyCode[config.Keybind] then
-            Module:SetKeybind(nil)  -- Обнуляем кейбинд
+            Module:SetKeybind(Enum.KeyCode[config.Keybind])
         end
     else
         Module.Keybind = nil
@@ -1504,7 +1459,6 @@ function Library:CreateModule(tab, config)
     
     -- Обработчик клика - открывает панель настроек
     Header.MouseButton1Click:Connect(function()
-        SoundSystem.PlaySound("click")
         print("=== КЛИК ПО МОДУЛЮ ===")
         print("Модуль:", Module.Name)
         print("Текущий модуль:", self.CurrentModule and self.CurrentModule.Name or "nil")
@@ -1516,8 +1470,14 @@ function Library:CreateModule(tab, config)
             print("Закрываем текущий модуль")
             self:HideSettingsPanel()
         else
-            print("Открываем модуль:", Module.Name)
-            LibraryInstance:ShowSettingsPanel(Module)
+            -- Открываем новый модуль (мгновенно, без debounce)
+            print("Открываем новый модуль")
+            local success, err = pcall(function()
+                self:ShowSettingsPanel(Module)
+            end)
+            if not success then
+                warn("Ошибка открытия панели:", err)
+            else
                 print("Панель открыта успешно")
             end
         end
@@ -1525,7 +1485,6 @@ function Library:CreateModule(tab, config)
     
     -- ИСПРАВЛЕНИЕ: Убраны hover анимации
     Header.MouseEnter:Connect(function()
-        SoundSystem.PlaySound("hover")
         Module.Frame.BackgroundColor3 = Color3.fromRGB(32, 38, 51)
     end)
     
@@ -1701,13 +1660,11 @@ function Library:ShowSettingsPanel(module)
         CloseStroke.Parent = CloseButton
         
         CloseButton.MouseButton1Click:Connect(function()
-            SoundSystem.PlaySound("click")
             self:HideSettingsPanel()
         end)
         
         -- ИСПРАВЛЕНИЕ: Убраны hover анимации для кнопки закрытия панели
         CloseButton.MouseEnter:Connect(function()
-            SoundSystem.PlaySound("hover")
             CloseButton.BackgroundColor3 = self._themeAccent:Lerp(Color3.fromRGB(255, 255, 255), 0.15)
         end)
         
@@ -2100,7 +2057,6 @@ function Library:AddSlider(module, config)
     end
     
     Slider.Element.MouseButton1Down:Connect(function()
-        SoundSystem.PlaySound("slide")
         dragging = true
         updateSlider()
         
@@ -2148,9 +2104,9 @@ function Library:AddToggle(module, config)
         if savedKey and Enum.KeyCode[savedKey] then
             Toggle.Keybind = Enum.KeyCode[savedKey]
         elseif typeof(config.Keybind) == "EnumItem" then
-            Toggle.Keybind = nil  -- Обнуляем кейбинд
+            Toggle.Keybind = config.Keybind
         elseif type(config.Keybind) == "string" and Enum.KeyCode[config.Keybind] then
-            Toggle.Keybind = nil  -- Обнуляем кейбинд
+            Toggle.Keybind = Enum.KeyCode[config.Keybind]
         end
     end
     
@@ -2282,7 +2238,6 @@ function Library:AddToggle(module, config)
     -- ИСПРАВЛЕНИЕ: Checkbox переключается только при клике на Box, не на весь Element
     Box.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            SoundSystem.PlaySound("toggle")
             Toggle:SetValue(not Toggle.Value)
         end
     end)
@@ -2570,7 +2525,6 @@ function Library:AddDropdown(module, config)
             optionButtons[option] = Option
             
             Option.MouseButton1Click:Connect(function()
-                SoundSystem.PlaySound("click")
                 if multi then
                     Dropdown:ToggleOption(option)
                 else
