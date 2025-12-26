@@ -560,6 +560,10 @@ function LibraryV2:Container(Name)
             table.insert(Container.Tweens, Tween)
         end
     }
+    
+    -- Установить правильный размер контейнера сразу после создания
+    Container.Container.Size = u2(0, 360, 0, 50)
+    
     table.insert(self.Containers, Container.Container)
 
     Container.Container.Parent = self._UI.Lib.Holder
