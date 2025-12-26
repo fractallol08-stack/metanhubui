@@ -2593,6 +2593,8 @@ function Library:AddDropdown(module, config)
     function Dropdown:ToggleOption(option)
         if not self.Multi then return end
         
+        print("[Library] Dropdown ToggleOption called:", option, "for flag:", flag)
+        
         local idx = table.find(self.Value, option)
         if idx then
             table.remove(self.Value, idx)
@@ -2616,8 +2618,11 @@ function Library:AddDropdown(module, config)
         Library.Config:SetFlag(flag, self.Value)
         Library.Config:Save(Library.ConfigName)
         
-        -- ИСПРАВЛЕНИЕ: Вызываем callback напрямую без task.spawn
-        callback(self.Value)
+        -- Вызываем callback напрямую
+        print("[Library] Calling multi callback with value:", self.Value)
+        pcall(function()
+            callback(self.Value)
+        end)
     end
     
     function Dropdown:SetValue(newValue)
@@ -2625,6 +2630,8 @@ function Library:AddDropdown(module, config)
             -- Для мульти-выбора используем ToggleOption
             return
         end
+        
+        print("[Library] Dropdown SetValue called:", newValue, "for flag:", flag)
         
         self.Value = newValue
         CurrentOption.Text = newValue
@@ -2637,13 +2644,24 @@ function Library:AddDropdown(module, config)
         Library.Config:SetFlag(flag, newValue)
         Library.Config:Save(Library.ConfigName)
         
-        -- ИСПРАВЛЕНИЕ: Вызываем callback напрямую без task.spawn
-        callback(newValue)
+        -- Вызываем callback напрямую
+        print("[Library] Calling callback with value:", newValue)
+        pcall(function()
+            callback(newValue)
+        end)
     end
     
     Header.MouseButton1Click:Connect(function()
         Dropdown:Toggle()
     end)
+    
+    -- ИСПРАВЛЕНИЕ: Вызываем callback при инициализации если значение не "None"
+    if not multi and value ~= "None" then
+        print("[Library] Initial callback for dropdown:", name, "value:", value)
+        pcall(function()
+            callback(value)
+        end)
+    end
     
     table.insert(module.Components, Dropdown)
     return Dropdown
