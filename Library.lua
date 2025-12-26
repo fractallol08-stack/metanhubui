@@ -569,7 +569,19 @@ function LibraryV2:Container(Name)
     Container.Container.Parent = self._UI.Lib.Holder
     Container.Update()
 
-    Container.Container.ImageLabel.MouseButton1Down:Connect(function()
+    -- Сделать весь контейнер кликабельным (не только стрелку)
+    local clickDetector = Container.Container.ImageLabel or Container.Container
+    
+    -- Добавить TextButton для обработки кликов если ImageLabel не работает
+    local clickButton = Instance.new("TextButton")
+    clickButton.Size = u2(1, 0, 0, 50)
+    clickButton.Position = u2(0, 0, 0, 0)
+    clickButton.BackgroundTransparency = 1
+    clickButton.Text = ""
+    clickButton.ZIndex = 10
+    clickButton.Parent = Container.Container
+    
+    clickButton.MouseButton1Click:Connect(function()
         if Container.State then
             Container.In()
 
