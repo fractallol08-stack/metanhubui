@@ -980,6 +980,7 @@ function Library:create_ui()
         end
 
         Tab.MouseButton1Click:Connect(function()
+            Library.PlaySound()
             self:update_tabs(Tab, LeftSection, RightSection)
             self:update_sections(LeftSection, RightSection)
         end)
@@ -1352,6 +1353,7 @@ function Library:create_ui()
             end)
 
             Header.MouseButton1Click:Connect(function()
+                Library.PlaySound()
                 ModuleManager:change_state(not ModuleManager._state)
             end)
 
@@ -1719,6 +1721,7 @@ function Library:create_ui()
                 end
             
                 Checkbox.MouseButton1Click:Connect(function()
+                    Library.PlaySound()
                     CheckboxManager:change_state(not CheckboxManager._state)
                 end)
             
@@ -2407,6 +2410,7 @@ function Library:create_ui()
                         UIGradient.Parent = Option
 
                         Option.MouseButton1Click:Connect(function()
+                            Library.PlaySound()
                             if not Library._config._flags[settings.flag] then
                                 Library._config._flags[settings.flag] = {};
                             end;
@@ -2445,6 +2449,7 @@ function Library:create_ui()
                 end
     
                 Dropdown.MouseButton1Click:Connect(function()
+                    Library.PlaySound()
                     DropdownManager:unfold_settings()
                 end)
 
@@ -2577,7 +2582,10 @@ function Library:create_ui()
 
                     UseF_Var = toggleState
                 
-                    Checkbox.MouseButton1Click:Connect(toggleState)
+                    Checkbox.MouseButton1Click:Connect(function()
+                        Library.PlaySound()
+                        toggleState()
+                    end)
 
                 else
 
@@ -2622,6 +2630,7 @@ function Library:create_ui()
                 Connections["keybind_press_" .. settings.flag] = keyPressConnection
             
                 FeatureButton.MouseButton1Click:Connect(function()
+                    Library.PlaySound()
                     if settings.button_callback then
                         settings.button_callback()
                     end
