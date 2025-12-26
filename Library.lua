@@ -386,97 +386,133 @@ end
 function Library.SendNotification(settings)
     Library.PlaySound("rbxassetid://6026984224")
     local Notification = Instance.new("Frame")
-    Notification.Size = UDim2.new(1, 0, 0, 60)  -- Width = 100% of NotificationContainer's width, dynamic height (Y)
-    Notification.BackgroundTransparency = 1  -- Outer frame is transparent for layout to work
+    Notification.Size = UDim2.new(1, 0, 0, 60)
+    Notification.BackgroundTransparency = 1
     Notification.BorderSizePixel = 0
     Notification.Name = "Notification"
-    Notification.Parent = NotificationContainer  -- Parent it to your NotificationContainer (the parent of the list layout)
-    Notification.AutomaticSize = Enum.AutomaticSize.Y  -- Allow this frame to resize based on child height
+    Notification.Parent = NotificationContainer
+    Notification.AutomaticSize = Enum.AutomaticSize.Y
 
-    -- Add rounded corners to outer frame
     local UICorner = Instance.new("UICorner")
     UICorner.CornerRadius = UDim.new(0, 4)
     UICorner.Parent = Notification
 
-    -- Create the inner frame for the notification's content
     local InnerFrame = Instance.new("Frame")
-    InnerFrame.Size = UDim2.new(1, 0, 0, 60)  -- Start with an initial height, width will adapt
-    InnerFrame.Position = UDim2.new(0, 0, 0, 0)  -- Positioned inside the outer notification frame
+    InnerFrame.Size = UDim2.new(1, 0, 0, 60)
+    InnerFrame.Position = UDim2.new(0, 0, 0, 0)
     InnerFrame.BackgroundColor3 = Color3.fromRGB(32, 38, 51)
     InnerFrame.BackgroundTransparency = 0.1
     InnerFrame.BorderSizePixel = 0
     InnerFrame.Name = "InnerFrame"
     InnerFrame.Parent = Notification
-    InnerFrame.AutomaticSize = Enum.AutomaticSize.Y  -- Automatically resize based on its content
+    InnerFrame.AutomaticSize = Enum.AutomaticSize.Y
 
-    -- Add rounded corners to the inner frame
     local InnerUICorner = Instance.new("UICorner")
     InnerUICorner.CornerRadius = UDim.new(0, 4)
     InnerUICorner.Parent = InnerFrame
 
-    -- Title Label (with automatic size support)
     local Title = Instance.new("TextLabel")
     Title.Text = settings.title or "Notification Title"
     Title.TextColor3 = Color3.fromRGB(210, 210, 210)
     Title.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
     Title.TextSize = 14
-    Title.Size = UDim2.new(1, -10, 0, 20)  -- Width is 1 (100% of parent width), height is fixed initially
+    Title.Size = UDim2.new(1, -10, 0, 20)
     Title.Position = UDim2.new(0, 5, 0, 5)
     Title.BackgroundTransparency = 1
     Title.TextXAlignment = Enum.TextXAlignment.Left
     Title.TextYAlignment = Enum.TextYAlignment.Center
-    Title.TextWrapped = true  -- Enable wrapping
-    Title.AutomaticSize = Enum.AutomaticSize.Y  -- Allow the title to resize based on content
+    Title.TextWrapped = true
+    Title.AutomaticSize = Enum.AutomaticSize.Y
     Title.Parent = InnerFrame
 
-    -- Body Text (with automatic size support)
     local Body = Instance.new("TextLabel")
     Body.Text = settings.text or "This is the body of the notification."
     Body.TextColor3 = Color3.fromRGB(180, 180, 180)
     Body.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.Regular, Enum.FontStyle.Normal)
     Body.TextSize = 12
-    Body.Size = UDim2.new(1, -10, 0, 30)  -- Width is 1 (100% of parent width), height is fixed initially
+    Body.Size = UDim2.new(1, -10, 0, 30)
     Body.Position = UDim2.new(0, 5, 0, 25)
     Body.BackgroundTransparency = 1
     Body.TextXAlignment = Enum.TextXAlignment.Left
     Body.TextYAlignment = Enum.TextYAlignment.Top
-    Body.TextWrapped = true  -- Enable wrapping for long text
-    Body.AutomaticSize = Enum.AutomaticSize.Y  -- Allow the body text to resize based on content
+    Body.TextWrapped = true
+    Body.AutomaticSize = Enum.AutomaticSize.Y
     Body.Parent = InnerFrame
 
-    -- Force the size to adjust after the text is fully loaded and wrapped
+    -- Добавляем кнопки если они есть
+    if settings.buttons and #settings.buttons > 0 then
+        local ButtonContainer = Instance.new("Frame")
+        ButtonContainer.Size = UDim2.new(1, -10, 0, 25)
+        ButtonContainer.Position = UDim2.new(0, 5, 0, 55)
+        ButtonContainer.BackgroundTransparency = 1
+        ButtonContainer.Parent = InnerFrame
+        
+        local ButtonLayout = Instance.new("UIListLayout")
+        ButtonLayout.FillDirection = Enum.FillDirection.Horizontal
+        ButtonLayout.HorizontalAlignment = Enum.HorizontalAlignment.Left
+        ButtonLayout.Padding = UDim.new(0, 5)
+        ButtonLayout.Parent = ButtonContainer
+        
+        for i, buttonData in ipairs(settings.buttons) do
+            local Button = Instance.new("TextButton")
+            Button.Size = UDim2.new(0, 70, 0, 22)
+            Button.BackgroundColor3 = Color3.fromRGB(45, 52, 68)
+            Button.BorderSizePixel = 0
+            Button.Text = buttonData.text or "Button"
+            Button.TextColor3 = Color3.fromRGB(200, 200, 200)
+            Button.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.Medium, Enum.FontStyle.Normal)
+            Button.TextSize = 11
+            Button.Parent = ButtonContainer
+            
+            local ButtonCorner = Instance.new("UICorner")
+            ButtonCorner.CornerRadius = UDim.new(0, 3)
+            ButtonCorner.Parent = Button
+            
+            Button.MouseButton1Click:Connect(function()
+                if buttonData.callback then
+                    buttonData.callback()
+                end
+                Notification:Destroy()
+            end)
+            
+            Button.MouseEnter:Connect(function()
+                TweenService:Create(Button, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(55, 62, 78)}):Play()
+            end)
+            
+            Button.MouseLeave:Connect(function()
+                TweenService:Create(Button, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(45, 52, 68)}):Play()
+            end)
+        end
+    end
+
     task.spawn(function()
-        wait(0.1)  -- Allow text wrapping to finish
-        -- Adjust inner frame size based on content
-        local totalHeight = Title.TextBounds.Y + Body.TextBounds.Y + 10  -- Add padding
-        InnerFrame.Size = UDim2.new(1, 0, 0, totalHeight)  -- Resize the inner frame
+        wait(0.1)
+        local totalHeight = Title.TextBounds.Y + Body.TextBounds.Y + 10
+        if settings.buttons and #settings.buttons > 0 then
+            totalHeight = totalHeight + 30
+        end
+        InnerFrame.Size = UDim2.new(1, 0, 0, totalHeight)
     end)
 
-    -- Use task.spawn to ensure the notification tweening happens asynchronously
     task.spawn(function()
-        -- Tween In the Notification (inner frame)
         local tweenIn = TweenService:Create(InnerFrame, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
             Position = UDim2.new(0, 0, 0, 10 + NotificationContainer.Size.Y.Offset)
         })
         tweenIn:Play()
 
-        -- Wait for the duration before tweening out
-        local duration = settings.duration or 5  -- Default to 5 seconds if not provided
+        local duration = settings.duration or 5
         wait(duration)
 
-        -- Tween Out the Notification (inner frame) to the right side of the screen
         local tweenOut = TweenService:Create(InnerFrame, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.In), {
-            Position = UDim2.new(1, 310, 0, 10 + NotificationContainer.Size.Y.Offset)  -- Move to the right off-screen
+            Position = UDim2.new(1, 310, 0, 10 + NotificationContainer.Size.Y.Offset)
         })
         tweenOut:Play()
 
-        -- Remove the notification after it is done tweening out
         tweenOut.Completed:Connect(function()
             Notification:Destroy()
         end)
     end)
 end
-
 function Library:get_screen_scale()
     local viewport_size_x = workspace.CurrentCamera.ViewportSize.X
 
