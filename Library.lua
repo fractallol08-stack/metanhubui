@@ -2616,7 +2616,10 @@ function Library:AddDropdown(module, config)
         Library.Config:SetFlag(flag, self.Value)
         Library.Config:Save(Library.ConfigName)
         
-        callback(self.Value)
+        -- ИСПРАВЛЕНИЕ: Вызываем callback сразу же
+        task.spawn(function()
+            callback(self.Value)
+        end)
     end
     
     function Dropdown:SetValue(newValue)
@@ -2636,7 +2639,10 @@ function Library:AddDropdown(module, config)
         Library.Config:SetFlag(flag, newValue)
         Library.Config:Save(Library.ConfigName)
         
-        callback(newValue)
+        -- ИСПРАВЛЕНИЕ: Вызываем callback сразу же
+        task.spawn(function()
+            callback(newValue)
+        end)
     end
     
     Header.MouseButton1Click:Connect(function()
